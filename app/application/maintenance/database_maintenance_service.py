@@ -22,7 +22,7 @@ class DatabaseMaintenanceService:
             deleted_tables = []
 
             if options.get("all") or options.get("wipe"):
-                excluded_tables = {"api_caches", "alembic_version"}
+                excluded_tables = {"api_caches", "alembic_version", "system_settings", "user_settings", "users"}
                 for table in reversed(Base.metadata.sorted_tables):
                     if table.name in excluded_tables:
                         continue
@@ -41,13 +41,15 @@ class DatabaseMaintenanceService:
             return {"status": "error", "message": str(e)}
 
     def _ensure_default_user(self) -> None:
-        self.db.add(User(
-            id=1,
-            username="default_user",
-            email="default@swaya.io",
-            password_hash="",
-            allow_adult=True,
-        ))
+        exists = self.db.query(User).filter(User.id == 1).first()
+        if not exists:
+            self.db.add(User(
+                id=1,
+                username="default_user",
+                email="default@swaya.io",
+                password_hash="",
+                allow_adult=True,
+            ))
 
     def _load_main_metadata(self) -> None:
         import app.domains.tasks.models

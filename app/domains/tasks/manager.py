@@ -48,6 +48,7 @@ class TaskManager:
         self.session_factory = session_factory
         # Track active asyncio tasks: task_id -> asyncio.Task
         self._active_tasks: Dict[int, asyncio.Task] = {}
+        self._active_task_names: Dict[int, str] = {}
         self._cancelled_tasks = set()
         
         if max_workers is None:
@@ -132,6 +133,7 @@ class TaskManager:
                 if task:
                     task.status = TaskStatus.RUNNING
                     db.commit()
+                    self._active_task_names[task_id] = task.name
 
                 # Execute original coroutine with timeout if specified
                 if timeout is not None:
@@ -167,6 +169,7 @@ class TaskManager:
             finally:
                 db.close()
                 self._active_tasks.pop(task_id, None)
+                self._active_task_names.pop(task_id, None)
 
         # Create and track the asyncio task
         try:
@@ -271,17 +274,10 @@ class TaskManager:
 
     def has_active_heavy_tasks(self) -> bool:
         """Returns True if there is a running scan, rename, or undo task."""
-        db = self.session_factory()
-        try:
-            running_tasks = db.query(BackgroundTask).filter(
-                BackgroundTask.status == TaskStatus.RUNNING
-            ).all()
-            for t in running_tasks:
-                name_lower = t.name.lower()
+        for task_id, task_name in list(self._active_task_names.items()):
+            active_task = self._active_tasks.get(task_id)
+            if active_task and not active_task.done():
+                name_lower = task_name.lower()
                 if "scan" in name_lower or "rename" in name_lower or "undo" in name_lower:
-                    active_task = self._active_tasks.get(t.id)
-                    if active_task and not active_task.done():
-                        return True
-        finally:
-            db.close()
+                    return True
         return False

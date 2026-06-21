@@ -34,8 +34,11 @@ class ImageProcessingService:
         if image_root:
             self.image_root = Path(image_root)
         else:
-            self.image_root = Path(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "data", "media", "images")))
+            self.image_root = Path(__file__).resolve().parents[4] / "data" / "media" / "images"
         self.session = requests.Session()
+        self.session.headers.update({
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        })
 
     def ensure_folders(self) -> None:
         """Ensures all subdirectories exist for original assets and thumbnails."""
@@ -213,7 +216,7 @@ class ImageProcessingService:
             return f"/media/images/thumbnails/{subfolder}/{filename}"
 
         # 3. TMDB CDN fallback
-        if path.startswith("/"):
+        if path.startswith("/") and not path.startswith("/media/"):
             return f"{TMDB_IMAGE_BASE}{size}{path}"
 
         return None
