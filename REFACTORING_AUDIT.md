@@ -1,8 +1,8 @@
 # Backend Refactoring Audit — Kritikustól Nice-to-do-ig
 
-## Áttekintés
-
-A DDD mappastruktúra kész. Most a **kód belső minőségét** kell javítani: God Objectek feldarabolása, cross-domain coupling megszüntetése, hiányzó absztrakciók bevezetése.
+## ⛔ ABSZOLÚT ALAPSZABÁLY: MŰKÖDŐ LOGIKA NEM MÓDOSULHAT / NEM TÖRHET MEG!
+* **Azonos Viselkedés (Zero-Behavior-Change):** A refaktorálás kizárólag a kód szerkezeti átrendezésére (fájlok szétbontása, domain határok tisztázása, importok tisztítása) irányulhat. Az üzleti logika, a meglévő funkciók, az adatformátumok és a működési logikák **teljesen érintetlenül kell, hogy maradjanak**!
+* **Tilos az önkényes átírás:** Bármilyen működő kódrészlet logikájának megváltoztatása szigorúan tilos, a meglévő működést minden esetben hiánytalanul meg kell őrizni. Semmi sem törhet meg!
 
 ---
 
@@ -206,3 +206,11 @@ A DDD mappastruktúra kész. Most a **kód belső minőségét** kell javítani:
 - ✅ Override schemas (`ItemOverridesUpdate`, `BulkOverridesUpdate`, etc.) → `users/schemas.py`
 - ✅ `ListsService` → `app/application/catalog/lists_service.py`
 - ✅ `get_people_group()` → `app/domains/people/services/people_library_service.py`
+
+---
+
+## ⚠️ FONTOS / KRITIKUS SZABÁLY (Semmi sem törhet meg!)
+
+### `ImageProcessingService` és `constants.py` Letöltési Logika
+* **SZABÁLY:** Az aktuális kép-letöltési, mentési és felbontási logika **SEMMI ESETRE SEM TÖRHET MEG** (at all cost)!
+* **Részletek:** A letöltési méreteket és a mentési konfigurációkat szigorúan a `constants.py`-ban definiált `TMDB_DOWNLOAD_SIZES` konstansnak megfelelően kell kezelni a letöltés során. Ezt a logikát később is használni szeretnénk, így refaktorálás vagy módosítás során a meglévő működést meg kell tartani – semmi sem törhet meg a jelenlegi logikában.

@@ -108,9 +108,7 @@ class ImageProcessingService:
 
         limits = MEDIA_IMAGE_LIMITS.get(subfolder)
         if not limits:
-            # No limits configured for this category (e.g. logos) -> copy directly
-            thumb.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(orig, thumb)
+            # No limits configured for this category (e.g. logos) -> skip thumbnail, use original
             return True
 
         thumb_temp = thumb.with_name(f"{thumb.name}.{uuid.uuid4().hex}.tmp")
@@ -131,7 +129,7 @@ class ImageProcessingService:
                     already_in_bounds = False
 
             if already_in_bounds:
-                shutil.copy2(orig, thumb)
+                # Already in bounds, no thumbnail needed
                 return True
 
             # 2. Resize if bounds exceeded
@@ -209,11 +207,14 @@ class ImageProcessingService:
         if path.startswith(("http://", "https://")):
             return path
 
-        # 2. Local thumbnail check
+        # 2. Local check
         filename = os.path.basename(path)
         thumb_path = self.get_thumbnail_path(subfolder, filename)
         if self.exists(thumb_path):
             return f"/media/images/thumbnails/{subfolder}/{filename}"
+        orig_path = self.get_original_path(subfolder, filename)
+        if self.exists(orig_path):
+            return f"/media/images/original/{subfolder}/{filename}"
 
         # 3. TMDB CDN fallback
         if path.startswith("/") and not path.startswith("/media/"):
@@ -256,12 +257,19 @@ class ImageProcessingService:
     def get_download_url(self, path: Optional[str], subfolder: str) -> Optional[str]:
         """
         Builds the download URL for an asset.
-        - If it's a remote URL, returns it directly.
-        - If it's a relative TMDB path (starts with /), prepends the base URL and configured subfolder download size.
+        - If it's a remote URL, returns it directly (rewriting TMDB URLs to the configured download size).
+        - If it's a relative TMDB path (starts with /), prepends the base URL and the configured download size.
         """
         if not path:
             return None
         if path.startswith(("http://", "https://")):
+            if "image.tmdb.org/t/p/" in path:
+                parts = path.split("/t/p/")
+                if len(parts) == 2:
+                    subparts = parts[1].split("/", 1)
+                    if len(subparts) == 2:
+                        size = TMDB_DOWNLOAD_SIZES.get(subfolder, "original")
+                        return f"{parts[0]}/t/p/{size}/{subparts[1]}"
             return path
         if path.startswith("/"):
             size = TMDB_DOWNLOAD_SIZES.get(subfolder, "original")
