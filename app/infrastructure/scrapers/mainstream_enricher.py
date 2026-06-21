@@ -1,4 +1,7 @@
 import logging
+import os
+import re
+from urllib.parse import urlparse
 import threading
 from datetime import datetime
 from typing import List, Optional, Dict, Any
@@ -11,24 +14,30 @@ from app.domains.people.models import MediaPersonLink
 from app.domains.people.services import PersonService
 from app.infrastructure.scrapers.tmdb import TMDBScraper
 from app.infrastructure.scrapers.omdb import OMDBScraper
+from app.core.language import LanguageService
 
 logger = logging.getLogger(__name__)
 
 tv_enrich_lock = threading.Lock()
 
-def _pick_backdrop_path(raw_data, language: str = None) -> Optional[str]:
+def _pick_backdrop_path(raw_data) -> Optional[str]:
     images = raw_data.get("images") or {}
     backdrops = images.get("backdrops") or []
     if not backdrops:
         return raw_data.get("backdrop_path")
+
+    neutral_backdrops = [bd for bd in backdrops if bd.get("iso_639_1") in (None, "")]
+    candidates = neutral_backdrops or backdrops
+
     def score(bd):
         return (
-            1 if bd.get("iso_639_1") in (None, "", DEFAULT_FALLBACK_LANGUAGE, language) else 0,
-            int(bd.get("vote_count") or 0),
+            int(bd.get("width") or 0),
+            int(bd.get("height") or 0),
             float(bd.get("vote_average") or 0),
-            int(bd.get("width") or 0)
+            int(bd.get("vote_count") or 0),
         )
-    sorted_bd = sorted(backdrops, key=score, reverse=True)
+
+    sorted_bd = sorted(candidates, key=score, reverse=True)
     return sorted_bd[0].get("file_path") or raw_data.get("backdrop_path")
 
 def _pick_logo_path(raw_data, language: str = None) -> Optional[str]:
@@ -142,9 +151,10 @@ class MainstreamEnricher:
             logger.warning(f"Failed to load target language for enrichment: {lang_ex}")
 
         unique_langs = []
-        for l in langs_to_enrich:
-            if l not in unique_langs:
-                unique_langs.append(l)
+        for raw_language in langs_to_enrich:
+            language = LanguageService.resolve_request_locale(Provider.TMDB, raw_language)
+            if language and language not in unique_langs:
+                unique_langs.append(language)
 
         for idx, lang in enumerate(unique_langs):
             inc_rat = include_ratings if idx == 0 else False
@@ -186,7 +196,7 @@ class MainstreamEnricher:
                 self.db.add(collection)
             match.collection = collection
             
-        selected_backdrop_path = _pick_backdrop_path(details, language)
+        selected_backdrop_path = _pick_backdrop_path(details)
         if selected_backdrop_path:
             match.backdrop_path = selected_backdrop_path
 
@@ -197,6 +207,14 @@ class MainstreamEnricher:
         loc.tagline = details.get("tagline")
         loc.poster_path = details.get("poster_path")
         loc.logo_path = _pick_logo_path(details, language)
+        localized_asset_prefix = f"tmdb_movie_{match.external_id}_{language}"
+        match.local_backdrop_path = self._queue_image(
+            match.backdrop_path,
+            "backdrops",
+            f"tmdb_movie_{match.external_id}",
+        )
+        loc.local_poster_path = self._queue_image(loc.poster_path, "posters", localized_asset_prefix)
+        loc.local_logo_path = self._queue_image(loc.logo_path, "logos", localized_asset_prefix)
         loc.genres = [g["name"] for g in details.get("genres") or []]
         loc.original_language = details.get("original_language")
 
@@ -256,48 +274,27 @@ class MainstreamEnricher:
                 except:
                     pass
 
-            selected_backdrop_path = _pick_backdrop_path(tv_details, language)
+            selected_backdrop_path = _pick_backdrop_path(tv_details)
             if selected_backdrop_path:
                 tv_match.backdrop_path = selected_backdrop_path
             
-            tv_loc = None
-            for loc in tv_match.localizations:
-                if loc.locale == language:
-                    tv_loc = loc
-                    break
-            if not tv_loc:
-                tv_loc = self.db.query(MetadataLocalization).filter(
-                    MetadataLocalization.match_id == tv_match.id,
-                    MetadataLocalization.locale == language
-                ).first()
-            if not tv_loc:
-                tv_loc = MetadataLocalization(
-                    locale=language,
-                    title=tv_details.get("name") or tv_details.get("original_name") or "Unknown",
-                    overview=tv_details.get("overview"),
-                    poster_path=tv_details.get("poster_path"),
-                    logo_path=_pick_logo_path(tv_details, language),
-                    genres=[g["name"] for g in tv_details.get("genres") or []],
-                    original_language=tv_details.get("original_language"),
-                    trailer_url=_pick_trailer_key(tv_details, language, tv_details.get("original_language"))
-                )
-                tv_match.localizations.append(tv_loc)
-                try:
-                    with self.db.begin_nested():
-                        self.db.flush()
-                except Exception:
-                    tv_loc = self.db.query(MetadataLocalization).filter(
-                        MetadataLocalization.match_id == tv_match.id,
-                        MetadataLocalization.locale == language
-                    ).first()
-            else:
-                tv_loc.title = tv_details.get("name") or tv_details.get("original_name") or "Unknown"
-                tv_loc.overview = tv_details.get("overview")
-                tv_loc.poster_path = tv_details.get("poster_path")
-                tv_loc.logo_path = _pick_logo_path(tv_details, language)
-                tv_loc.genres = [g["name"] for g in tv_details.get("genres") or []]
-                tv_loc.original_language = tv_details.get("original_language")
-                tv_loc.trailer_url = _pick_trailer_key(tv_details, language, tv_details.get("original_language"))
+            tv_loc = self._get_or_create_loc(tv_match, language)
+            tv_loc.title = tv_details.get("name") or tv_details.get("original_name") or "Unknown"
+            tv_loc.overview = tv_details.get("overview")
+            tv_loc.poster_path = tv_details.get("poster_path")
+            tv_loc.logo_path = _pick_logo_path(tv_details, language)
+            tv_loc.genres = [g["name"] for g in tv_details.get("genres") or []]
+            tv_loc.original_language = tv_details.get("original_language")
+            tv_loc.trailer_url = _pick_trailer_key(tv_details, language, tv_details.get("original_language"))
+
+            localized_asset_prefix = f"tmdb_tv_{tv_match.external_id}_{language}"
+            tv_match.local_backdrop_path = self._queue_image(
+                tv_match.backdrop_path,
+                "backdrops",
+                f"tmdb_tv_{tv_match.external_id}",
+            )
+            tv_loc.local_poster_path = self._queue_image(tv_loc.poster_path, "posters", localized_asset_prefix)
+            tv_loc.local_logo_path = self._queue_image(tv_loc.logo_path, "logos", localized_asset_prefix)
 
         # B. SEASON LEVEL
         season_match = None
@@ -337,37 +334,16 @@ class MainstreamEnricher:
                 
                 if season_data:
                     season_match.number_of_episodes = season_data.get("episode_count")
-                    season_loc = None
-                    for loc in season_match.localizations:
-                        if loc.locale == language:
-                            season_loc = loc
-                            break
-                    if not season_loc:
-                        season_loc = self.db.query(MetadataLocalization).filter(
-                            MetadataLocalization.match_id == season_match.id,
-                            MetadataLocalization.locale == language
-                        ).first()
-                    if not season_loc:
-                        season_loc = MetadataLocalization(
-                            locale=language,
-                            title=season_data.get("name") or f"Season {match.season_number}",
-                            overview=season_data.get("overview"),
-                            poster_path=season_data.get("poster_path")
-                        )
-                        season_match.localizations.append(season_loc)
-                        try:
-                            with self.db.begin_nested():
-                                self.db.flush()
-                        except Exception:
-                            season_loc = self.db.query(MetadataLocalization).filter(
-                                MetadataLocalization.match_id == season_match.id,
-                                MetadataLocalization.locale == language
-                            ).first()
-                    else:
-                        season_loc.title = season_data.get("name") or f"Season {match.season_number}"
-                        season_loc.overview = season_data.get("overview")
-                        if season_data.get("poster_path"):
-                            season_loc.poster_path = season_data.get("poster_path")
+                    season_loc = self._get_or_create_loc(season_match, language)
+                    season_loc.title = season_data.get("name") or f"Season {match.season_number}"
+                    season_loc.overview = season_data.get("overview")
+                    if season_data.get("poster_path"):
+                        season_loc.poster_path = season_data.get("poster_path")
+                    season_loc.local_poster_path = self._queue_image(
+                        season_loc.poster_path,
+                        "posters",
+                        f"tmdb_tv_{match.external_id}_s{match.season_number}_{language}",
+                    )
                     if tv_match.release_date:
                         season_match.release_date = tv_match.release_date
 
@@ -422,6 +398,13 @@ class MainstreamEnricher:
                 loc.title = " / ".join(titles)
                 match.still_path = first_still
                 match.stills = all_stills
+                still_prefix = f"tmdb_tv_{match.external_id}_s{match.season_number}_e{ep_nums[0]}"
+                match.local_stills = [
+                    local_path
+                    for index, still_path in enumerate(all_stills)
+                    if (local_path := self._queue_image(still_path, "stills", f"{still_prefix}_{index}"))
+                ]
+                match.local_still_path = match.local_stills[0] if match.local_stills else None
                 if overviews:
                     loc.overview = "\n\n".join(overviews)
                 
@@ -432,6 +415,25 @@ class MainstreamEnricher:
                         pass
                 
                 match.media_type = MediaType.EPISODE
+
+    def _queue_image(self, path: Optional[str], subfolder: str, prefix: str) -> Optional[str]:
+        if not path:
+            return None
+
+        from app.core.tasks import task_manager
+
+        image_service = task_manager.download_worker.image_service
+        url = image_service.get_download_url(path, subfolder)
+        if not url:
+            return None
+
+        basename = os.path.basename(urlparse(path).path)
+        if not basename:
+            return None
+        safe_prefix = re.sub(r"[^A-Za-z0-9_.-]+", "_", prefix).strip("_")
+        filename = f"{safe_prefix}_{basename}"
+        task_manager.download_worker.enqueue_download(url, subfolder, filename)
+        return f"{subfolder}/{filename}"
 
     def _update_match_common(self, match: MetadataMatch, details: Dict[str, Any], include_ratings: bool = True):
         runtimes = details.get("episode_run_time", [])
@@ -538,9 +540,18 @@ class MainstreamEnricher:
                 match.people.append(link)
 
     def _get_or_create_loc(self, match: MetadataMatch, language: str) -> MetadataLocalization:
-        for loc in match.localizations:
-            if loc.locale == language:
-                return loc
+        language = LanguageService.resolve_request_locale(Provider.TMDB, language) or DEFAULT_FALLBACK_LANGUAGE
+        equivalent_localizations = [
+            loc for loc in match.localizations
+            if LanguageService.resolve_request_locale(Provider.TMDB, loc.locale) == language
+        ]
+        if equivalent_localizations:
+            loc = next((item for item in equivalent_localizations if item.locale == language), equivalent_localizations[0])
+            loc.locale = language
+            for duplicate in equivalent_localizations:
+                if duplicate is not loc:
+                    match.localizations.remove(duplicate)
+            return loc
         loc = self.db.query(MetadataLocalization).filter(
             MetadataLocalization.match_id == match.id if match.id else False,
             MetadataLocalization.locale == language

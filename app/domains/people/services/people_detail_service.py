@@ -10,9 +10,7 @@ from app.domains.media.models.filesystem import MediaItem
 from app.domains.media.models.metadata import MetadataMatch, MetadataLocalization
 from app.domains.people.models import Person, PersonLocalization, MediaPersonLink, ExternalSourceLink
 from app.domains.settings.models import UserSetting
-from app.infrastructure.scrapers.tmdb import TMDBScraper
-from app.infrastructure.scrapers.stashdb import StashDBScraper
-from app.infrastructure.scrapers.fansdb import FansDBScraper
+from app.domains.shared.ports.scrapers import ScraperGatewayPort
 from app.core.images import ImageProcessingService
 from app.core.language import LanguageService
 
@@ -21,10 +19,10 @@ from app.core.constants import DEFAULT_FALLBACK_LANGUAGE
 logger = logging.getLogger(__name__)
 
 class PeopleDetailService:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, scrapers: ScraperGatewayPort):
         self.db = db
         self.img_service = ImageProcessingService()
-        self.tmdb = TMDBScraper(db)
+        self.tmdb = scrapers.tmdb(db)
 
     def _resolve_img(self, path: Optional[str], subfolder: str) -> Optional[str]:
         if not path:

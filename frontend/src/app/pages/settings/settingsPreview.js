@@ -53,7 +53,7 @@ const PREVIEW_CONTEXTS = {
     source: 'WEB-DL',
     video_codec: 'h264',
   },
-  show: {
+  tv: {
     tv_title: 'Stranger Things',
     tv_original_title: 'Stranger Things',
     year: '2016',
@@ -117,7 +117,7 @@ const PREVIEW_EXTENSIONS = {
 };
 
 const isMoviePreviewType = (type) => type === 'movie' || type === 'adultMovie';
-const isShowPreviewType = (type) => type === 'show';
+const isTvPreviewType = (type) => type === 'tv';
 const isCollectionPreviewType = (type) => type === 'collection';
 const isSeasonLikePreviewType = (type) => type === 'season' || type === 'episode';
 
@@ -174,7 +174,7 @@ export function generatePreview(template, type, casing, separator, customTag, is
       finalResult = `${result}/The Matrix (1999) 1080p.mp4`;
     } else if (type === 'adultMovie') {
       finalResult = `${result}/Velvet Nights XXX (2018) 1080p.mp4`;
-    } else if (isShowPreviewType(type)) {
+    } else if (isTvPreviewType(type)) {
       finalResult = `${result}/Season 01/Stranger Things - S01E03 - Holly, Jolly.mp4`;
     } else if (isSeasonLikePreviewType(type)) {
       finalResult = `${result}/Stranger Things - S01E03 - Holly, Jolly.mp4`;

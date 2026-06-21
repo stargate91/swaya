@@ -91,7 +91,12 @@ def init_databases():
     as a fallback. Cache tables are created directly.
     """
     # Import all models here to ensure they register on Base.metadata
+    import app.core.tasks.models
+    import app.domains.history.models
     import app.domains.media.models
+    import app.domains.people.models
+    import app.domains.settings.models
+    import app.domains.users.models
     
     # Create main database tables if they do not exist
     Base.metadata.create_all(bind=engine)

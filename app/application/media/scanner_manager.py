@@ -6,11 +6,11 @@ from app.core.enums import ScanMode
 
 from app.domains.media.models.filesystem import Library, MediaItem
 from app.domains.settings.models import SystemSetting, UserSetting
-from .collector import Collector
-from .categorizer import Categorizer
-from .linker import Linker
-from .probe import TechnicalProber
-from .scan_collector import ScanCollector
+from app.domains.media.services.scanner.collector import Collector
+from app.domains.media.services.scanner.categorizer import Categorizer
+from app.domains.media.services.scanner.linker import Linker
+from app.domains.media.services.scanner.probe import TechnicalProber
+from app.domains.media.services.scanner.scan_collector import ScanCollector
 
 logger = logging.getLogger(__name__)
 

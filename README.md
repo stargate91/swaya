@@ -5,7 +5,7 @@ Swaya is a high-performance, domain-driven media identification, metadata enrich
 ## Key Enhancements over Legacy Backend
 
 * **Clean Domain-Driven Design (DDD):** Organized into distinct layers (`core`, `domains`, `infrastructure`) to eliminate circular imports and enforce a strict separation of concerns.
-* **Unified Relational Database Schema:** Fully relational SQLite database managed via SQLAlchemy 2.0 and Alembic migrations, utilizing unified identifiers (e.g. mapping legacy namespaces, series conventions to `tv`, and SFW/NSFW to unified tracking flags).
+* **Unified Relational Database Schema:** Fully relational SQLite database managed via SQLAlchemy 2.0 and Alembic migrations, utilizing unified identifiers (e.g. mapping legacy namespaces to `tv`, and SFW/NSFW to unified tracking flags).
 * **Asynchronous Background Task Manager:** Built-in task queue supporting concurrent execution, progress tracking, and thread-safe abort/cancellation mechanisms.
 * **Aggressive API Caching:** Centralized SQLite-based caching layer for external API queries (TMDB, OMDb, StashDB, PornDB, FansDB) with configurable TTL policies and negative cache support.
 * **Robust Image Processing:** On-the-fly local download, format verification, aspect-ratio preserved downscaling, and thumbnail generation for media assets.

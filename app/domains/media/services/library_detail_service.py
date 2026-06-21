@@ -11,9 +11,7 @@ from app.domains.media.models.filesystem import MediaItem, ExtraFile
 from app.domains.media.models.metadata import MetadataMatch, MetadataLocalization, MediaCollection, MediaCollectionLocalization
 from app.domains.people.models import Person, PersonLocalization, MediaPersonLink
 from app.domains.users.models import UserOverride, Tag
-from app.infrastructure.scrapers.tmdb import TMDBScraper
-from app.infrastructure.scrapers.stashdb import StashDBScraper
-from app.infrastructure.scrapers.fansdb import FansDBScraper
+from app.domains.shared.ports.scrapers import ScraperGatewayPort
 from app.core.images import ImageProcessingService
 from app.core.language import LanguageService
 
@@ -22,10 +20,11 @@ from app.core.constants import DEFAULT_FALLBACK_LANGUAGE
 logger = logging.getLogger(__name__)
 
 class LibraryDetailService:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, scrapers: ScraperGatewayPort):
         self.db = db
+        self.scrapers = scrapers
         self.img_service = ImageProcessingService()
-        self.tmdb_scraper = TMDBScraper(db)
+        self.tmdb_scraper = scrapers.tmdb(db)
 
     def _resolve_img(self, path: Optional[str], subfolder: str, size: str = "w500") -> Optional[str]:
         if not path:
@@ -38,10 +37,10 @@ class LibraryDetailService:
         # 1. Virtual StashDB / FansDB Scene Detail
         if isinstance(item_id, str) and item_id.startswith("stash_"):
             scene_uuid = item_id.split("_")[1]
-            stash_scraper = StashDBScraper(db)
+            stash_scraper = self.scrapers.adult(Provider.STASHDB, db)
             scene_data = stash_scraper.fetch_scene(scene_uuid)
             if not scene_data:
-                fans_scraper = FansDBScraper(db)
+                fans_scraper = self.scrapers.adult(Provider.FANSDB, db)
                 scene_data = fans_scraper.fetch_scene(scene_uuid)
             
             if not scene_data:

@@ -27,6 +27,8 @@ async def lifespan(app: FastAPI):
     
     # Start background download worker on the main event loop
     from app.core.tasks import task_manager
+    from app.infrastructure.scrapers.gateway import scraper_gateway
+    task_manager.people_enrich_worker.scrapers = scraper_gateway
     await task_manager.download_worker.start()
     await task_manager.people_enrich_worker.start()
     
@@ -56,7 +58,7 @@ from app.core.tasks.routes import router as tasks_router
 from app.domains.media.routes import router as media_router, mainstream_router as media_mainstream_router, adult_router as media_adult_router, library_router
 from app.domains.people.routes import router as people_router, mainstream_router as people_mainstream_router, adult_router as people_adult_router
 from app.domains.settings.routes import router as settings_router, db_router
-from app.domains.users.routes import router as users_router
+from app.domains.users.routes import router as users_router, catalog_router
 from app.domains.history.routes import router as history_router
 
 app.include_router(tasks_router)
@@ -70,6 +72,7 @@ app.include_router(people_adult_router)
 app.include_router(settings_router)
 app.include_router(db_router)
 app.include_router(users_router)
+app.include_router(catalog_router)
 app.include_router(history_router)
 
 

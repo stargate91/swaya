@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from app.core.database import get_db
+from app.application.maintenance.database_maintenance_service import DatabaseMaintenanceService
 from app.domains.settings.models import SystemSetting, UserSetting
 from app.domains.settings.services.settings_service import SettingsService
 from app.domains.settings.schemas import (
@@ -100,11 +102,34 @@ def validate_api_keys(payload: dict, db: Session = Depends(get_db)):
     return SettingsService(db, user_id=1).validate_api_keys(payload)
 
 
+@router.get("/changelog", response_model=dict)
+def get_changelog(db: Session = Depends(get_db)):
+    return SettingsService(db, user_id=1).get_changelog()
+
+
+@router.get("/ignored-items", response_model=dict)
+def get_ignored_items(
+    search: str = "",
+    offset: int = 0,
+    limit: int = 40,
+    db: Session = Depends(get_db),
+):
+    return SettingsService(db, user_id=1).get_ignored_items(search, offset, limit)
+
+
+class RestoreIgnoredRequest(BaseModel):
+    item_ids: List[int]
+
+
+@router.post("/ignored-items/restore", response_model=dict)
+def restore_ignored_items(request: RestoreIgnoredRequest, db: Session = Depends(get_db)):
+    return SettingsService(db, user_id=1).restore_ignored_items(request.item_ids)
+
 # --- Database Endpoints ---
 db_router = APIRouter(prefix="/api/v1/database", tags=["Database"])
 
 @db_router.post("/clear", response_model=dict)
-def clear_database(payload: dict, db: Session = Depends(get_db)):
+def clear_database(payload: Optional[dict] = None, db: Session = Depends(get_db)):
     """Clear metadata, files, libraries, or history from database."""
-    return SettingsService(db, user_id=1).clear_database(payload)
+    return DatabaseMaintenanceService(db).clear_database(payload)
 

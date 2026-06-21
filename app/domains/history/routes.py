@@ -41,7 +41,7 @@ def get_action_history(db: Session = Depends(get_db), limit: int = 50):
 
 async def run_undo_coroutine(task_id: int, batch_id: int):
     import logging
-    from app.domains.media.services.renamer_engine import RenamerEngine
+    from app.application.media.renamer_engine import RenamerEngine
     from app.core.database import SessionLocal
     from app.core.tasks import task_manager
 

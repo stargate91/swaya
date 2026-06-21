@@ -31,7 +31,7 @@ function getFolderLabel(path) {
       parts.pop();
     }
   }
-  return parts.join('/') || '';
+  return parts[0] || '';
 }
 
 function createFileNode(label, options = {}) {
@@ -175,7 +175,7 @@ function buildPreviewAssets(form) {
       : '',
     episodeFile: generatePreview(form.naming_episode_template, 'episode', form.naming_filename_casing, form.naming_word_separator, form.naming_custom_tag, true),
     folderMovie: generatePreview(form.folder_movie_template, 'movie', form.naming_filename_casing, form.naming_word_separator, form.naming_custom_tag, false),
-    folderShow: generatePreview(form.folder_show_template, 'show', form.naming_filename_casing, form.naming_word_separator, form.naming_custom_tag, false),
+    folderTv: generatePreview(form.folder_tv_template, 'tv', form.naming_filename_casing, form.naming_word_separator, form.naming_custom_tag, false),
     folderSeason: generatePreview(form.folder_season_template, 'season', form.naming_filename_casing, form.naming_word_separator, form.naming_custom_tag, false),
     folderEpisode: generatePreview(form.folder_episode_template, 'episode', form.naming_filename_casing, form.naming_word_separator, form.naming_custom_tag, false),
     folderCollection: generatePreview(form.folder_collection_template || '{Collection}', 'collection', form.naming_filename_casing, form.naming_word_separator, form.naming_custom_tag, true),
@@ -262,7 +262,7 @@ function buildAdultNodes(form, assets) {
       ]
     : [createFileNode(assets.adultMovieFile, { tone: 'adult' })];
   const tvNodes = [
-    createFolderNode(getFolderLabel(assets.folderShow), {
+    createFolderNode(getFolderLabel(assets.folderTv), {
       tone: 'adult',
       children: [createFileNode(assets.episodeFile, { tone: 'adult' })],
     }),
@@ -324,7 +324,7 @@ function buildShowNodes(form, assets, options = {}) {
 
   if (!form.folder_create_season_dir) {
     return [
-      createFolderNode(getFolderLabel(assets.folderShow), {
+      createFolderNode(getFolderLabel(assets.folderTv), {
         topSpacing: Boolean(options.topSpacing),
         children: [buildEpisodeFileNode(assets)],
       }),
@@ -340,7 +340,7 @@ function buildShowNodes(form, assets, options = {}) {
     : [buildEpisodeFileNode(assets)];
 
   return [
-    createFolderNode(getFolderLabel(assets.folderShow), {
+    createFolderNode(getFolderLabel(assets.folderTv), {
       topSpacing: Boolean(options.topSpacing),
       children: [
         createFolderNode(getFolderLabel(assets.folderSeason), {

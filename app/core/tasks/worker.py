@@ -23,6 +23,8 @@ class DownloadWorker:
         self.active_downloads = 0
         self.batch_total = 0
         self.completed_downloads = 0
+        self.is_paused = False
+        self._pending_downloads: set[tuple[str, str]] = set()
         self._worker_tasks: List[asyncio.Task] = []
 
     @property
@@ -53,6 +55,10 @@ class DownloadWorker:
     async def _put_in_queue(self, url: str, subfolder: str, filename: str) -> None:
         if not self.is_running:
             await self.start()
+        key = (subfolder, filename)
+        if key in self._pending_downloads:
+            return
+        self._pending_downloads.add(key)
         if self.queue.empty() and self.active_downloads == 0:
             self.batch_total = 0
             self.completed_downloads = 0
@@ -127,10 +133,16 @@ class DownloadWorker:
             try:
                 # Pause/wait if any heavy tasks (scan, rename, undo) are running
                 from app.core.tasks import task_manager
-                while task_manager.has_active_heavy_tasks():
+                while self.is_paused or task_manager.has_active_heavy_tasks():
                     await asyncio.sleep(2)
 
                 url, subfolder, filename = await self.queue.get()
+                if self.is_paused or task_manager.has_active_heavy_tasks():
+                    await self.queue.put((url, subfolder, filename))
+                    self.queue.task_done()
+                    await asyncio.sleep(0.25)
+                    continue
+
                 self.active_downloads += 1
                 try:
                     await asyncio.to_thread(self._do_download, url, subfolder, filename)
@@ -139,6 +151,7 @@ class DownloadWorker:
                 finally:
                     self.active_downloads = max(0, self.active_downloads - 1)
                     self.completed_downloads += 1
+                    self._pending_downloads.discard((subfolder, filename))
                     self.queue.task_done()
             except asyncio.CancelledError:
                 break

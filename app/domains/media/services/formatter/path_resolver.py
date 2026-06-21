@@ -1,11 +1,12 @@
 from pathlib import Path
-from typing import List, Dict
+from typing import Callable, List, Dict, Optional
 from .models import RenamePreview
 
 
 class PathResolver:
-    def __init__(self, config=None):
+    def __init__(self, config=None, replacement_decider: Optional[Callable[[RenamePreview], Optional[bool]]] = None):
         self.config = config
+        self.replacement_decider = replacement_decider
 
     def _is_same_file_target(self, preview: RenamePreview) -> bool:
         try:
@@ -160,50 +161,9 @@ class PathResolver:
         )
 
     def _can_replace_existing(self, preview: RenamePreview):
-        db_session = getattr(self.config, "db_session", None)
-        if db_session is None:
+        if self.replacement_decider is None:
             return None
-
-        try:
-            from app.domains.media.models.filesystem import Library, MediaItem
-
-            target_path = preview.target_path
-            target_path_lower = str(target_path).replace("\\", "/").lower()
-
-            target_item = None
-            libraries = db_session.query(Library).all()
-            for lib in libraries:
-                root_lower = str(lib.root_path).replace("\\", "/").lower().rstrip("/")
-                if target_path_lower.startswith(root_lower):
-                    rel = target_path[len(root_lower):].strip("/\\").replace("\\", "/")
-                    target_item = db_session.query(MediaItem).filter(
-                        MediaItem.library_id == lib.id,
-                        MediaItem.relative_path == rel
-                    ).first()
-                    if target_item:
-                        break
-
-            if not target_item:
-                return None
-
-            tolerance = getattr(self.config, "collision_duration_tolerance_seconds", 10) or 10
-            if preview.source_duration and target_item.duration:
-                if abs(float(preview.source_duration) - float(target_item.duration)) > tolerance:
-                    return False
-
-            source_score = (
-                self._resolution_height(preview.source_resolution),
-                preview.source_video_bitrate or 0,
-                preview.source_size or 0,
-            )
-            target_score = (
-                self._resolution_height(target_item.resolution),
-                target_item.video_bitrate or 0,
-                target_item.size or 0,
-            )
-            return source_score > target_score
-        except Exception:
-            return None
+        return self.replacement_decider(preview)
 
     def _resolution_height(self, resolution: str) -> int:
         if not resolution:

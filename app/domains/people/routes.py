@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.core.database import get_db
+from app.infrastructure.scrapers.gateway import scraper_gateway
 from app.domains.people.models import Person
 from app.domains.people.schemas import PersonRead
 
@@ -41,7 +42,7 @@ async def run_people_enrich_coroutine(task_id: int, match_ids: List[int]):
     logger = logging.getLogger(__name__)
     db = SessionLocal()
     try:
-        enricher = PeopleEnricher(db)
+        enricher = PeopleEnricher(db, scraper_gateway)
         count = await asyncio.to_thread(enricher.enrich_people_for_matches, task_id, match_ids)
         logger.info(f"Enriched {count} people for matches {match_ids}")
     except Exception as e:
@@ -79,7 +80,7 @@ def get_people(
     limit: int = 20,
     db: Session = Depends(get_db)
 ):
-    return PeopleDetailService(db).get_people(
+    return PeopleDetailService(db, scraper_gateway).get_people(
         search=search, role=role, sort_by=sort_by, include_inactive=include_inactive,
         adult_only=adult_only, gender=gender, offset=offset, limit=limit
     )
@@ -87,7 +88,7 @@ def get_people(
 
 @router.get("/{person_id}")
 def get_person_detail(person_id: int, db: Session = Depends(get_db)):
-    return PeopleDetailService(db).get_person_detail(person_id)
+    return PeopleDetailService(db, scraper_gateway).get_person_detail(person_id)
 
 
 @router.get("/{person_id}/movies")
@@ -97,7 +98,7 @@ def get_person_movies(
     page_size: int = Query(default=12, ge=1),
     db: Session = Depends(get_db)
 ):
-    return PeopleDetailService(db).get_person_movies(person_id, page=page, page_size=page_size)
+    return PeopleDetailService(db, scraper_gateway).get_person_movies(person_id, page=page, page_size=page_size)
 
 
 @router.get("/{person_id}/tv")
@@ -107,7 +108,7 @@ def get_person_tv(
     page_size: int = Query(default=12, ge=1),
     db: Session = Depends(get_db)
 ):
-    return PeopleDetailService(db).get_person_tv(person_id, page=page, page_size=page_size)
+    return PeopleDetailService(db, scraper_gateway).get_person_tv(person_id, page=page, page_size=page_size)
 
 
 @router.get("/{person_id}/scenes")
@@ -117,5 +118,5 @@ def get_person_scenes(
     page_size: int = Query(default=12, ge=1),
     db: Session = Depends(get_db)
 ):
-    return PeopleDetailService(db).get_person_scenes(person_id, page=page, page_size=page_size)
+    return PeopleDetailService(db, scraper_gateway).get_person_scenes(person_id, page=page, page_size=page_size)
 

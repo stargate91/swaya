@@ -12,34 +12,6 @@ from app.domains.media.models.metadata import (
     ExternalStudioLink,
     ExternalCollectionLink,
 )
-from app.domains.people.models import (
-    Person,
-    PersonLocalization,
-    MediaPersonLink,
-    ExternalSourceLink,
-)
-from app.domains.users.models import (
-    user_override_tags,
-    User,
-    Tag,
-    UserOverride,
-    CustomList,
-    CustomListItem,
-)
-from app.domains.settings.models import (
-    UserSetting,
-    SystemSetting,
-)
-from app.core.tasks.models import (
-    BackgroundTask,
-)
-from app.domains.history.models import (
-    PlaybackLog,
-    PlaybackPeakLog,
-    ActionBatch,
-    ActionLog,
-)
-
 
 __all__ = [
     "Library",
@@ -56,21 +28,4 @@ __all__ = [
     "ExternalMatchLink",
     "ExternalStudioLink",
     "ExternalCollectionLink",
-    "Person",
-    "PersonLocalization",
-    "MediaPersonLink",
-    "ExternalSourceLink",
-    "user_override_tags",
-    "User",
-    "Tag",
-    "UserOverride",
-    "CustomList",
-    "CustomListItem",
-    "UserSetting",
-    "SystemSetting",
-    "PlaybackLog",
-    "PlaybackPeakLog",
-    "ActionBatch",
-    "ActionLog",
-    "BackgroundTask",
 ]

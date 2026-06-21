@@ -62,6 +62,16 @@ class ScannerService:
         completed = worker.completed_downloads
         pending = queued + active_count
 
+        if worker.is_paused:
+            return {
+                "active": False,
+                "deferred": pending > 0,
+                "pending": pending,
+                "total": total,
+                "completed": completed,
+                "progress": 0,
+            }
+
         if pending == 0:
             return {"active": False, "pending": 0, "total": total, "completed": completed, "progress": 100 if total else 0}
 
@@ -81,7 +91,8 @@ class ScannerService:
         if hasattr(worker, "queue") and worker.queue:
             while not worker.queue.empty():
                 try:
-                    worker.queue.get_nowait()
+                    _, subfolder, filename = worker.queue.get_nowait()
+                    worker._pending_downloads.discard((subfolder, filename))
                     worker.queue.task_done()
                     cleared += 1
                 except (asyncio.QueueEmpty, ValueError):
@@ -129,6 +140,7 @@ class ScannerService:
         include_adult: Optional[bool] = None,
     ):
         global scan_status
+        self.task_manager.download_worker.is_paused = True
         with scan_status_lock:
             scan_status.update({
                 "active": True,
@@ -183,7 +195,7 @@ class ScannerService:
                 self.db.commit()
 
             total_items_to_enrich = []
-            from app.domains.media.services.scanner.scanner_manager import ScannerManager
+            from app.application.media.scanner_manager import ScannerManager
             scanner = ScannerManager(self.db)
             
             for lib in libraries_to_scan:
@@ -235,6 +247,7 @@ class ScannerService:
             logger.error(f"Scan task failed: {e}", exc_info=True)
             raise e
         finally:
+            self.task_manager.download_worker.is_paused = False
             with scan_status_lock:
                 scan_status["active"] = False
                 scan_status["phase"] = "idle"
@@ -304,13 +317,12 @@ class ScannerService:
                 "stop_requested": False,
             })
             
-        from app.domains.media.services.renamer_engine import RenamerEngine
-        from app.domains.media.services.formatter.formatter import Formatter
-        from app.domains.media.services.formatter.config import FormatterConfig
+        from app.application.media.renamer_engine import RenamerEngine
+        from app.infrastructure.settings.formatter_config_adapter import build_formatter_from_db
         import os
         
         engine = RenamerEngine(self.db)
-        formatter = Formatter(FormatterConfig.from_db(self.db))
+        formatter = build_formatter_from_db(self.db)
         
         for idx, item in enumerate(items):
             if self._is_stop_requested():
@@ -369,7 +381,7 @@ class ScannerService:
                 "stop_requested": False,
             })
             
-        from app.domains.media.services.renamer_engine import RenamerEngine
+        from app.application.media.renamer_engine import RenamerEngine
         engine = RenamerEngine(self.db)
         
         def progress_cb(current, total):

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from app.core.database import get_db
 from app.domains.users.models import User, UserOverride, CustomList
@@ -123,3 +123,113 @@ def create_user_override(user_id: int, override_data: UserOverrideCreate, db: Se
 def list_user_custom_lists(user_id: int, db: Session = Depends(get_db)):
     """Retrieve custom user lists."""
     return db.query(CustomList).filter(CustomList.user_id == user_id).all()
+
+# Compatibility API owned by the Users domain.
+catalog_router = APIRouter(prefix="/api/v1", tags=["User Catalog"])
+
+from app.domains.users.services.tags_service import TagsService
+from app.domains.users.services.lists_service import ListsService
+
+
+@catalog_router.get("/tags")
+def get_all_tags(target_type: Optional[str] = None, is_adult: bool = False, db: Session = Depends(get_db)):
+    return TagsService(db).get_all_tags(target_type, is_adult)
+
+
+@catalog_router.post("/tags")
+def create_tag(payload: dict, db: Session = Depends(get_db)):
+    res = TagsService(db).create_tag(payload)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+
+@catalog_router.put("/tags/{tag_id}")
+def update_tag(tag_id: int, payload: dict, db: Session = Depends(get_db)):
+    res = TagsService(db).update_tag(tag_id, payload)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+
+@catalog_router.delete("/tags/{tag_id}")
+def delete_tag(tag_id: int, db: Session = Depends(get_db)):
+    res = TagsService(db).delete_tag(tag_id)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+
+@catalog_router.get("/lists")
+def get_all_lists(db: Session = Depends(get_db)):
+    return ListsService(db).get_all_lists()
+
+
+@catalog_router.get("/lists/item-membership/{item_id}")
+def get_item_membership(item_id: str, db: Session = Depends(get_db)):
+    return ListsService(db).get_item_membership(item_id)
+
+@catalog_router.get("/lists/{list_id}")
+def get_list_details(list_id: int, db: Session = Depends(get_db)):
+    res = ListsService(db).get_list_details(list_id)
+    if "error" in res:
+        raise HTTPException(status_code=404, detail=res["error"])
+    return res
+
+
+@catalog_router.post("/lists")
+def create_list(payload: dict, db: Session = Depends(get_db)):
+    res = ListsService(db).create_list(payload)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+
+@catalog_router.put("/lists/{list_id}")
+def update_list(list_id: int, payload: dict, db: Session = Depends(get_db)):
+    res = ListsService(db).update_list(list_id, payload)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+
+@catalog_router.delete("/lists/{list_id}")
+def delete_list(list_id: int, db: Session = Depends(get_db)):
+    res = ListsService(db).delete_list(list_id)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+
+@catalog_router.post("/lists/{list_id}/items")
+def add_item_to_list(list_id: int, payload: dict, db: Session = Depends(get_db)):
+    res = ListsService(db).add_item_to_list(list_id, payload)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+
+@catalog_router.delete("/lists/{list_id}/items/{item_id}")
+def remove_item_from_list(list_id: int, item_id: int, db: Session = Depends(get_db)):
+    res = ListsService(db).remove_item_from_list(list_id, item_id)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+
+
+@catalog_router.get("/user/catalog")
+def get_user_catalog(
+    tab: Optional[str] = None,
+    offset: int = 0,
+    limit: int = 40,
+    search: str = "",
+    favorite_only: bool = False,
+    db: Session = Depends(get_db),
+):
+    return ListsService(db).get_user_catalog(tab, offset, limit, search, favorite_only)
+
+
+@catalog_router.post("/user/catalog/bulk-status")
+def bulk_update_catalog_status(payload: dict, db: Session = Depends(get_db)):
+    return ListsService(db).bulk_update_catalog_status(payload)

@@ -84,7 +84,7 @@ export const SETTINGS_BASE_DEFAULTS = {
   folder_create_movie_subdir: true,
   folder_movie_template: '{title} ({year})',
   folder_create_show_dir: true,
-  folder_show_template: '{tv_title} ({year_range})',
+  folder_tv_template: '{tv_title} ({year_range})',
   folder_create_season_dir: true,
   folder_season_template: 'Season {season}',
   folder_create_episode_dir: false,
@@ -287,7 +287,7 @@ export function getInitialFormValues(settingsData = null, t = null) {
     ),
     folder_movie_template: getStringValue(settingsData.folder_movie_template, defaults.folder_movie_template),
     folder_create_show_dir: getBooleanValue(settingsData.folder_create_show_dir, defaults.folder_create_show_dir),
-    folder_show_template: getStringValue(settingsData.folder_show_template, defaults.folder_show_template),
+    folder_tv_template: getStringValue(settingsData.folder_tv_template, defaults.folder_tv_template),
     folder_create_season_dir: getBooleanValue(
       settingsData.folder_create_season_dir,
       defaults.folder_create_season_dir

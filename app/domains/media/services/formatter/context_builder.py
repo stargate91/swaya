@@ -316,16 +316,6 @@ class ContextBuilder:
             ctx["Resolution"] = mixed_res
             ctx["resolution"] = mixed_res
 
-        first_air_date, last_air_date = self._resolve_air_dates(match)
-        first_air_year = str(first_air_date.year) if first_air_date else ""
-        last_air_year = str(last_air_date.year) if last_air_date else ""
-        if first_air_year and last_air_year:
-            year_range = first_air_year if first_air_year == last_air_year else f"{first_air_year}-{last_air_year}"
-        elif first_air_year:
-            year_range = f"{first_air_year}-"
-        else:
-            year_range = ""
-
         # Safely resolve titles using the new hierarchy schema
         from app.core.enums import MediaType
         
@@ -395,6 +385,16 @@ class ContextBuilder:
             elif match.media_type == MediaType.EPISODE:
                 # loc is the episode localization
                 pass
+
+        first_air_date, last_air_date = self._resolve_air_dates(tv_match or match)
+        first_air_year = str(first_air_date.year) if first_air_date else ""
+        last_air_year = str(last_air_date.year) if last_air_date else ""
+        if first_air_year and last_air_year:
+            year_range = first_air_year if first_air_year == last_air_year else f"{first_air_year}-{last_air_year}"
+        elif first_air_year:
+            year_range = f"{first_air_year}-"
+        else:
+            year_range = ""
 
         tv_title = ""
         tv_orig_title = ""

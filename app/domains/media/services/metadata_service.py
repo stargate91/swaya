@@ -6,13 +6,8 @@ from sqlalchemy.orm import Session
 from app.core.enums import Provider, MediaType, ItemStatus
 from app.domains.media.models.filesystem import MediaItem
 from app.domains.media.models.metadata import MetadataMatch, MetadataLocalization
-from app.infrastructure.scrapers.tmdb import TMDBScraper
-from app.infrastructure.scrapers.stashdb import StashDBScraper
-from app.infrastructure.scrapers.porndb import PornDBScraper
-from app.infrastructure.scrapers.fansdb import FansDBScraper
-from app.infrastructure.scrapers.mainstream_enricher import MainstreamEnricher
-from app.infrastructure.scrapers.normalizer import ScraperNormalizer
-from app.infrastructure.scrapers.persistence import ScraperPersister
+from app.domains.shared.ports.scrapers import ScraperGatewayPort
+
 from app.domains.media.schemas import MetadataResolveRequest, BulkResolveRequest
 
 from app.core.constants import DEFAULT_FALLBACK_LANGUAGE
@@ -20,9 +15,10 @@ from app.core.constants import DEFAULT_FALLBACK_LANGUAGE
 logger = logging.getLogger(__name__)
 
 class MetadataService:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, scrapers: ScraperGatewayPort):
         self.db = db
-        self.tmdb = TMDBScraper(db)
+        self.scrapers = scrapers
+        self.tmdb = scrapers.tmdb(db)
 
     def search_metadata(self, query: str, item_type: str = "movie", year: Optional[int] = None, language: Optional[str] = None, provider: Optional[str] = None) -> List[Dict[str, Any]]:
         # Resolve provider
@@ -39,11 +35,11 @@ class MetadataService:
         if prov_enum in (Provider.STASHDB, Provider.PORNDB, Provider.FANSDB):
             scraper = None
             if prov_enum == Provider.STASHDB:
-                scraper = StashDBScraper(self.db)
+                scraper = self.scrapers.adult(Provider.STASHDB, self.db)
             elif prov_enum == Provider.PORNDB:
-                scraper = PornDBScraper(self.db)
+                scraper = self.scrapers.adult(Provider.PORNDB, self.db)
             elif prov_enum == Provider.FANSDB:
-                scraper = FansDBScraper(self.db)
+                scraper = self.scrapers.adult(Provider.FANSDB, self.db)
 
             if not scraper:
                 return []
@@ -180,11 +176,11 @@ class MetadataService:
         if provider in (Provider.STASHDB, Provider.PORNDB, Provider.FANSDB):
             scraper = None
             if provider == Provider.STASHDB:
-                scraper = StashDBScraper(self.db)
+                scraper = self.scrapers.adult(Provider.STASHDB, self.db)
             elif provider == Provider.PORNDB:
-                scraper = PornDBScraper(self.db)
+                scraper = self.scrapers.adult(Provider.PORNDB, self.db)
             elif provider == Provider.FANSDB:
-                scraper = FansDBScraper(self.db)
+                scraper = self.scrapers.adult(Provider.FANSDB, self.db)
 
             if not scraper:
                 return {"error": "Selected adult scraper is not configured"}
@@ -193,9 +189,8 @@ class MetadataService:
             if not scene_data:
                 return {"error": f"Failed to fetch scene details from {provider.value}"}
 
-            normalized = ScraperNormalizer.normalize_adult_scene(provider.value, scene_data)
-            persister = ScraperPersister(self.db)
-            match = persister.persist_normalized_scene(provider, str(scene_data["id"]), normalized)
+            normalized = self.scrapers.normalize_adult_scene(provider, scene_data)
+            match = self.scrapers.persist_adult_scene(self.db, provider, str(scene_data["id"]), normalized)
             match.media_item_id = item.id
             item.status = ItemStatus.MATCHED
             self.db.commit()
@@ -231,9 +226,8 @@ class MetadataService:
         item.status = ItemStatus.MATCHED
 
         # Enrich item metadata
-        enricher = MainstreamEnricher(self.db)
         try:
-            enricher.enrich_matched_item(item, language=DEFAULT_FALLBACK_LANGUAGE, commit=True)
+            self.scrapers.enrich_mainstream(self.db, item, DEFAULT_FALLBACK_LANGUAGE, commit=True)
         except Exception as e:
             logger.error(f"Enrichment failed during manual resolve: {e}")
             self.db.commit()
@@ -272,11 +266,11 @@ class MetadataService:
             if match.provider in (Provider.STASHDB, Provider.PORNDB, Provider.FANSDB):
                 scraper = None
                 if match.provider == Provider.STASHDB:
-                    scraper = StashDBScraper(self.db)
+                    scraper = self.scrapers.adult(Provider.STASHDB, self.db)
                 elif match.provider == Provider.PORNDB:
-                    scraper = PornDBScraper(self.db)
+                    scraper = self.scrapers.adult(Provider.PORNDB, self.db)
                 elif match.provider == Provider.FANSDB:
-                    scraper = FansDBScraper(self.db)
+                    scraper = self.scrapers.adult(Provider.FANSDB, self.db)
 
                 if scraper:
                     details = scraper.fetch_scene(match.external_id) or {}

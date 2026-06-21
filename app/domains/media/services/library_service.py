@@ -134,7 +134,7 @@ class LibraryService:
             joinedload(MetadataMatch.parent).joinedload(MetadataMatch.parent).joinedload(MetadataMatch.localizations)
         ).all()
 
-        seen_tv_shows = set()
+        seen_tv = set()
         unique_matches = []
         for m in matches:
             if not include_adult and m.is_adult:
@@ -142,18 +142,18 @@ class LibraryService:
             if m.media_type == MediaType.MOVIE:
                 unique_matches.append(m)
             elif m.media_type == MediaType.EPISODE:
-                show_match = None
+                tv_match = None
                 if m.parent and m.parent.parent:
-                    show_match = m.parent.parent
+                    tv_match = m.parent.parent
                 elif m.parent:
-                    show_match = m.parent
+                    tv_match = m.parent
                 
-                if show_match:
-                    if not include_adult and show_match.is_adult:
+                if tv_match:
+                    if not include_adult and tv_match.is_adult:
                         continue
-                    if show_match.id not in seen_tv_shows:
-                        seen_tv_shows.add(show_match.id)
-                        unique_matches.append(show_match)
+                    if tv_match.id not in seen_tv:
+                        seen_tv.add(tv_match.id)
+                        unique_matches.append(tv_match)
                 else:
                     unique_matches.append(m)
 
@@ -288,20 +288,20 @@ class LibraryService:
             
             if match and match.media_type == MediaType.EPISODE:
                 episode_title = title
-                show_match = None
+                tv_match = None
                 if match.parent and match.parent.parent:
-                    show_match = match.parent.parent
+                    tv_match = match.parent.parent
                 elif match.parent:
-                    show_match = match.parent
+                    tv_match = match.parent
                 
-                if show_match:
-                    show_override = self.db.query(UserOverride).filter(
-                        UserOverride.metadata_match_id == show_match.id,
+                if tv_match:
+                    tv_override = self.db.query(UserOverride).filter(
+                        UserOverride.metadata_match_id == tv_match.id,
                         UserOverride.user_id == o.user_id
                     ).first()
-                    show_loc = show_match.localizations[0] if show_match.localizations else None
-                    tv_title = (show_override.custom_title if (show_override and show_override.custom_title) else None) or (show_loc.title if show_loc else None)
-                    tv_tmdb_id = int(show_match.external_id) if show_match.external_id.isdigit() else None
+                    tv_loc = tv_match.localizations[0] if tv_match.localizations else None
+                    tv_title = (tv_override.custom_title if (tv_override and tv_override.custom_title) else None) or (tv_loc.title if tv_loc else None)
+                    tv_tmdb_id = int(tv_match.external_id) if tv_match.external_id.isdigit() else None
             
             results.append({
                 "id": item.id,
@@ -587,7 +587,7 @@ class LibraryService:
         """
         from app.core.language import LanguageService as LangHelper
         from app.domains.settings.models import UserSetting, SystemSetting
-        from app.domains.media.services.formatter.config import FormatterConfig
+        from app.infrastructure.settings.formatter_config_adapter import load_formatter_config_from_db
 
         # Get ui language
         ui_lang = DEFAULT_FALLBACK_LANGUAGE
@@ -682,7 +682,7 @@ class LibraryService:
             })
 
         # Apply config filtering
-        config = FormatterConfig.from_db(self.db)
+        config = load_formatter_config_from_db(self.db)
         collection_mode = config.collection_folder_mode
         threshold = config.collection_folder_threshold
 

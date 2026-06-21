@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Dict, Any, List
+from typing import Callable, Optional, Dict, Any, List
 from pathlib import Path
 
 from app.core.enums import MediaType, ItemStatus
@@ -21,11 +21,11 @@ class Formatter:
     MULTI_SPACE = TemplateRenderer.MULTI_SPACE
     TEMPLATE_VAR = TemplateRenderer.TEMPLATE_VAR
 
-    def __init__(self, config: Optional[FormatterConfig] = None):
+    def __init__(self, config: Optional[FormatterConfig] = None, replacement_decider: Optional[Callable[[RenamePreview], Optional[bool]]] = None):
         self.config = config or FormatterConfig()
         self.context_builder = ContextBuilder(self.config)
         self.renderer = TemplateRenderer(self.config)
-        self.path_resolver = PathResolver(self.config)
+        self.path_resolver = PathResolver(self.config, replacement_decider)
 
     def _get_absolute_path(self, item_or_extra: Any) -> str:
         # Reconstruct path using library root path + relative path

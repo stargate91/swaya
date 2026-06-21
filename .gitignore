@@ -73,3 +73,6 @@ Thumbs.db
 # Scratch and Tests
 scratch/
 tests/
+
+# Logs
+logs/

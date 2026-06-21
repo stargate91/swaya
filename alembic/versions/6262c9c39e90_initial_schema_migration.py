@@ -391,7 +391,7 @@ def upgrade() -> None:
     sa.Column('budget', sa.BigInteger(), nullable=True),
     sa.Column('revenue', sa.BigInteger(), nullable=True),
     sa.Column('release_status', sa.String(), nullable=True),
-    sa.Column('series_type', sa.String(), nullable=True),
+    sa.Column('tv_type', sa.String(), nullable=True),
     sa.Column('release_date', sa.DateTime(), nullable=True),
     sa.Column('last_air_date', sa.DateTime(), nullable=True),
     sa.Column('popularity', sa.Float(), nullable=True),

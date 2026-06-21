@@ -37,7 +37,7 @@ export const getScanProgress = (status) => {
   return clampPercent(Math.round(start + ((end - start) * phaseProgress)));
 };
 
-export const formatScanRemaining = (status, progress) => {
+export const formatScanRemaining = (status, progress, now = Date.now()) => {
   if (!status?.active) {
     return '--:--';
   }
@@ -48,7 +48,7 @@ export const formatScanRemaining = (status, progress) => {
     return '--:--';
   }
 
-  const elapsedSeconds = Math.max(0, Date.now() / 1000 - startTime);
+  const elapsedSeconds = Math.max(0, now / 1000 - startTime);
   if (!elapsedSeconds) {
     return '--:--';
   }

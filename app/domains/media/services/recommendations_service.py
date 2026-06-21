@@ -9,7 +9,7 @@ from app.core.enums import Provider, MediaType, ItemStatus, CustomListType, Acti
 from app.domains.users.models import User, CustomList, CustomListItem
 from app.domains.media.models.filesystem import MediaItem, Library, ExtraFile
 from app.domains.media.models.metadata import MetadataMatch, MetadataLocalization
-from app.infrastructure.scrapers.tmdb import TMDBScraper
+from app.domains.shared.ports.scrapers import ScraperGatewayPort
 from app.domains.settings.models import UserSetting, SystemSetting
 from app.core.tasks import task_manager
 from app.core.images import ImageProcessingService
@@ -20,9 +20,9 @@ from app.core.constants import DEFAULT_FALLBACK_LANGUAGE
 logger = logging.getLogger(__name__)
 
 class RecommendationsService:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, scrapers: ScraperGatewayPort):
         self.db = db
-        self.scraper = TMDBScraper(db)
+        self.scraper = scrapers.tmdb(db)
         self.img_service = ImageProcessingService()
 
     def _preferred_metadata_language(self) -> str:
@@ -134,10 +134,9 @@ class RecommendationsService:
             ~MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED, ItemStatus.IGNORED])
         ).all()
 
-        from app.domains.media.services.formatter.formatter import Formatter
-        from app.domains.media.services.formatter.config import FormatterConfig
-        config = FormatterConfig.from_db(self.db)
-        formatter = Formatter(config)
+        from app.infrastructure.settings.formatter_config_adapter import build_formatter_from_db
+        formatter = build_formatter_from_db(self.db)
+        config = formatter.config
 
         groups = {"manual": [], "movies": [], "tv": [], "extras": [], "collisions": []}
 

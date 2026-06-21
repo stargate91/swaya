@@ -149,10 +149,11 @@ def get_library_people(
 
 
 from app.domains.media.services.library_detail_service import LibraryDetailService
+from app.infrastructure.scrapers.gateway import scraper_gateway
 
 @library_router.get("/library/item/{item_id}")
 def get_library_item_detail(item_id: str, full_people: bool = False, db: Session = Depends(get_db)):
-    return LibraryDetailService(db).get_library_item_detail(item_id, full_people=full_people)
+    return LibraryDetailService(db, scraper_gateway).get_library_item_detail(item_id, full_people=full_people)
 
 
 @library_router.get("/library/tv/{tv_tmdb_id}")
@@ -162,22 +163,22 @@ def get_library_tv_detail(
     initial_episodes_limit: int = 4,
     db: Session = Depends(get_db)
 ):
-    return LibraryDetailService(db).get_library_tv_detail(
+    return LibraryDetailService(db, scraper_gateway).get_library_tv_detail(
         tv_tmdb_id, seasons_limit=seasons_limit, initial_episodes_limit=initial_episodes_limit
     )
 
 
 @library_router.get("/library/tv/{tv_tmdb_id}/season/{season_number}")
 def get_library_tv_season_detail(tv_tmdb_id: str, season_number: int, db: Session = Depends(get_db)):
-    return LibraryDetailService(db).get_library_tv_season_detail(tv_tmdb_id, season_number)
+    return LibraryDetailService(db, scraper_gateway).get_library_tv_season_detail(tv_tmdb_id, season_number)
 
 
 @library_router.get("/library/collection/{collection_tmdb_id}")
 def get_library_collection_detail(collection_tmdb_id: str, language: str | None = None, db: Session = Depends(get_db)):
-    return LibraryDetailService(db).get_collection_detail(collection_tmdb_id, language=language)
+    return LibraryDetailService(db, scraper_gateway).get_collection_detail(collection_tmdb_id, language=language)
 
 
-from app.domains.media.services.playback_service import PlaybackService
+from app.application.media.playback_service import PlaybackService
 
 @library_router.post("/media/play")
 def play_media_item(payload: dict, db: Session = Depends(get_db)):
@@ -235,7 +236,7 @@ def reset_item_progress(item_id: int, db: Session = Depends(get_db)):
 
 # --- Legacy Scanner and Renamer Endpoints ---
 from pydantic import BaseModel
-from app.domains.media.services.scanner_service import ScannerService
+from app.application.media.scanner_service import ScannerService
 from app.core.enums import ScanMode
 
 class ScanRequest(BaseModel):
@@ -295,15 +296,15 @@ from app.domains.media.services.recommendations_service import RecommendationsSe
 
 @library_router.get("/recommendations")
 def get_recommendations(language: Optional[str] = None, db: Session = Depends(get_db)):
-    return RecommendationsService(db).get_recommendations(language=language)
+    return RecommendationsService(db, scraper_gateway).get_recommendations(language=language)
 
 @library_router.get("/discovery")
 def get_discovery_items(db: Session = Depends(get_db)):
-    return RecommendationsService(db).get_discovery_groups()
+    return RecommendationsService(db, scraper_gateway).get_discovery_groups()
 
 @library_router.get("/discovery/count")
 def get_discovery_item_count(db: Session = Depends(get_db)):
-    return {"count": RecommendationsService(db).get_discovery_item_count()}
+    return {"count": RecommendationsService(db, scraper_gateway).get_discovery_item_count()}
 
 class DiscoveryDeleteRequest(BaseModel):
     item_ids: Optional[List[int]] = None
@@ -312,7 +313,7 @@ class DiscoveryDeleteRequest(BaseModel):
 
 @library_router.post("/discovery/delete")
 def delete_discovery_items(request: DiscoveryDeleteRequest, db: Session = Depends(get_db)):
-    return RecommendationsService(db).delete_discovery_items(
+    return RecommendationsService(db, scraper_gateway).delete_discovery_items(
         item_ids=request.item_ids or [],
         extra_ids=request.extra_ids or [],
         mode=request.mode
@@ -324,148 +325,11 @@ class WatchlistRequest(BaseModel):
 
 @library_router.post("/watchlist")
 def add_to_watchlist(request: WatchlistRequest, db: Session = Depends(get_db)):
-    return RecommendationsService(db).add_to_watchlist(request.tmdb_id, request.type)
+    return RecommendationsService(db, scraper_gateway).add_to_watchlist(request.tmdb_id, request.type)
 
 @library_router.delete("/watchlist/{tmdb_id}")
 def remove_from_watchlist(tmdb_id: int, db: Session = Depends(get_db)):
-    return RecommendationsService(db).remove_from_watchlist(tmdb_id)
-
-
-# --- Legacy Settings and Database Maintenance Endpoints ---
-from app.domains.settings.services.settings_service import SettingsService
-
-@library_router.get("/settings")
-def get_settings(db: Session = Depends(get_db)):
-    return SettingsService(db).get_settings()
-
-@library_router.post("/settings")
-def update_settings(settings: dict, db: Session = Depends(get_db)):
-    return SettingsService(db).update_settings(settings)
-
-@library_router.post("/settings/validate-folders")
-def validate_folders(payload: dict, db: Session = Depends(get_db)):
-    return SettingsService(db).validate_folders(payload)
-
-@library_router.post("/settings/validate-api-keys")
-def validate_api_keys(payload: dict, db: Session = Depends(get_db)):
-    return SettingsService(db).validate_api_keys(payload)
-
-@library_router.get("/settings/changelog")
-def get_changelog(db: Session = Depends(get_db)):
-    return SettingsService(db).get_changelog()
-
-@library_router.get("/settings/ignored-items")
-def get_ignored_items(search: str = "", offset: int = 0, limit: int = 40, db: Session = Depends(get_db)):
-    return SettingsService(db).get_ignored_items(search, offset, limit)
-
-class RestoreIgnoredRequest(BaseModel):
-    item_ids: List[int]
-
-@library_router.post("/settings/ignored-items/restore")
-def restore_ignored_items(request: RestoreIgnoredRequest, db: Session = Depends(get_db)):
-    return SettingsService(db).restore_ignored_items(request.item_ids)
-
-@library_router.post("/database/clear")
-def clear_database(options: Optional[dict] = None, db: Session = Depends(get_db)):
-    return SettingsService(db).clear_database(options)
-
-
-# --- Legacy Tags Endpoints ---
-from app.domains.users.services.tags_service import TagsService
-
-@library_router.get("/tags")
-def get_all_tags(target_type: Optional[str] = None, is_adult: bool = False, db: Session = Depends(get_db)):
-    return TagsService(db).get_all_tags(target_type, is_adult)
-
-@library_router.post("/tags")
-def create_tag(payload: dict, db: Session = Depends(get_db)):
-    res = TagsService(db).create_tag(payload)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
-
-@library_router.put("/tags/{tag_id}")
-def update_tag(tag_id: int, payload: dict, db: Session = Depends(get_db)):
-    res = TagsService(db).update_tag(tag_id, payload)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
-
-@library_router.delete("/tags/{tag_id}")
-def delete_tag(tag_id: int, db: Session = Depends(get_db)):
-    res = TagsService(db).delete_tag(tag_id)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
-
-
-# --- Legacy Custom Lists and Catalog Endpoints ---
-from app.domains.users.services.lists_service import ListsService
-
-@library_router.get("/lists")
-def get_all_lists(db: Session = Depends(get_db)):
-    return ListsService(db).get_all_lists()
-
-@library_router.get("/lists/{list_id}")
-def get_list_details(list_id: int, db: Session = Depends(get_db)):
-    res = ListsService(db).get_list_details(list_id)
-    if "error" in res:
-        raise HTTPException(status_code=404, detail=res["error"])
-    return res
-
-@library_router.post("/lists")
-def create_list(payload: dict, db: Session = Depends(get_db)):
-    res = ListsService(db).create_list(payload)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
-
-@library_router.put("/lists/{list_id}")
-def update_list(list_id: int, payload: dict, db: Session = Depends(get_db)):
-    res = ListsService(db).update_list(list_id, payload)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
-
-@library_router.delete("/lists/{list_id}")
-def delete_list(list_id: int, db: Session = Depends(get_db)):
-    res = ListsService(db).delete_list(list_id)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
-
-@library_router.post("/lists/{list_id}/items")
-def add_item_to_list(list_id: int, payload: dict, db: Session = Depends(get_db)):
-    res = ListsService(db).add_item_to_list(list_id, payload)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
-
-@library_router.delete("/lists/{list_id}/items/{item_id}")
-def remove_item_from_list(list_id: int, item_id: int, db: Session = Depends(get_db)):
-    res = ListsService(db).remove_item_from_list(list_id, item_id)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
-
-@library_router.get("/lists/item-membership/{item_id}")
-def get_item_membership(item_id: str, db: Session = Depends(get_db)):
-    return ListsService(db).get_item_membership(item_id)
-
-@library_router.get("/user/catalog")
-def get_user_catalog(
-    tab: Optional[str] = None,
-    offset: int = 0,
-    limit: int = 40,
-    search: str = "",
-    favorite_only: bool = False,
-    db: Session = Depends(get_db),
-):
-    return ListsService(db).get_user_catalog(tab, offset, limit, search, favorite_only)
-
-@library_router.post("/user/catalog/bulk-status")
-def bulk_update_catalog_status(payload: dict, db: Session = Depends(get_db)):
-    return ListsService(db).bulk_update_catalog_status(payload)
+    return RecommendationsService(db, scraper_gateway).remove_from_watchlist(tmdb_id)
 
 
 # --- Legacy Overrides Endpoints ---
@@ -579,41 +443,41 @@ from app.domains.media.services.metadata_service import MetadataService
 
 @library_router.get("/metadata/search")
 def search_metadata(query: str, type: str = "movie", year: Optional[int] = None, provider: Optional[str] = None, db: Session = Depends(get_db)):
-    return MetadataService(db).search_metadata(query, item_type=type, year=year, provider=provider)
+    return MetadataService(db, scraper_gateway).search_metadata(query, item_type=type, year=year, provider=provider)
 
 @library_router.get("/metadata/tv/{tmdb_id}/seasons")
 def get_metadata_seasons(tmdb_id: int, db: Session = Depends(get_db)):
-    return MetadataService(db).get_seasons(tmdb_id)
+    return MetadataService(db, scraper_gateway).get_seasons(tmdb_id)
 
 @library_router.get("/metadata/tv/{tmdb_id}/season/{season_number}/episodes")
 def get_metadata_episodes(tmdb_id: int, season_number: int, db: Session = Depends(get_db)):
-    return MetadataService(db).get_episodes(tmdb_id, season_number)
+    return MetadataService(db, scraper_gateway).get_episodes(tmdb_id, season_number)
 
 @library_router.post("/metadata/resolve")
 def resolve_metadata_item(payload: MetadataResolveRequest, db: Session = Depends(get_db)):
-    res = MetadataService(db).resolve_item(payload)
+    res = MetadataService(db, scraper_gateway).resolve_item(payload)
     if "error" in res:
         raise HTTPException(status_code=400, detail=res["error"])
     return res
 
 @library_router.post("/metadata/bulk-resolve")
 def bulk_resolve_metadata(payload: BulkResolveRequest, db: Session = Depends(get_db)):
-    return MetadataService(db).bulk_resolve(payload)
+    return MetadataService(db, scraper_gateway).bulk_resolve(payload)
 
 @library_router.get("/metadata/item/{item_id}/full-metadata")
 def get_full_metadata(item_id: int, db: Session = Depends(get_db)):
-    res = MetadataService(db).get_full_metadata(item_id)
+    res = MetadataService(db, scraper_gateway).get_full_metadata(item_id)
     if "error" in res:
         raise HTTPException(status_code=404, detail=res["error"])
     return res
 
 @library_router.get("/metadata/sync-language/status")
 def get_sync_language_status(db: Session = Depends(get_db)):
-    return MetadataService(db).get_sync_status()
+    return MetadataService(db, scraper_gateway).get_sync_status()
 
 @library_router.post("/metadata/sync-language")
 def trigger_sync_language(payload: dict = None, db: Session = Depends(get_db)):
-    return MetadataService(db).trigger_sync(payload)
+    return MetadataService(db, scraper_gateway).trigger_sync(payload)
 
 
 

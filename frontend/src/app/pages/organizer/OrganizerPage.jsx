@@ -115,7 +115,7 @@ export default function OrganizerPage() {
     folder_create_movie_subdir: settings.folder_create_movie_subdir !== false,
     folder_movie_template: settings.folder_movie_template || '',
     folder_create_show_dir: settings.folder_create_show_dir !== false,
-    folder_show_template: settings.folder_show_template || '',
+    folder_tv_template: settings.folder_tv_template || '',
     folder_create_season_dir: settings.folder_create_season_dir !== false,
     folder_season_template: settings.folder_season_template || '',
     folder_create_episode_dir: Boolean(settings.folder_create_episode_dir),

@@ -238,16 +238,16 @@ export default function FolderStructureTab({
                   {form.folder_create_show_dir && (
                     <TemplateFieldSection
                       t={t}
-                      inputRef={formInputs.folderShow}
+                      inputRef={formInputs.folderTv}
                       label={t('settingsPage.sections.folderStructure.showTemplate')}
-                      value={form.folder_show_template}
+                      value={form.folder_tv_template}
                       disabled={isScanActive}
-                      onChange={handleChange('folder_show_template')}
+                      onChange={handleChange('folder_tv_template')}
                       placeholder="{tv_title} ({year_range})"
                       tags={FOLDER_SHOW_TAGS}
-                      fieldKey="folder_show_template"
+                      fieldKey="folder_tv_template"
                       insertTag={insertTag}
-                      previewText={getPreview(form.folder_show_template, 'show', { isFile: false, sortOptions })}
+                      previewText={getPreview(form.folder_tv_template, 'tv', { isFile: false, sortOptions })}
                       className="settings-nested-block settings-nested-block--top"
                     />
                   )}

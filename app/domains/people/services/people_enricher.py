@@ -4,17 +4,23 @@ import requests
 from sqlalchemy.orm import Session
 from app.domains.people.models import Person, PersonLocalization, MediaPersonLink, ExternalSourceLink
 from app.core.enums import Provider, RoleType
-from app.infrastructure.scrapers.tmdb import TMDBScraper
 from app.domains.settings.models import SystemSetting, UserSetting
+from app.domains.shared.ports.scrapers import ScraperGatewayPort
 
 from app.core.constants import DEFAULT_MAX_WORKERS, DEFAULT_FALLBACK_LANGUAGE
 
 logger = logging.getLogger(__name__)
 
 class PeopleEnricher:
-    def __init__(self, db: Optional[Session]):
+    def __init__(self, db: Optional[Session], scrapers: Optional[ScraperGatewayPort] = None):
         self.db = db
+        self.scrapers = scrapers
         self.session = requests.Session()
+
+    def _require_scrapers(self) -> ScraperGatewayPort:
+        if self.scrapers is None:
+            raise RuntimeError("Scraper gateway is required for people enrichment")
+        return self.scrapers
 
     def get_setting_with_db(self, db: Session, key: str, default: Optional[str] = None) -> Optional[str]:
         val = db.query(UserSetting).filter(UserSetting.key == key).first()
@@ -68,7 +74,7 @@ class PeopleEnricher:
                 local_db.close()
 
             # 3. Perform network API request outside of database transaction
-            enricher = PeopleEnricher(None)
+            enricher = PeopleEnricher(None, self.scrapers)
             fetched_data = enricher.fetch_external_details(person_name, external_ids, link_data, is_adult=is_adult)
             if not fetched_data:
                 return False
@@ -166,8 +172,7 @@ class PeopleEnricher:
             from app.core.database import SessionLocal
             temp_db = SessionLocal()
             try:
-                from app.infrastructure.scrapers.porndb import PornDBScraper
-                porndb = PornDBScraper(temp_db)
+                porndb = self._require_scrapers().adult(Provider.PORNDB, temp_db)
                 if porndb.get_setting("porndb_api_key") or porndb.get_setting("porndb_api_token"):
                     candidates = porndb.search_performers(name)
                     exact_match = next(
@@ -197,7 +202,7 @@ class PeopleEnricher:
                 from app.core.database import SessionLocal
                 temp_db = SessionLocal()
                 try:
-                    tmdb = TMDBScraper(temp_db)
+                    tmdb = self._require_scrapers().tmdb(temp_db)
                     details = tmdb.get_person_details(int(external_id))
                 finally:
                     temp_db.close()
@@ -232,15 +237,8 @@ class PeopleEnricher:
                 temp_db = SessionLocal()
                 perf = None
                 try:
-                    if provider == Provider.STASHDB:
-                        from app.infrastructure.scrapers.stashdb import StashDBScraper
-                        scraper = StashDBScraper(temp_db)
-                    elif provider == Provider.PORNDB:
-                        from app.infrastructure.scrapers.porndb import PornDBScraper
-                        scraper = PornDBScraper(temp_db)
-                    elif provider == Provider.FANSDB:
-                        from app.infrastructure.scrapers.fansdb import FansDBScraper
-                        scraper = FansDBScraper(temp_db)
+                    if provider in (Provider.STASHDB, Provider.PORNDB, Provider.FANSDB):
+                        scraper = self._require_scrapers().adult(provider, temp_db)
                     else:
                         continue
                     

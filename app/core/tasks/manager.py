@@ -58,7 +58,7 @@ class TaskManager:
         from app.core.tasks.worker import DownloadWorker
         self.download_worker = DownloadWorker()
 
-        from app.core.tasks.enrich_worker import PeopleEnrichWorker
+        from app.application.people.enrich_worker import PeopleEnrichWorker
         self.people_enrich_worker = PeopleEnrichWorker(session_factory=self.session_factory, executor=self.executor)
 
     @contextmanager

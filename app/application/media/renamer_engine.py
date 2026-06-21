@@ -10,8 +10,7 @@ from app.domains.users.models import CustomListItem
 from app.domains.history.models import ActionBatch, ActionLog, PlaybackLog
 from app.domains.settings.models import UserSetting
 from app.core.enums import ActionType, ActionStatus, ItemStatus, MediaType
-from app.domains.media.services.formatter.formatter import Formatter
-from app.domains.media.services.formatter.config import FormatterConfig
+from app.infrastructure.settings.formatter_config_adapter import build_formatter_from_db
 from app.domains.media.services.formatter.models import RenamePreview
 from app.core.fs_utils import move_with_progress, send_to_trash
 
@@ -25,7 +24,7 @@ class RenamerEngine:
 
     def __init__(self, db_session: Session):
         self.db = db_session
-        self.formatter = Formatter(FormatterConfig.from_db(db_session))
+        self.formatter = build_formatter_from_db(db_session)
 
     def execute_batch(self, previews: List[RenamePreview], batch_name: Optional[str] = None) -> int:
         """

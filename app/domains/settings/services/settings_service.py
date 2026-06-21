@@ -9,19 +9,14 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, text
+from sqlalchemy import or_
 
 
 from app.domains.settings.models import UserSetting, SystemSetting
-from app.domains.media.models.filesystem import MediaItem, ExtraFile, Library
-from app.domains.media.models.metadata import MetadataMatch, MetadataLocalization
-from app.domains.people.models import Person, PersonLocalization, MediaPersonLink
-from app.domains.history.models import ActionBatch, ActionLog, PlaybackLog
-from app.domains.users.models import Tag, CustomList, CustomListItem
+from app.domains.media.models.filesystem import MediaItem
 from app.core.enums import ItemStatus, MediaType
 from app.core.constants import STASHDB_DEFAULT_ENDPOINT, FANSDB_DEFAULT_ENDPOINT, PORNDB_DEFAULT_ENDPOINT
 from app.core.images import ImageProcessingService
-from app.core.tasks.models import BackgroundTask, ScraperLog
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +25,11 @@ class SettingsService:
         self.db = db
         self.user_id = user_id
 
-    def _migrate_legacy_setting_keys(self) -> None:
+    def _migrate_legacy_settings(self) -> None:
         legacy_key_map = {
             "theporndb_api_key": "porndb_api_key",
             "theporndb_endpoint": "porndb_endpoint",
+            "folder_show_template": "folder_tv_template",
         }
         did_change = False
 
@@ -47,15 +43,31 @@ class SettingsService:
                 if not canonical_setting.value and legacy_setting.value:
                     canonical_setting.value = legacy_setting.value
                 self.db.delete(legacy_setting)
+            elif legacy_key == "folder_show_template" and not legacy_setting.value:
+                self.db.delete(legacy_setting)
             else:
                 legacy_setting.key = canonical_key
             did_change = True
+
+        template_keys = (
+            "naming_episode_template",
+            "folder_tv_template",
+            "folder_episode_template",
+        )
+        template_settings = self.db.query(UserSetting).filter(
+            UserSetting.user_id == self.user_id,
+            UserSetting.key.in_(template_keys),
+        ).all()
+        for setting in template_settings:
+            if isinstance(setting.value, str) and "{series_title}" in setting.value:
+                setting.value = setting.value.replace("{series_title}", "{tv_title}")
+                did_change = True
 
         if did_change:
             self.db.commit()
 
     def get_settings(self) -> Dict[str, Any]:
-        self._migrate_legacy_setting_keys()
+        self._migrate_legacy_settings()
 
         # Auto-detect VLC path
         vlc_setting = self.db.query(UserSetting).filter(UserSetting.user_id == self.user_id, UserSetting.key == "vlc_path").first()
@@ -99,7 +111,7 @@ class SettingsService:
         return {s.key: s.value for s in settings}
 
     def update_settings(self, settings: Dict[str, Any]) -> Dict[str, Any]:
-        self._migrate_legacy_setting_keys()
+        self._migrate_legacy_settings()
 
         for key, value in settings.items():
             setting = self.db.query(UserSetting).filter(UserSetting.user_id == self.user_id, UserSetting.key == key).first()
@@ -199,34 +211,6 @@ class SettingsService:
             item.ignored_at = None
         self.db.commit()
         return {"status": "success", "restored": len(items)}
-
-    def clear_database(self, options: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        options = options or {"all": True}
-        try:
-            self.db.execute(text("PRAGMA foreign_keys = OFF"))
-            if options.get("all") or options.get("wipe"):
-                self.db.query(ScraperLog).delete(synchronize_session=False)
-                self.db.query(BackgroundTask).delete(synchronize_session=False)
-                self.db.query(MediaPersonLink).delete(synchronize_session=False)
-                self.db.query(PersonLocalization).delete(synchronize_session=False)
-                self.db.query(Person).delete(synchronize_session=False)
-                self.db.query(CustomListItem).delete(synchronize_session=False)
-                self.db.query(CustomList).delete(synchronize_session=False)
-                self.db.query(ActionLog).delete(synchronize_session=False)
-                self.db.query(ActionBatch).delete(synchronize_session=False)
-                self.db.query(PlaybackLog).delete(synchronize_session=False)
-                self.db.query(ExtraFile).delete(synchronize_session=False)
-                self.db.query(MetadataMatch).delete(synchronize_session=False)
-                self.db.query(MediaItem).delete(synchronize_session=False)
-                self.db.query(Library).delete(synchronize_session=False)
-                
-            self.db.execute(text("PRAGMA foreign_keys = ON"))
-            self.db.commit()
-            return {"status": "success"}
-        except Exception as e:
-            self.db.rollback()
-            logger.error(f"Database clear failed: {e}")
-            return {"status": "error", "message": str(e)}
 
     def validate_api_keys(self, payload: dict) -> Dict[str, Any]:
         tmdb_api_key = (payload.get("tmdb_api_key") or "").strip()

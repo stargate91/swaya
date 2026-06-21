@@ -10,10 +10,11 @@ from app.core.enums import TaskStatus
 logger = logging.getLogger(__name__)
 
 class PeopleEnrichWorker:
-    def __init__(self, session_factory=None, executor=None, concurrency: int = 4):
+    def __init__(self, session_factory=None, executor=None, concurrency: int = 4, scrapers=None):
         self.session_factory = session_factory
         self.executor = executor
         self.concurrency = concurrency
+        self.scrapers = scrapers
         self._queue: Optional[asyncio.Queue] = None
         self.is_running = False
         self.active_task_id: Optional[int] = None
@@ -186,7 +187,7 @@ class PeopleEnrichWorker:
         finally:
             db.close()
 
-        enricher = PeopleEnricher(None)
+        enricher = PeopleEnricher(None, self.scrapers)
         fetched_data = enricher.fetch_external_details(person_name, external_ids, link_data, is_adult=is_adult)
         if not fetched_data:
             return False

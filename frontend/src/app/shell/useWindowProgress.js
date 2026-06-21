@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useTranslation } from '../providers/LanguageContext';
 import { useImageStatusQuery, useScanStatusQuery, useHydrateStatusQuery } from '../queries';
 import {
@@ -10,6 +11,7 @@ import {
 
 export default function useWindowProgress() {
   const { t } = useTranslation();
+  const [now, setNow] = useState(() => Date.now());
   const scanStatusQuery = useScanStatusQuery();
   const imageStatusQuery = useImageStatusQuery();
   const hydrateStatusQuery = useHydrateStatusQuery();
@@ -19,8 +21,15 @@ export default function useWindowProgress() {
   const hydrateStatus = hydrateStatusQuery.data || null;
   
   const isPrimaryActive = Boolean(scanStatus?.active);
-  const isImageActive = Boolean(imageStatus?.active);
+  const isImageActive = Boolean(imageStatus?.active) && !isPrimaryActive;
   const isHydrateActive = Boolean(hydrateStatus?.active);
+
+  useEffect(() => {
+    if (!isPrimaryActive) return undefined;
+
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [isPrimaryActive]);
 
   const isMainActive = isPrimaryActive && (
     scanStatus?.phase === 'collecting' ||
@@ -48,7 +57,7 @@ export default function useWindowProgress() {
       : {
           taskName: getScanTaskName(scanStatus, t),
           progress: rawProgress,
-          timeRemaining: formatScanRemaining(scanStatus, rawProgress),
+          timeRemaining: formatScanRemaining(scanStatus, rawProgress, now),
           active: true,
           variant: 'primary',
         }

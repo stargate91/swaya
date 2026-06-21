@@ -36,7 +36,7 @@ export default function useSettingsForm() {
     namingScene: useRef(null),
     folderScene: useRef(null),
     folderMovie: useRef(null),
-    folderShow: useRef(null),
+    folderTv: useRef(null),
     folderSeason: useRef(null),
     folderEpisode: useRef(null),
     extrasVideo: useRef(null),
