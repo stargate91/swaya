@@ -7,14 +7,14 @@ from datetime import datetime
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 
-from app.domains.media.models.filesystem import MediaItem
-from app.domains.media.models.metadata import MetadataMatch, MetadataLocalization, Studio, MediaCollection
-from app.core.enums import Provider, MediaType, RoleType
+from app.domains.library.models import MediaItem
+from app.domains.metadata.models import MetadataMatch, MetadataLocalization, Studio, MediaCollection
+from app.shared_kernel.enums import Provider, MediaType, RoleType
 from app.domains.people.models import MediaPersonLink
 from app.domains.people.services import PersonService
 from app.infrastructure.scrapers.tmdb import TMDBScraper
 from app.infrastructure.scrapers.omdb import OMDBScraper
-from app.core.language import LanguageService
+from app.shared_kernel.language import LanguageService
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ def _pick_logo_path(raw_data, language: str = None) -> Optional[str]:
     sorted_lg = sorted(logos, key=score, reverse=True)
     return sorted_lg[0].get("file_path")
 
-from app.core.constants import YOUTUBE_WATCH_BASE, DEFAULT_FALLBACK_LANGUAGE
+from app.shared_kernel.constants import YOUTUBE_WATCH_BASE, DEFAULT_FALLBACK_LANGUAGE
 
 def _pick_trailer_key(raw_data, language: str = None, original_language: str = None) -> Optional[str]:
     videos = (raw_data.get("videos") or {}).get("results") or []
@@ -420,7 +420,7 @@ class MainstreamEnricher:
         if not path:
             return None
 
-        from app.core.tasks import task_manager
+        from app.domains.tasks import task_manager
 
         image_service = task_manager.download_worker.image_service
         url = image_service.get_download_url(path, subfolder)

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-from app.core.database import get_db
+from app.shared_kernel.database import get_db
 from app.infrastructure.scrapers.gateway import scraper_gateway
 from app.domains.people.models import Person
 from app.domains.people.schemas import PersonRead
@@ -36,7 +36,7 @@ def list_adult_people(db: Session = Depends(get_db), limit: int = 50):
 
 async def run_people_enrich_coroutine(task_id: int, match_ids: List[int]):
     import logging
-    from app.core.database import SessionLocal
+    from app.shared_kernel.database import SessionLocal
     from app.domains.people.services.people_enricher import PeopleEnricher
 
     logger = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ def enrich_people(match_ids: List[int], db: Session = Depends(get_db)):
     Triggers a background task to enrich people details (bio, physical traits, profiles)
     for the given MetadataMatch IDs.
     """
-    from app.core.tasks import task_manager
+    from app.domains.tasks import task_manager
     task_manager.people_enrich_worker.enqueue_enrich(match_ids)
     task_id = task_manager.people_enrich_worker.active_task_id
     return {"status": "enrichment_pending", "task_id": task_id}

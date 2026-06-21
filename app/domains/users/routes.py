@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from app.core.database import get_db
+from app.shared_kernel.database import get_db
 from app.domains.users.models import User, UserOverride, CustomList
 from app.domains.users.schemas import (
     UserRead,
@@ -128,7 +128,7 @@ def list_user_custom_lists(user_id: int, db: Session = Depends(get_db)):
 catalog_router = APIRouter(prefix="/api/v1", tags=["User Catalog"])
 
 from app.domains.users.services.tags_service import TagsService
-from app.domains.users.services.lists_service import ListsService
+from app.application.catalog.lists_service import ListsService
 
 
 @catalog_router.get("/tags")

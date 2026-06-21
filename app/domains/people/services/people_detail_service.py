@@ -5,16 +5,16 @@ from sqlalchemy import case, func, or_
 from sqlalchemy.orm import Session, joinedload
 from fastapi.responses import JSONResponse
 
-from app.core.enums import Provider, MediaType, ItemStatus, RoleType
-from app.domains.media.models.filesystem import MediaItem
-from app.domains.media.models.metadata import MetadataMatch, MetadataLocalization
+from app.shared_kernel.enums import Provider, MediaType, ItemStatus, RoleType
+from app.domains.library.models import MediaItem
+from app.domains.metadata.models import MetadataMatch, MetadataLocalization
 from app.domains.people.models import Person, PersonLocalization, MediaPersonLink, ExternalSourceLink
 from app.domains.settings.models import UserSetting
-from app.domains.shared.ports.scrapers import ScraperGatewayPort
-from app.core.images import ImageProcessingService
-from app.core.language import LanguageService
+from app.shared_kernel.ports.scrapers import ScraperGatewayPort
+from app.domains.media_assets.services.images import ImageProcessingService
+from app.shared_kernel.language import LanguageService
 
-from app.core.constants import DEFAULT_FALLBACK_LANGUAGE
+from app.shared_kernel.constants import DEFAULT_FALLBACK_LANGUAGE
 
 logger = logging.getLogger(__name__)
 

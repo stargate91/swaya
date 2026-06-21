@@ -2,11 +2,11 @@ import logging
 import requests
 from typing import Optional
 
-from app.core.enums import Provider, MediaType
+from app.shared_kernel.enums import Provider, MediaType
 from app.infrastructure.scrapers.base import BaseScraper
 from app.infrastructure.scrapers.normalizer import ScraperNormalizer
 
-from app.core.constants import PORNDB_API_BASE, PORNDB_DEFAULT_ENDPOINT, SCRAPER_REQUEST_TIMEOUT
+from app.shared_kernel.constants import PORNDB_API_BASE, PORNDB_DEFAULT_ENDPOINT, SCRAPER_REQUEST_TIMEOUT
 
 logger = logging.getLogger(__name__)
 

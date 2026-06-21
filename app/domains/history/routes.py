@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-from app.core.database import get_db
+from app.shared_kernel.database import get_db
 from app.domains.history.models import PlaybackLog, PlaybackPeakLog, ActionBatch
 from app.domains.history.schemas import (
     PlaybackLogRead,
@@ -42,8 +42,8 @@ def get_action_history(db: Session = Depends(get_db), limit: int = 50):
 async def run_undo_coroutine(task_id: int, batch_id: int):
     import logging
     from app.application.media.renamer_engine import RenamerEngine
-    from app.core.database import SessionLocal
-    from app.core.tasks import task_manager
+    from app.shared_kernel.database import SessionLocal
+    from app.domains.tasks import task_manager
 
     logger = logging.getLogger(__name__)
     db = SessionLocal()
@@ -74,7 +74,7 @@ def undo_action_batch(batch_id: int, db: Session = Depends(get_db)):
     if not batch:
         raise HTTPException(status_code=404, detail="Action batch not found")
     
-    from app.core.tasks import task_manager
+    from app.domains.tasks import task_manager
     task_id = task_manager.create_task(name=f"undo_batch_{batch_id}")
     task_manager.start_task(task_id, run_undo_coroutine, batch_id)
     

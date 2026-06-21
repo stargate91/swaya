@@ -3,8 +3,8 @@ from typing import List, Optional, Any
 from sqlalchemy import String, Integer, DateTime, JSON, Boolean, ForeignKey, Table, Column, Enum as SQLEnum, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.database import Base
-from app.core.enums import MovieEdition, MediaAudioType, MediaSource, CustomListType
+from app.shared_kernel.database import Base
+from app.shared_kernel.enums import MovieEdition, MediaAudioType, MediaSource, CustomListType
 
 
 # Association table for UserOverride many-to-many relationship with Tag

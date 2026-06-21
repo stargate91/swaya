@@ -2,15 +2,15 @@ import logging
 from typing import Optional, List, Tuple, Dict, Any
 from sqlalchemy.orm import Session
 
-from app.core.enums import ScanMode
+from app.shared_kernel.enums import ScanMode
 
-from app.domains.media.models.filesystem import Library, MediaItem
+from app.domains.library.models import Library, MediaItem
 from app.domains.settings.models import SystemSetting, UserSetting
-from app.domains.media.services.scanner.collector import Collector
-from app.domains.media.services.scanner.categorizer import Categorizer
-from app.domains.media.services.scanner.linker import Linker
-from app.domains.media.services.scanner.probe import TechnicalProber
-from app.domains.media.services.scanner.scan_collector import ScanCollector
+from app.domains.library.services.scanner.collector import Collector
+from app.domains.library.services.scanner.categorizer import Categorizer
+from app.domains.library.services.scanner.linker import Linker
+from app.domains.library.services.scanner.probe import TechnicalProber
+from app.domains.library.services.scanner.scan_collector import ScanCollector
 
 logger = logging.getLogger(__name__)
 

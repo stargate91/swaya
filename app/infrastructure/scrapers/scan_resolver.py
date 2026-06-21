@@ -5,13 +5,13 @@ from typing import List, Optional, Callable
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import OperationalError
 
-from app.domains.media.models.filesystem import MediaItem
-from app.core.enums import ItemStatus, ScanMode
+from app.domains.library.models import MediaItem
+from app.shared_kernel.enums import ItemStatus, ScanMode
 from app.domains.settings.models import UserSetting, SystemSetting
 from app.infrastructure.scrapers.resolver import Resolver
 from app.infrastructure.scrapers.metadata_enricher import MetadataEnricher
-from app.core.database import SessionLocal
-from app.core.constants import DEFAULT_MAX_WORKERS, DEFAULT_FALLBACK_LANGUAGE
+from app.shared_kernel.database import SessionLocal
+from app.shared_kernel.constants import DEFAULT_MAX_WORKERS, DEFAULT_FALLBACK_LANGUAGE
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,7 @@ class ScanResolver:
         if self.stop_checker and self.stop_checker():
             return True
         if task_id is not None:
-            from app.core.tasks import task_manager
+            from app.domains.tasks import task_manager
             if task_manager.is_cancelled(task_id):
                 return True
         return False
@@ -161,7 +161,7 @@ class ScanResolver:
                         logger.warning(f"Progress callback raised exception: {cb_ex}")
 
         # ThreadPool for network requests (limited to avoid rate limit)
-        from app.core.tasks import task_manager
+        from app.domains.tasks import task_manager
         executor = task_manager.executor
         max_workers = getattr(executor, "_max_workers", DEFAULT_MAX_WORKERS)
         

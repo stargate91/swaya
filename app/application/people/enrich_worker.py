@@ -4,8 +4,8 @@ from typing import List, Optional, Set
 
 from app.domains.people.models import Person, MediaPersonLink
 from app.domains.people.services.people_enricher import PeopleEnricher
-from app.core.tasks.models import BackgroundTask
-from app.core.enums import TaskStatus
+from app.domains.tasks.models import BackgroundTask
+from app.shared_kernel.enums import TaskStatus
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +85,7 @@ class PeopleEnrichWorker:
         if not self.is_running:
             await self.start()
 
-        from app.core.tasks import task_manager
+        from app.domains.tasks import task_manager
         
         # Check if there is an active task
         db = self.session_factory()
@@ -126,7 +126,7 @@ class PeopleEnrichWorker:
         while self.is_running:
             try:
                 # Pause/wait if any heavy tasks (scan, rename, undo) are running
-                from app.core.tasks import task_manager
+                from app.domains.tasks import task_manager
                 while task_manager.has_active_heavy_tasks():
                     await asyncio.sleep(2)
 

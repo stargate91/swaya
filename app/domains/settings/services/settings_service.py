@@ -13,10 +13,10 @@ from sqlalchemy import or_
 
 
 from app.domains.settings.models import UserSetting, SystemSetting
-from app.domains.media.models.filesystem import MediaItem
-from app.core.enums import ItemStatus, MediaType
-from app.core.constants import STASHDB_DEFAULT_ENDPOINT, FANSDB_DEFAULT_ENDPOINT, PORNDB_DEFAULT_ENDPOINT
-from app.core.images import ImageProcessingService
+from app.domains.library.models import MediaItem
+from app.shared_kernel.enums import ItemStatus, MediaType
+from app.shared_kernel.constants import STASHDB_DEFAULT_ENDPOINT, FANSDB_DEFAULT_ENDPOINT, PORNDB_DEFAULT_ENDPOINT
+from app.domains.media_assets.services.images import ImageProcessingService
 
 logger = logging.getLogger(__name__)
 

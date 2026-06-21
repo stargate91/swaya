@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, List, Any
 from datetime import datetime
-from app.core.enums import ActionType, ActionStatus
+from app.shared_kernel.enums import ActionType, ActionStatus
 
 class BaseSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)

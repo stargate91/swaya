@@ -2,8 +2,8 @@ from typing import List, Optional, Any
 from sqlalchemy import String, Integer, Float, Enum as SQLEnum, JSON, Boolean, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.database import Base
-from app.core.enums import RoleType, Provider
+from app.shared_kernel.database import Base
+from app.shared_kernel.enums import RoleType, Provider
 
 
 class Person(Base):

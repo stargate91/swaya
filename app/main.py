@@ -6,9 +6,9 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from app.core.database import init_databases
-from app.core.logging import setup_logger
-from app.core.images import ImageProcessingService
+from app.shared_kernel.database import init_databases
+from app.shared_kernel.logging import setup_logger
+from app.domains.media_assets.services.images import ImageProcessingService
 
 # Setup logging
 setup_logger()
@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
     logger.info("Image directories ensured.")
     
     # Start background download worker on the main event loop
-    from app.core.tasks import task_manager
+    from app.domains.tasks import task_manager
     from app.infrastructure.scrapers.gateway import scraper_gateway
     task_manager.people_enrich_worker.scrapers = scraper_gateway
     await task_manager.download_worker.start()
@@ -54,8 +54,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from app.core.tasks.routes import router as tasks_router
-from app.domains.media.routes import router as media_router, mainstream_router as media_mainstream_router, adult_router as media_adult_router, library_router
+from app.domains.tasks.routes import router as tasks_router
+from app.domains.library.routes import router as media_router, mainstream_router as media_mainstream_router, adult_router as media_adult_router, library_router
+from app.domains.metadata.routes import library_router as metadata_router
 from app.domains.people.routes import router as people_router, mainstream_router as people_mainstream_router, adult_router as people_adult_router
 from app.domains.settings.routes import router as settings_router, db_router
 from app.domains.users.routes import router as users_router, catalog_router
@@ -66,6 +67,7 @@ app.include_router(media_router)
 app.include_router(media_mainstream_router)
 app.include_router(media_adult_router)
 app.include_router(library_router)
+app.include_router(metadata_router)
 app.include_router(people_router)
 app.include_router(people_mainstream_router)
 app.include_router(people_adult_router)

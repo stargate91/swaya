@@ -10,9 +10,10 @@ from alembic import context
 # Add project root to sys.path so we can import app modules
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from app.core.database import Base, SWAYA_DB_PATH
+from app.shared_kernel.database import Base, SWAYA_DB_PATH
 # Import all models to register them on Base.metadata
-import app.domains.media.models  # noqa
+import app.domains.library.models  # noqa
+import app.domains.metadata.models  # noqa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

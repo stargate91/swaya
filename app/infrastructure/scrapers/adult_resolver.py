@@ -3,13 +3,13 @@ import difflib
 from datetime import datetime
 from typing import Optional
 from sqlalchemy.orm import Session
-from app.domains.media.models.filesystem import MediaItem
-from app.domains.media.models.metadata import MetadataMatch
-from app.core.enums import Provider, MediaType, ItemStatus, ScanMode
+from app.domains.library.models import MediaItem
+from app.domains.metadata.models import MetadataMatch
+from app.shared_kernel.enums import Provider, MediaType, ItemStatus, ScanMode
 
 logger = logging.getLogger(__name__)
 
-from app.core.constants import PORNDB_API_BASE, SCRAPER_REQUEST_TIMEOUT
+from app.shared_kernel.constants import PORNDB_API_BASE, SCRAPER_REQUEST_TIMEOUT
 
 class AdultResolver:
     """

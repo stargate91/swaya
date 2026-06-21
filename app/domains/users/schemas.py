@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, List, Any
 from datetime import datetime
-from app.core.enums import MovieEdition, MediaAudioType, MediaSource, CustomListType
+from app.shared_kernel.enums import MovieEdition, MediaAudioType, MediaSource, CustomListType
 
 class BaseSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -117,3 +117,51 @@ class CustomListRead(BaseSchema):
     color: Optional[str] = None
     icon: Optional[str] = None
     created_at: datetime
+
+
+# --- UserOverride Action Schemas (Legacy Endpoints) ---
+
+class ItemOverridesUpdate(BaseSchema):
+    item_id: str
+    custom_title: Optional[str] = None
+    custom_overview: Optional[str] = None
+    custom_language: Optional[str] = None
+    user_rating: Optional[int] = None
+    rating: Optional[int] = None
+    user_comment: Optional[str] = None
+    comment: Optional[str] = None
+    is_favorite: Optional[bool] = None
+    is_watched: Optional[bool] = None
+    resume_position: Optional[int] = None
+    tags: Optional[List[Any]] = None
+
+
+class ItemStatusUpdate(BaseSchema):
+    status: str
+
+
+class ImageOverrideUpdate(BaseSchema):
+    path: Optional[str] = None
+    url: Optional[str] = None
+    poster_path: Optional[str] = None
+    backdrop_path: Optional[str] = None
+    logo_path: Optional[str] = None
+
+
+class BulkOverridesUpdate(BaseSchema):
+    item_ids: List[str]
+    updates: dict[str, Any]
+
+
+class BulkTagsUpdate(BaseSchema):
+    item_ids: List[str]
+    tag_ids: Optional[List[int]] = None
+    tags: Optional[List[str]] = None
+    action: str = "add"
+
+
+class BulkWatchedUpdate(BaseSchema):
+    item_ids: List[str]
+    is_watched: bool = True
+    watched_at: Optional[str] = None
+    last_watched_at: Optional[str] = None

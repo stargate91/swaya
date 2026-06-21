@@ -1,9 +1,9 @@
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from app.core.constants import DEFAULT_FALLBACK_LANGUAGE
-from app.domains.media.models.filesystem import Library, MediaItem
-from app.domains.media.services.formatter.config import Casing, FormatterConfig, Separator
+from app.shared_kernel.constants import DEFAULT_FALLBACK_LANGUAGE
+from app.domains.library.models import Library, MediaItem
+from app.domains.library.services.formatter.config import Casing, FormatterConfig, Separator
 from app.domains.settings.models import SystemSetting, UserSetting
 
 
@@ -192,7 +192,7 @@ def load_formatter_config_from_db(db_session, user_id: int = 1) -> FormatterConf
 
 
 def build_formatter_from_db(db_session, user_id: int = 1):
-    from app.domains.media.services.formatter.formatter import Formatter
+    from app.domains.library.services.formatter.formatter import Formatter
 
     config = load_formatter_config_from_db(db_session, user_id)
     replacement_decider = ExistingMediaReplacementDecider(db_session, config.collision_duration_tolerance_seconds)

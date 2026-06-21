@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from app.core.database import get_db
+from app.shared_kernel.database import get_db
 from app.application.maintenance.database_maintenance_service import DatabaseMaintenanceService
 from app.domains.settings.models import SystemSetting, UserSetting
 from app.domains.settings.services.settings_service import SettingsService

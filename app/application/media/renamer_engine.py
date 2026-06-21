@@ -5,14 +5,14 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 
-from app.domains.media.models.filesystem import MediaItem, ExtraFile
+from app.domains.library.models import MediaItem, ExtraFile
 from app.domains.users.models import CustomListItem
 from app.domains.history.models import ActionBatch, ActionLog, PlaybackLog
 from app.domains.settings.models import UserSetting
-from app.core.enums import ActionType, ActionStatus, ItemStatus, MediaType
+from app.shared_kernel.enums import ActionType, ActionStatus, ItemStatus, MediaType
 from app.infrastructure.settings.formatter_config_adapter import build_formatter_from_db
-from app.domains.media.services.formatter.models import RenamePreview
-from app.core.fs_utils import move_with_progress, send_to_trash
+from app.domains.library.services.formatter.models import RenamePreview
+from app.infrastructure.filesystem.fs_utils import move_with_progress, send_to_trash
 
 logger = logging.getLogger(__name__)
 
@@ -383,7 +383,7 @@ class RenamerEngine:
             protected_paths = set()
             try:
                 # We can dynamically fetch library paths
-                from app.domains.media.models.filesystem import Library
+                from app.domains.library.models import Library
                 libraries = self.db.query(Library).all()
                 for lib in libraries:
                     protected_paths.add(Path(lib.root_path).resolve())

@@ -1,7 +1,7 @@
 import math
 from typing import List, Optional, Any
 from sqlalchemy.orm import Session
-from app.core.constants import DEFAULT_FALLBACK_LANGUAGE
+from app.shared_kernel.constants import DEFAULT_FALLBACK_LANGUAGE
 
 TALK_LIKE_GENRE_IDS = {10763, 10764, 10767}
 SELF_ROLE_KEYWORDS = {"self", "himself", "herself", "themselves", "guest", "host", "presenter", "interviewer"}

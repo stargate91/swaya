@@ -2,10 +2,10 @@ import re
 import unicodedata
 from typing import List, Dict, Any, Set, Optional
 from sqlalchemy.orm import Session
-from app.domains.media.models.filesystem import MediaItem
-from app.domains.media.models.metadata import MetadataMatch, MetadataLocalization
+from app.domains.library.models import MediaItem
+from app.domains.metadata.models import MetadataMatch, MetadataLocalization
 from app.domains.settings.models import SystemSetting, UserSetting
-from app.core.enums import Provider, MediaType, ItemStatus, ScanMode
+from app.shared_kernel.enums import Provider, MediaType, ItemStatus, ScanMode
 
 def _has_episode_value(episode) -> bool:
     if isinstance(episode, list):
@@ -43,7 +43,7 @@ def normalize_title_words(value: str) -> str:
     return " ".join(re.findall(r"[a-z0-9]+", normalized.lower()))
 
 
-from app.core.constants import DEFAULT_FALLBACK_LANGUAGE
+from app.shared_kernel.constants import DEFAULT_FALLBACK_LANGUAGE
 
 class Resolver:
     """

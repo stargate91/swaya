@@ -11,15 +11,15 @@ from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session, joinedload
 from fastapi.responses import JSONResponse, FileResponse
 
-from app.core.enums import Provider, MediaType, ItemStatus
-from app.domains.media.models.filesystem import MediaItem
-from app.domains.media.models.metadata import MetadataMatch, MetadataLocalization
+from app.shared_kernel.enums import Provider, MediaType, ItemStatus
+from app.domains.library.models import MediaItem
+from app.domains.metadata.models import MetadataMatch, MetadataLocalization
 from app.domains.history.models import PlaybackLog
 from app.domains.settings.models import UserSetting
-from app.core.images import ImageProcessingService
-from app.core.language import LanguageService
+from app.domains.media_assets.services.images import ImageProcessingService
+from app.shared_kernel.language import LanguageService
 
-from app.core.constants import PLAYBACK_CHECK_TIMEOUT, DEFAULT_FALLBACK_LANGUAGE
+from app.shared_kernel.constants import PLAYBACK_CHECK_TIMEOUT, DEFAULT_FALLBACK_LANGUAGE
 
 logger = logging.getLogger(__name__)
 
@@ -246,7 +246,7 @@ class PlaybackService:
                     
                     if current_time > 0 and abs(current_time - last_saved_time) >= 10:
                         last_saved_time = current_time
-                        from app.core.database import SessionLocal
+                        from app.shared_kernel.database import SessionLocal
                         from app.domains.users.models import UserOverride
                         db_session = SessionLocal()
                         try:
@@ -274,7 +274,7 @@ class PlaybackService:
             logger.error(f"Error in monitoring: {e}")
         finally:
             if current_time > 0 and current_time != last_saved_time:
-                from app.core.database import SessionLocal
+                from app.shared_kernel.database import SessionLocal
                 from app.domains.users.models import UserOverride
                 db_session = SessionLocal()
                 try:

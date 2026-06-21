@@ -6,11 +6,11 @@ from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
-from app.core.tasks import task_manager
-from app.core.enums import ActionStatus, ActionType, ItemStatus, MediaType, ScanMode
+from app.domains.tasks import task_manager
+from app.shared_kernel.enums import ActionStatus, ActionType, ItemStatus, MediaType, ScanMode
 from app.domains.history.models import ActionBatch, ActionLog
-from app.domains.media.models.filesystem import MediaItem, Library, ExtraFile
-from app.domains.media.models.metadata import MetadataMatch
+from app.domains.library.models import MediaItem, Library, ExtraFile
+from app.domains.metadata.models import MetadataMatch
 from app.domains.people.models import Person
 
 logger = logging.getLogger(__name__)
@@ -38,8 +38,8 @@ class ScannerService:
 
     def get_hydrate_status(self) -> Dict[str, Any]:
         # Return status matching whether a "People Enrichment" task is running
-        from app.core.tasks.models import BackgroundTask
-        from app.core.enums import TaskStatus
+        from app.domains.tasks.models import BackgroundTask
+        from app.shared_kernel.enums import TaskStatus
         task = self.db.query(BackgroundTask).filter(
             BackgroundTask.name == "People Enrichment",
             BackgroundTask.status == TaskStatus.RUNNING

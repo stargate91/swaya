@@ -944,3 +944,1065 @@
   "canceled": false,
   "selected": "D:\\media"
 }
+[2026-06-21T22:35:06.102Z] [INFO] Electron app ready
+[2026-06-21T22:35:06.103Z] [INFO] Dev mode: backend should be started externally.
+[2026-06-21T22:35:11.487Z] [ERROR] Timed out waiting for backend port.txt, starting window anyway
+[2026-06-21T22:35:11.547Z] [INFO] browser-window-created
+{
+  "id": 1
+}
+[2026-06-21T22:35:11.621Z] [INFO] System tray initialized
+{
+  "trayIconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png"
+}
+[2026-06-21T22:35:11.621Z] [INFO] BrowserWindow created
+{
+  "isDev": true,
+  "iconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png",
+  "webPreferences": {
+    "nodeIntegration": true,
+    "contextIsolation": false,
+    "backgroundThrottling": false
+  }
+}
+[2026-06-21T22:35:11.622Z] [INFO] Loading renderer URL
+{
+  "targetUrl": "http://localhost:5173?backend_port=8000"
+}
+[2026-06-21T22:35:11.735Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-21T22:35:11.993Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:35:11.994Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:35:12.000Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T22:35:12.003Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T22:35:12.005Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T22:35:12.117Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T22:35:12.129Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:35:12.130Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:35:12.131Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T22:35:12.132Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T22:35:12.133Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:35:12.135Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:35:12.137Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T22:35:19.672Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T22:35:19.673Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:35:19.673Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:35:19.674Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-21T22:35:20.880Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-21T22:35:20.880Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:35:20.881Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:35:20.882Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T22:47:47.350Z] [WARN] Renderer requested app quit flow
+[2026-06-21T22:47:47.351Z] [INFO] Requesting renderer close decision
+{
+  "source": "quit-button"
+}
+[2026-06-21T22:47:48.181Z] [INFO] Renderer responded to close prompt
+{
+  "action": "quit",
+  "rememberChoice": false
+}
+[2026-06-21T22:47:48.182Z] [WARN] before-quit fired
+[2026-06-21T22:47:53.237Z] [INFO] Electron app ready
+[2026-06-21T22:47:53.240Z] [INFO] Dev mode: backend should be started externally.
+[2026-06-21T22:47:58.577Z] [ERROR] Timed out waiting for backend port.txt, starting window anyway
+[2026-06-21T22:47:58.612Z] [INFO] browser-window-created
+{
+  "id": 1
+}
+[2026-06-21T22:47:58.751Z] [INFO] System tray initialized
+{
+  "trayIconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png"
+}
+[2026-06-21T22:47:58.751Z] [INFO] BrowserWindow created
+{
+  "isDev": true,
+  "iconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png",
+  "webPreferences": {
+    "nodeIntegration": true,
+    "contextIsolation": false,
+    "backgroundThrottling": false
+  }
+}
+[2026-06-21T22:47:58.752Z] [INFO] Loading renderer URL
+{
+  "targetUrl": "http://localhost:5173?backend_port=8000"
+}
+[2026-06-21T22:47:58.865Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-21T22:47:59.159Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:47:59.161Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:47:59.170Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T22:47:59.175Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T22:47:59.180Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T22:47:59.268Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T22:47:59.269Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:47:59.270Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:47:59.272Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T22:47:59.280Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T22:47:59.284Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:47:59.284Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:47:59.287Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T22:48:02.298Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T22:48:02.298Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:48:02.299Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:48:02.300Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-21T22:48:04.902Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-21T22:48:04.903Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:48:04.904Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:48:04.904Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-21T22:48:09.134Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-21T22:48:09.134Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:48:09.136Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:48:09.137Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-21T22:48:11.271Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-21T22:48:11.272Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:48:11.273Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:48:11.273Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T22:48:13.742Z] [INFO] Folder picker opened
+{
+  "defaultPath": "E:\\downloads_torrent"
+}
+[2026-06-21T22:48:24.470Z] [INFO] Folder picker closed
+{
+  "canceled": false,
+  "selected": "D:\\media"
+}
+[2026-06-21T22:50:39.975Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T22:50:39.976Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:50:39.977Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:50:39.977Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-21T22:50:43.389Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-21T22:50:43.389Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:50:43.390Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:50:43.391Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T22:50:47.062Z] [WARN] Renderer requested app quit flow
+[2026-06-21T22:50:47.062Z] [INFO] Requesting renderer close decision
+{
+  "source": "quit-button"
+}
+[2026-06-21T22:50:47.989Z] [INFO] Renderer responded to close prompt
+{
+  "action": "quit",
+  "rememberChoice": false
+}
+[2026-06-21T22:51:11.409Z] [INFO] Electron app ready
+[2026-06-21T22:51:11.418Z] [INFO] Dev mode: backend should be started externally.
+[2026-06-21T22:51:16.755Z] [ERROR] Timed out waiting for backend port.txt, starting window anyway
+[2026-06-21T22:51:16.790Z] [INFO] browser-window-created
+{
+  "id": 1
+}
+[2026-06-21T22:51:16.901Z] [INFO] System tray initialized
+{
+  "trayIconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png"
+}
+[2026-06-21T22:51:16.902Z] [INFO] BrowserWindow created
+{
+  "isDev": true,
+  "iconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png",
+  "webPreferences": {
+    "nodeIntegration": true,
+    "contextIsolation": false,
+    "backgroundThrottling": false
+  }
+}
+[2026-06-21T22:51:16.902Z] [INFO] Loading renderer URL
+{
+  "targetUrl": "http://localhost:5173?backend_port=8000"
+}
+[2026-06-21T22:51:17.047Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-21T22:51:17.377Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:51:17.378Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:51:17.387Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T22:51:17.390Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T22:51:17.391Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T22:51:17.461Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T22:51:17.462Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:51:17.463Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:51:17.463Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T22:51:17.467Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T22:51:17.468Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:51:17.468Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:51:17.469Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T22:51:20.086Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T22:51:20.087Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:51:20.087Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:51:20.088Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-21T22:51:22.533Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-21T22:51:22.533Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:51:22.535Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:51:22.536Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T22:51:23.710Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T22:51:23.710Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:51:23.712Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:51:23.712Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-21T22:51:25.469Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-21T22:51:25.470Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:51:25.470Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:51:25.471Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T22:51:27.044Z] [INFO] Folder picker opened
+{
+  "defaultPath": "E:\\downloads_torrent"
+}
+[2026-06-21T22:51:37.827Z] [INFO] Folder picker closed
+{
+  "canceled": false,
+  "selected": "D:\\media"
+}
+[2026-06-21T22:53:42.518Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T22:53:42.519Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:53:42.520Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:53:42.520Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-21T22:54:04.557Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-21T22:54:04.558Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:54:04.560Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T22:54:04.561Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T23:05:39.244Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T23:05:39.245Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:05:39.247Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:05:39.247Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-21T23:05:44.844Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-21T23:05:44.844Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:05:44.846Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:05:44.847Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T23:05:46.348Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T23:05:46.349Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:05:46.351Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:05:46.351Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T23:05:47.220Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T23:05:47.220Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:05:47.223Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:05:47.223Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T23:11:00.345Z] [INFO] Electron app ready
+[2026-06-21T23:11:00.349Z] [INFO] Dev mode: backend should be started externally.
+[2026-06-21T23:11:06.113Z] [ERROR] Timed out waiting for backend port.txt, starting window anyway
+[2026-06-21T23:11:06.149Z] [INFO] browser-window-created
+{
+  "id": 1
+}
+[2026-06-21T23:11:06.259Z] [INFO] System tray initialized
+{
+  "trayIconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png"
+}
+[2026-06-21T23:11:06.260Z] [INFO] BrowserWindow created
+{
+  "isDev": true,
+  "iconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png",
+  "webPreferences": {
+    "nodeIntegration": true,
+    "contextIsolation": false,
+    "backgroundThrottling": false
+  }
+}
+[2026-06-21T23:11:06.260Z] [INFO] Loading renderer URL
+{
+  "targetUrl": "http://localhost:5173?backend_port=8000"
+}
+[2026-06-21T23:11:06.462Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-21T23:11:06.747Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:06.748Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:06.756Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T23:11:06.759Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T23:11:06.760Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T23:11:06.822Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-21T23:11:06.822Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:06.822Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:06.823Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T23:11:06.826Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T23:11:06.826Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:06.827Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:06.828Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T23:11:10.141Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T23:11:10.142Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:10.144Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:10.144Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-21T23:11:13.461Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-21T23:11:13.461Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/onboarding",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:13.462Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/onboarding",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:13.462Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/onboarding"
+}
+[2026-06-21T23:11:26.996Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/onboarding"
+}
+[2026-06-21T23:11:26.996Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:26.998Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:26.998Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T23:11:58.748Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-21T23:11:58.749Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:58.749Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:58.750Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T23:11:59.827Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T23:11:59.827Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:59.829Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:11:59.830Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-21T23:12:00.884Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-21T23:12:00.884Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:12:00.886Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:12:00.887Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T23:12:03.235Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T23:12:03.236Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:12:03.238Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:12:03.239Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-21T23:12:03.851Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-21T23:12:03.851Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:12:03.853Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-21T23:12:03.854Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-21T23:12:05.173Z] [INFO] Folder picker opened
+{
+  "defaultPath": "E:\\downloads_torrent"
+}
+[2026-06-21T23:12:12.473Z] [INFO] Folder picker closed
+{
+  "canceled": false,
+  "selected": "D:\\media"
+}

@@ -2,7 +2,7 @@ import logging
 from typing import List, Optional, Any, Dict
 from sqlalchemy.orm import Session
 from app.domains.people.models import Person, ExternalSourceLink
-from app.core.enums import Provider
+from app.shared_kernel.enums import Provider
 from app.domains.people.helpers import (
     known_for_score,
     select_known_for,

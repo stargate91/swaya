@@ -3,12 +3,12 @@ import time
 import random
 from typing import Optional, List, Dict, Any
 
-from app.core.enums import Provider, MediaType
-from app.core.language import LanguageService
+from app.shared_kernel.enums import Provider, MediaType
+from app.shared_kernel.language import LanguageService
 from app.infrastructure.scrapers.base import BaseScraper
 from app.infrastructure.scrapers.normalizer import ScraperNormalizer
 
-from app.core.constants import TMDB_API_BASE, DEFAULT_FALLBACK_LANGUAGE, TMDB_MOVIE_APPEND_PARTS, TMDB_TV_APPEND_PARTS, SCRAPER_REQUEST_TIMEOUT
+from app.shared_kernel.constants import TMDB_API_BASE, DEFAULT_FALLBACK_LANGUAGE, TMDB_MOVIE_APPEND_PARTS, TMDB_TV_APPEND_PARTS, SCRAPER_REQUEST_TIMEOUT
 
 logger = logging.getLogger(__name__)
 

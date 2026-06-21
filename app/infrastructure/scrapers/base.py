@@ -3,8 +3,8 @@ import requests
 from typing import Optional, Dict, Any, List
 from sqlalchemy.orm import Session
 
-from app.core.cache import CacheService
-from app.core.enums import Provider
+from app.infrastructure.cache.cache_service import CacheService
+from app.shared_kernel.enums import Provider
 
 logger = logging.getLogger(__name__)
 
@@ -156,7 +156,7 @@ class BaseScraper:
 
     def log_search(self, task_id: Optional[int], media_item_id: Optional[int], search_query: str, result_count: int, details: Dict[str, Any]) -> None:
         """Saves a structured search log for scraper resolution auditing."""
-        from app.core.tasks.models import ScraperLog
+        from app.domains.tasks.models import ScraperLog
         try:
             log_entry = ScraperLog(
                 task_id=task_id,

@@ -2,14 +2,14 @@ import logging
 from typing import Dict, Any, Optional
 from sqlalchemy.orm import Session
 
-from app.core.enums import Provider, MediaType, RoleType
-from app.domains.media.models.metadata import MetadataMatch, MetadataLocalization, Studio, MediaCollection
+from app.shared_kernel.enums import Provider, MediaType, RoleType
+from app.domains.metadata.models import MetadataMatch, MetadataLocalization, Studio, MediaCollection
 from app.domains.people.models import Person, MediaPersonLink
 from app.domains.people.services import PersonService
 
 logger = logging.getLogger(__name__)
 
-from app.core.constants import DEFAULT_FALLBACK_LANGUAGE
+from app.shared_kernel.constants import DEFAULT_FALLBACK_LANGUAGE
 
 import threading
 

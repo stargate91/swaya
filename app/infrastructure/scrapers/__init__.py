@@ -1,8 +1,8 @@
 from typing import Optional
 from sqlalchemy.orm import Session
 
-from app.core.enums import Provider, MediaType
-from app.core.cache import CacheService
+from app.shared_kernel.enums import Provider, MediaType
+from app.infrastructure.cache.cache_service import CacheService
 from app.infrastructure.scrapers.tmdb import TMDBScraper
 from app.infrastructure.scrapers.omdb import OMDBScraper
 from app.infrastructure.scrapers.stashdb import StashDBScraper

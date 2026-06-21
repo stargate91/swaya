@@ -3,7 +3,7 @@ from typing import Any, Optional
 from sqlalchemy import String, DateTime, JSON, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.database import Base
+from app.shared_kernel.database import Base
 
 
 class SystemSetting(Base):

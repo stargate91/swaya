@@ -3,11 +3,11 @@ from typing import List, Optional
 import requests
 from sqlalchemy.orm import Session
 from app.domains.people.models import Person, PersonLocalization, MediaPersonLink, ExternalSourceLink
-from app.core.enums import Provider, RoleType
+from app.shared_kernel.enums import Provider, RoleType
 from app.domains.settings.models import SystemSetting, UserSetting
-from app.domains.shared.ports.scrapers import ScraperGatewayPort
+from app.shared_kernel.ports.scrapers import ScraperGatewayPort
 
-from app.core.constants import DEFAULT_MAX_WORKERS, DEFAULT_FALLBACK_LANGUAGE
+from app.shared_kernel.constants import DEFAULT_MAX_WORKERS, DEFAULT_FALLBACK_LANGUAGE
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class PeopleEnricher:
 
         import concurrent.futures
         import time
-        from app.core.tasks import task_manager
+        from app.domains.tasks import task_manager
 
         executor = task_manager.executor
         max_workers = DEFAULT_MAX_WORKERS
@@ -169,7 +169,7 @@ class PeopleEnricher:
         has_data = False
 
         if is_adult and not any(link["provider"] == Provider.PORNDB for link in all_links):
-            from app.core.database import SessionLocal
+            from app.shared_kernel.database import SessionLocal
             temp_db = SessionLocal()
             try:
                 porndb = self._require_scrapers().adult(Provider.PORNDB, temp_db)
@@ -199,7 +199,7 @@ class PeopleEnricher:
             external_id = l["external_id"]
 
             if provider == Provider.TMDB:
-                from app.core.database import SessionLocal
+                from app.shared_kernel.database import SessionLocal
                 temp_db = SessionLocal()
                 try:
                     tmdb = self._require_scrapers().tmdb(temp_db)
@@ -233,7 +233,7 @@ class PeopleEnricher:
                             result["biographies"][locale] = bio
 
             elif provider in (Provider.STASHDB, Provider.PORNDB, Provider.FANSDB):
-                from app.core.database import SessionLocal
+                from app.shared_kernel.database import SessionLocal
                 temp_db = SessionLocal()
                 perf = None
                 try:
@@ -305,7 +305,7 @@ class PeopleEnricher:
         return result if has_data else None
 
     def apply_enriched_data(self, person: Person, data: dict):
-        from app.core.tasks import task_manager
+        from app.domains.tasks import task_manager
         if data.get("birthday"):
             person.birthday = data["birthday"]
         if data.get("deathday"):
@@ -355,7 +355,7 @@ class PeopleEnricher:
             person.profile_path = profile_path
             tmdb_id = person.external_ids.get("tmdb") if person.external_ids else None
             
-            from app.core.images import ImageProcessingService
+            from app.domains.media_assets.services.images import ImageProcessingService
             img_service = ImageProcessingService()
             url = img_service.get_download_url(profile_path, "people") or profile_path
             

@@ -1,10 +1,10 @@
 import logging
 from typing import Optional
-from app.core.enums import Provider
-from app.domains.media.models.metadata import MetadataMatch
+from app.shared_kernel.enums import Provider
+from app.domains.metadata.models import MetadataMatch
 from app.infrastructure.scrapers.base import BaseScraper
 
-from app.core.constants import OMDB_DEFAULT_ENDPOINT, OMDB_REQUEST_TIMEOUT
+from app.shared_kernel.constants import OMDB_DEFAULT_ENDPOINT, OMDB_REQUEST_TIMEOUT
 
 logger = logging.getLogger(__name__)
 
