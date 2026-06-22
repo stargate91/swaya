@@ -106,6 +106,9 @@ class ImageProcessingService:
             shutil.copy2(orig, thumb)
             return True
 
+        if subfolder == "scene_stills":
+            return True
+
         limits = MEDIA_IMAGE_LIMITS.get(subfolder)
         if not limits:
             # No limits configured for this category (e.g. logos) -> skip thumbnail, use original
@@ -115,13 +118,22 @@ class ImageProcessingService:
         thumb.parent.mkdir(parents=True, exist_ok=True)
 
         try:
+            def use_adult_scene_poster_height_limit(filename: str, width: int, height: int) -> bool:
+                if subfolder != "posters" or width <= height:
+                    return False
+                lowered = filename.lower()
+                return lowered.startswith(("stashdb_", "fansdb_", "porndb_"))
+
             # 1. Quick size check to avoid decoding/processing if already small
             with Image.open(orig) as img:
                 width, height = img.size
-                
+
                 max_width = limits.get("max_width")
                 max_height = limits.get("max_height")
-                
+                if use_adult_scene_poster_height_limit(orig.name, width, height):
+                    max_width = None
+                    max_height = 780
+
                 already_in_bounds = True
                 if max_width and width > max_width:
                     already_in_bounds = False
@@ -136,6 +148,9 @@ class ImageProcessingService:
             with Image.open(orig) as img:
                 orig_format = img.format or ("PNG" if orig.suffix.lower() == ".png" else "JPEG")
                 width, height = img.size
+                if use_adult_scene_poster_height_limit(orig.name, width, height):
+                    max_width = None
+                    max_height = 780
                 
                 if max_width and width > max_width:
                     ratio = max_width / float(width)
@@ -229,13 +244,26 @@ class ImageProcessingService:
             return path
 
         # 2. Local check
-        filename = os.path.basename(path)
+        normalized_path = path.replace("\\", "/").lstrip("/")
+        path_parts = [part for part in normalized_path.split("/") if part]
+        embedded_subfolder = path_parts[0] if len(path_parts) >= 2 else subfolder
+        filename = path_parts[-1] if path_parts else os.path.basename(path)
+
         thumb_path = self.get_thumbnail_path(subfolder, filename)
         if self.exists(thumb_path):
             return f"/media/images/thumbnails/{subfolder}/{filename}"
-        orig_path = self.get_original_path(subfolder, filename)
+
+        if subfolder == "posters" and embedded_subfolder == "scene_stills":
+            source_orig_path = self.get_original_path("scene_stills", filename)
+            if self.exists(source_orig_path):
+                self.generate_thumbnail(source_orig_path, thumb_path, "posters")
+                if self.exists(thumb_path):
+                    return f"/media/images/thumbnails/posters/{filename}"
+                return f"/media/images/original/scene_stills/{filename}"
+
+        orig_path = self.get_original_path(embedded_subfolder, filename)
         if self.exists(orig_path):
-            return f"/media/images/original/{subfolder}/{filename}"
+            return f"/media/images/original/{embedded_subfolder}/{filename}"
 
         # 3. TMDB CDN fallback
         if path.startswith("/") and not path.startswith("/media/"):

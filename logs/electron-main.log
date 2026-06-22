@@ -194,3 +194,2679 @@
 {
   "url": "http://localhost:5173/?backend_port=8000#/organizer"
 }
+[2026-06-22T20:42:29.023Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T20:42:29.024Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T20:42:29.026Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T20:42:29.027Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-22T20:42:32.916Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-22T20:42:32.917Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T20:42:32.919Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T20:42:32.919Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T20:50:48.040Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T20:50:48.041Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T20:50:48.045Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T20:50:48.047Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-22T20:50:51.916Z] [WARN] Renderer requested app quit flow
+[2026-06-22T20:50:51.916Z] [INFO] Requesting renderer close decision
+{
+  "source": "quit-button"
+}
+[2026-06-22T20:50:52.565Z] [INFO] Renderer responded to close prompt
+{
+  "action": "quit",
+  "rememberChoice": false
+}
+[2026-06-22T20:51:34.392Z] [INFO] Electron app ready
+[2026-06-22T20:51:34.398Z] [INFO] Dev mode: backend should be started externally.
+[2026-06-22T20:51:39.711Z] [ERROR] Timed out waiting for backend port.txt, starting window anyway
+[2026-06-22T20:51:39.750Z] [INFO] browser-window-created
+{
+  "id": 1
+}
+[2026-06-22T20:51:39.913Z] [INFO] System tray initialized
+{
+  "trayIconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png"
+}
+[2026-06-22T20:51:39.914Z] [INFO] BrowserWindow created
+{
+  "isDev": true,
+  "iconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png",
+  "webPreferences": {
+    "nodeIntegration": true,
+    "contextIsolation": false,
+    "backgroundThrottling": false
+  }
+}
+[2026-06-22T20:51:39.914Z] [INFO] Loading renderer URL
+{
+  "targetUrl": "http://localhost:5173?backend_port=8000"
+}
+[2026-06-22T20:51:40.220Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T20:51:40.507Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T20:51:40.508Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T20:51:40.520Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T20:51:40.527Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T20:51:40.527Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T20:51:40.633Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T20:51:40.634Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T20:51:40.636Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T20:51:40.638Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T20:51:40.639Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T20:51:40.640Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T20:51:40.641Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T20:51:40.652Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T20:51:43.310Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T20:51:43.310Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T20:51:43.313Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T20:51:43.314Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:17:39.965Z] [INFO] Electron app ready
+[2026-06-22T21:17:39.978Z] [INFO] Dev mode: backend should be started externally.
+[2026-06-22T21:17:45.292Z] [ERROR] Timed out waiting for backend port.txt, starting window anyway
+[2026-06-22T21:17:45.341Z] [INFO] browser-window-created
+{
+  "id": 1
+}
+[2026-06-22T21:17:45.454Z] [INFO] System tray initialized
+{
+  "trayIconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png"
+}
+[2026-06-22T21:17:45.454Z] [INFO] BrowserWindow created
+{
+  "isDev": true,
+  "iconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png",
+  "webPreferences": {
+    "nodeIntegration": true,
+    "contextIsolation": false,
+    "backgroundThrottling": false
+  }
+}
+[2026-06-22T21:17:45.454Z] [INFO] Loading renderer URL
+{
+  "targetUrl": "http://localhost:5173?backend_port=8000"
+}
+[2026-06-22T21:17:45.705Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T21:17:46.027Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:17:46.028Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:17:46.044Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:17:46.051Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:17:46.056Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:17:46.228Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:17:46.243Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:17:46.245Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:17:46.246Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:17:46.250Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:17:46.253Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:17:46.256Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:17:46.257Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:18:01.473Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:18:01.474Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:18:01.476Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:18:01.477Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-22T21:18:03.138Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-22T21:18:03.138Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:18:03.140Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:18:03.141Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:18:03.457Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:18:03.458Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:18:03.461Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:18:03.461Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:18:14.457Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:18:14.458Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:18:14.460Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:18:14.460Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-22T21:18:18.512Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/settings"
+}
+[2026-06-22T21:18:18.512Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:18:18.516Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:18:18.518Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:24:56.457Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:24:56.458Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:24:56.461Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:24:56.461Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-22T21:25:08.869Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-22T21:25:08.870Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:25:08.872Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:25:08.872Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:26:33.831Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "In HTML, %s cannot be a descendant of <%s>.\nThis will cause a hydration error.%s <button> button \n\n  ...\n    <OrganizerPage>\n      <OrganizerModalProvider focusFirstAvailableResult={function focusFirstAvailableResult} ...>\n        <OrganizerPageContent activeExtrasTab=\"bonus\" activeManualTab=\"movies\" activeImage={{path:\"/med...\"}} ...>\n          <Page className=\"organizer-...\">\n            <div className=\"ui-page or...\">\n              <div className={\"organize...\"}>\n                <div>\n                <OrganizerDetailsPanel activeImage={{path:\"/med...\"}} activeImageIndex={0} activeImages={[...]} ...>\n                  <aside className=\"organizer-...\" aria-label=\"Details\">\n                    <div>\n                    <div className=\"organizer-...\">\n                      <div className=\"organizer-...\">\n                        <div>\n                        <div className=\"organizer-...\">\n                          <PosterCard className=\"organizer-...\" imageUrl=\"http://loc...\" ...>\n                            <div className=\"ui-poster-...\" style={undefined}>\n                              <div className=\"ui-poster-...\">\n>                               <button\n>                                 type=\"button\"\n>                                 className=\"ui-poster-card__image-wrapper\"\n>                                 onClick={function handleOpenLightbox}\n>                                 disabled={undefined}\n>                               >\n                                  <MediaCard className=\"ui-poster-...\">\n                                    <div className=\"ui-media-c...\">\n                                      <img>\n                                      <div className=\"organizer-...\" role=\"tablist\" aria-label=\"Episode im...\">\n>                                       <button\n>                                         type=\"button\"\n>                                         className=\"organizer-details__poster-dot is-active\"\n>                                         aria-label=\"Show image 1\"\n>                                         aria-pressed={true}\n>                                         onClick={function onClick}\n>                                       >\n                                        ...\n                          ...\n",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T21:26:33.892Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. button <button>",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T21:27:19.235Z] [WARN] Renderer requested app quit flow
+[2026-06-22T21:27:19.236Z] [INFO] Requesting renderer close decision
+{
+  "source": "quit-button"
+}
+[2026-06-22T21:27:20.468Z] [INFO] Renderer responded to close prompt
+{
+  "action": "cancel",
+  "rememberChoice": false
+}
+[2026-06-22T21:30:59.526Z] [INFO] Manual reload shortcut triggered
+{
+  "key": "r",
+  "control": true,
+  "meta": false,
+  "shift": false
+}
+[2026-06-22T21:30:59.543Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:30:59.571Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": false,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 8
+}
+[2026-06-22T21:30:59.699Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T21:30:59.983Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:30:59.984Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:30:59.986Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:31:03.714Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "In HTML, %s cannot be a descendant of <%s>.\nThis will cause a hydration error.%s <button> button \n\n  ...\n    <OrganizerPage>\n      <OrganizerModalProvider focusFirstAvailableResult={function focusFirstAvailableResult} ...>\n        <OrganizerPageContent activeExtrasTab=\"bonus\" activeManualTab=\"movies\" activeImage={{path:\"/med...\"}} ...>\n          <Page className=\"organizer-...\">\n            <div className=\"ui-page or...\">\n              <div className={\"organize...\"}>\n                <div>\n                <OrganizerDetailsPanel activeImage={{path:\"/med...\"}} activeImageIndex={0} activeImages={[...]} ...>\n                  <aside className=\"organizer-...\" aria-label=\"Details\">\n                    <div>\n                    <div className=\"organizer-...\">\n                      <div className=\"organizer-...\">\n                        <div>\n                        <div className=\"organizer-...\">\n                          <PosterCard className=\"organizer-...\" imageUrl=\"http://loc...\" placeholderText={undefined} ...>\n                            <div className=\"ui-poster-...\" style={undefined}>\n                              <div className=\"ui-poster-...\">\n>                               <button\n>                                 type=\"button\"\n>                                 className=\"ui-poster-card__image-wrapper\"\n>                                 onClick={function handleOpenLightbox}\n>                                 disabled={undefined}\n>                               >\n                                  <MediaCard className=\"ui-poster-...\">\n                                    <div className=\"ui-media-c...\">\n                                      <img>\n>                                     <button\n>                                       type=\"button\"\n>                                       className=\"organizer-details__image-nav organizer-details__image-nav--prev\"\n>                                       aria-label=\"Previous image\"\n>                                       onClick={function onClick}\n>                                     >\n                                      ...\n                          ...\n",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782163836104"
+}
+[2026-06-22T21:31:03.716Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. button <button>",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782163836104"
+}
+[2026-06-22T21:32:32.557Z] [INFO] Manual reload shortcut triggered
+{
+  "key": "r",
+  "control": true,
+  "meta": false,
+  "shift": false
+}
+[2026-06-22T21:32:32.559Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:32:32.562Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": false,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 11
+}
+[2026-06-22T21:32:32.591Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T21:32:32.766Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:32:32.767Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:32:32.767Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:32:36.773Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "In HTML, %s cannot be a descendant of <%s>.\nThis will cause a hydration error.%s <button> button \n\n  ...\n    <OrganizerPage>\n      <OrganizerModalProvider focusFirstAvailableResult={function focusFirstAvailableResult} ...>\n        <OrganizerPageContent activeExtrasTab=\"bonus\" activeManualTab=\"movies\" activeImage={{path:\"/med...\"}} ...>\n          <Page className=\"organizer-...\">\n            <div className=\"ui-page or...\">\n              <div className={\"organize...\"}>\n                <div>\n                <OrganizerDetailsPanel activeImage={{path:\"/med...\"}} activeImageIndex={0} activeImages={[...]} ...>\n                  <aside className=\"organizer-...\" aria-label=\"Details\">\n                    <div>\n                    <div className=\"organizer-...\">\n                      <div className=\"organizer-...\">\n                        <div>\n                        <div className=\"organizer-...\">\n                          <PosterCard className=\"organizer-...\" imageUrl=\"http://loc...\" placeholderText={undefined} ...>\n                            <div className=\"ui-poster-...\" style={undefined}>\n                              <div className=\"ui-poster-...\">\n>                               <button\n>                                 type=\"button\"\n>                                 className=\"ui-poster-card__image-wrapper\"\n>                                 onClick={function handleOpenLightbox}\n>                                 disabled={undefined}\n>                               >\n                                  <MediaCard className=\"ui-poster-...\">\n                                    <div className=\"ui-media-c...\">\n                                      <img>\n>                                     <button\n>                                       type=\"button\"\n>                                       className=\"organizer-details__image-nav organizer-details__image-nav--prev\"\n>                                       aria-label=\"Previous image\"\n>                                       onClick={function onClick}\n>                                     >\n                                      ...\n                          ...\n",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782163940723"
+}
+[2026-06-22T21:32:36.774Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. button <button>",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782163940723"
+}
+[2026-06-22T21:36:39.821Z] [WARN] Renderer requested app quit flow
+[2026-06-22T21:36:39.822Z] [INFO] Requesting renderer close decision
+{
+  "source": "quit-button"
+}
+[2026-06-22T21:36:40.573Z] [INFO] Renderer responded to close prompt
+{
+  "action": "quit",
+  "rememberChoice": false
+}
+[2026-06-22T21:36:40.573Z] [WARN] before-quit fired
+[2026-06-22T21:36:45.264Z] [INFO] Electron app ready
+[2026-06-22T21:36:45.272Z] [INFO] Dev mode: backend should be started externally.
+[2026-06-22T21:36:50.613Z] [ERROR] Timed out waiting for backend port.txt, starting window anyway
+[2026-06-22T21:36:50.661Z] [INFO] browser-window-created
+{
+  "id": 1
+}
+[2026-06-22T21:36:50.832Z] [INFO] System tray initialized
+{
+  "trayIconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png"
+}
+[2026-06-22T21:36:50.833Z] [INFO] BrowserWindow created
+{
+  "isDev": true,
+  "iconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png",
+  "webPreferences": {
+    "nodeIntegration": true,
+    "contextIsolation": false,
+    "backgroundThrottling": false
+  }
+}
+[2026-06-22T21:36:50.833Z] [INFO] Loading renderer URL
+{
+  "targetUrl": "http://localhost:5173?backend_port=8000"
+}
+[2026-06-22T21:36:51.010Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T21:36:51.488Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:36:51.489Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:36:51.499Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:36:51.509Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:36:51.510Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:36:51.621Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:36:51.621Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:36:51.624Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:36:51.625Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:36:51.629Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:36:51.629Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:36:51.630Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:36:51.630Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:36:55.136Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:36:55.137Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:36:55.140Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:36:55.141Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:37:44.929Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "In HTML, %s cannot be a descendant of <%s>.\nThis will cause a hydration error.%s <button> button \n\n  ...\n    <OrganizerPage>\n      <OrganizerModalProvider focusFirstAvailableResult={function focusFirstAvailableResult} ...>\n        <OrganizerPageContent activeExtrasTab=\"bonus\" activeManualTab=\"movies\" activeImage={{path:\"/med...\"}} ...>\n          <Page className=\"organizer-...\">\n            <div className=\"ui-page or...\">\n              <div className={\"organize...\"}>\n                <div>\n                <OrganizerDetailsPanel activeImage={{path:\"/med...\"}} activeImageIndex={0} activeImages={[...]} ...>\n                  <aside className=\"organizer-...\" aria-label=\"Details\">\n                    <div>\n                    <div className=\"organizer-...\">\n                      <div className=\"organizer-...\">\n                        <div>\n                        <div className=\"organizer-...\">\n                          <PosterCard className=\"organizer-...\" imageUrl=\"http://loc...\" placeholderText={undefined} ...>\n                            <div className=\"ui-poster-...\" style={undefined}>\n                              <div className=\"ui-poster-...\">\n>                               <button\n>                                 type=\"button\"\n>                                 className=\"ui-poster-card__image-wrapper\"\n>                                 onClick={function handleOpenLightbox}\n>                                 disabled={undefined}\n>                               >\n                                  <MediaCard className=\"ui-poster-...\">\n                                    <div className=\"ui-media-c...\">\n                                      <img>\n>                                     <button\n>                                       type=\"button\"\n>                                       className=\"organizer-details__image-nav organizer-details__image-nav--prev\"\n>                                       aria-label=\"Previous image\"\n>                                       onClick={function onClick}\n>                                     >\n                                      ...\n                          ...\n",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T21:37:44.930Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. button <button>",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T21:38:11.422Z] [WARN] Renderer requested app quit flow
+[2026-06-22T21:38:11.422Z] [INFO] Requesting renderer close decision
+{
+  "source": "quit-button"
+}
+[2026-06-22T21:38:12.165Z] [INFO] Renderer responded to close prompt
+{
+  "action": "quit",
+  "rememberChoice": false
+}
+[2026-06-22T21:38:20.003Z] [INFO] Electron app ready
+[2026-06-22T21:38:20.012Z] [INFO] Dev mode: backend should be started externally.
+[2026-06-22T21:38:25.325Z] [ERROR] Timed out waiting for backend port.txt, starting window anyway
+[2026-06-22T21:38:25.364Z] [INFO] browser-window-created
+{
+  "id": 1
+}
+[2026-06-22T21:38:25.502Z] [INFO] System tray initialized
+{
+  "trayIconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png"
+}
+[2026-06-22T21:38:25.503Z] [INFO] BrowserWindow created
+{
+  "isDev": true,
+  "iconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png",
+  "webPreferences": {
+    "nodeIntegration": true,
+    "contextIsolation": false,
+    "backgroundThrottling": false
+  }
+}
+[2026-06-22T21:38:25.504Z] [INFO] Loading renderer URL
+{
+  "targetUrl": "http://localhost:5173?backend_port=8000"
+}
+[2026-06-22T21:38:25.617Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T21:38:26.005Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:38:26.011Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:38:26.019Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:38:26.048Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:38:26.049Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:38:26.161Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:38:26.184Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:38:26.188Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:38:26.189Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:38:26.190Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:38:26.190Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:38:26.192Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:38:26.193Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:38:28.919Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:38:28.919Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:38:28.921Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:38:28.921Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:39:39.502Z] [WARN] Renderer requested app quit flow
+[2026-06-22T21:39:39.502Z] [INFO] Requesting renderer close decision
+{
+  "source": "quit-button"
+}
+[2026-06-22T21:39:44.897Z] [INFO] Electron app ready
+[2026-06-22T21:39:44.913Z] [INFO] Dev mode: backend should be started externally.
+[2026-06-22T21:39:50.229Z] [ERROR] Timed out waiting for backend port.txt, starting window anyway
+[2026-06-22T21:39:50.272Z] [INFO] browser-window-created
+{
+  "id": 1
+}
+[2026-06-22T21:39:50.411Z] [INFO] System tray initialized
+{
+  "trayIconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png"
+}
+[2026-06-22T21:39:50.411Z] [INFO] BrowserWindow created
+{
+  "isDev": true,
+  "iconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png",
+  "webPreferences": {
+    "nodeIntegration": true,
+    "contextIsolation": false,
+    "backgroundThrottling": false
+  }
+}
+[2026-06-22T21:39:50.412Z] [INFO] Loading renderer URL
+{
+  "targetUrl": "http://localhost:5173?backend_port=8000"
+}
+[2026-06-22T21:39:50.678Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T21:39:50.934Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:39:50.934Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:39:50.948Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:39:50.953Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:39:50.955Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:39:51.051Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:39:51.051Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:39:51.055Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:39:51.056Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:39:51.057Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:39:51.058Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:39:51.058Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:39:51.059Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:39:53.550Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:39:53.551Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:39:53.554Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:39:53.555Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:48:23.617Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:48:23.618Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:48:23.618Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:48:23.619Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-22T21:48:24.719Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-22T21:48:24.720Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:48:24.721Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:48:24.722Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:48:56.095Z] [WARN] Renderer requested app quit flow
+[2026-06-22T21:48:56.095Z] [INFO] Requesting renderer close decision
+{
+  "source": "quit-button"
+}
+[2026-06-22T21:48:57.165Z] [INFO] Renderer responded to close prompt
+{
+  "action": "quit",
+  "rememberChoice": false
+}
+[2026-06-22T21:48:57.165Z] [WARN] before-quit fired
+[2026-06-22T21:49:02.464Z] [INFO] Electron app ready
+[2026-06-22T21:49:02.479Z] [INFO] Dev mode: backend should be started externally.
+[2026-06-22T21:49:07.802Z] [ERROR] Timed out waiting for backend port.txt, starting window anyway
+[2026-06-22T21:49:07.844Z] [INFO] browser-window-created
+{
+  "id": 1
+}
+[2026-06-22T21:49:08.006Z] [INFO] System tray initialized
+{
+  "trayIconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png"
+}
+[2026-06-22T21:49:08.007Z] [INFO] BrowserWindow created
+{
+  "isDev": true,
+  "iconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png",
+  "webPreferences": {
+    "nodeIntegration": true,
+    "contextIsolation": false,
+    "backgroundThrottling": false
+  }
+}
+[2026-06-22T21:49:08.008Z] [INFO] Loading renderer URL
+{
+  "targetUrl": "http://localhost:5173?backend_port=8000"
+}
+[2026-06-22T21:49:08.129Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T21:49:08.491Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:49:08.492Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:49:08.501Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:49:08.504Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:49:08.505Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:49:08.594Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:49:08.595Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:49:08.596Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:49:08.596Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:49:08.600Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:49:08.603Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:49:08.604Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:49:08.606Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:49:11.007Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:49:11.009Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:49:11.013Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:49:11.014Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-22T21:49:12.901Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-22T21:49:12.901Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:49:12.903Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:49:12.903Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:49:28.621Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:49:28.622Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:49:28.626Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:49:28.627Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-22T21:49:28.990Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-22T21:49:28.991Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:49:28.994Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:49:28.995Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:54:18.838Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks\n\n   Previous render            Next render\n   ------------------------------------------------------\n%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n OrganizerPage 1. useContext                 useContext\n2. useContext                 useContext\n3. useContext                 useContext\n4. useContext                 useContext\n5. useContext                 useContext\n6. useContext                 useContext\n7. useEffect                  useEffect\n8. useState                   useState\n9. useCallback                useCallback\n10. useSyncExternalStore      useSyncExternalStore\n11. useEffect                 useEffect\n12. useContext                useContext\n13. useContext                useContext\n14. useContext                useContext\n15. useEffect                 useEffect\n16. useState                  useState\n17. useCallback               useCallback\n18. useSyncExternalStore      useSyncExternalStore\n19. useEffect                 useEffect\n20. useContext                useContext\n21. useContext                useContext\n22. useContext                useContext\n23. useEffect                 useEffect\n24. useState                  useState\n25. useCallback               useCallback\n26. useSyncExternalStore      useSyncExternalStore\n27. useEffect                 useEffect\n28. useContext                useContext\n29. useContext                useContext\n30. useContext                useContext\n31. useEffect                 useEffect\n32. useState                  useState\n33. useCallback               useCallback\n34. useSyncExternalStore      useSyncExternalStore\n35. useEffect                 useEffect\n36. useCallback               useCallback\n37. useCallback               useCallback\n38. useSyncExternalStore      useSyncExternalStore\n39. useDebugValue             useDebugValue\n40. useState                  useState\n41. useContext                useContext\n42. useContext                useContext\n43. useContext                useContext\n44. useEffect                 useEffect\n45. useState                  useState\n46. useCallback               useCallback\n47. useSyncExternalStore      useSyncExternalStore\n48. useEffect                 useEffect\n49. useState                  useState\n50. useState                  useState\n51. useEffect                 useEffect\n52. useEffect                 useEffect\n53. useMemo                   useMemo\n54. useEffect                 useEffect\n55. useMemo                   useMemo\n56. useRef                    useRef\n57. useState                  useState\n58. useState                  useState\n59. useState                  useState\n60. useState                  useState\n61. useEffect                 useEffect\n62. useMemo                   useMemo\n63. useMemo                   useMemo\n64. useMemo                   useMemo\n65. useMemo                   useMemo\n66. useMemo                   useMemo\n67. useMemo                   useMemo\n68. useMemo                   useMemo\n69. useMemo                   useMemo\n70. useEffect                 useMemo\n",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T21:54:18.879Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: Error: Should have a queue. You are likely calling Hooks conditionally, which is not allowed. (https://react.dev/link/invalid-hook-call)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T21:54:18.881Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: Error: Should have a queue. You are likely calling Hooks conditionally, which is not allowed. (https://react.dev/link/invalid-hook-call)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T21:54:18.882Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: Error: Should have a queue. You are likely calling Hooks conditionally, which is not allowed. (https://react.dev/link/invalid-hook-call)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T21:54:18.883Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: Error: Should have a queue. You are likely calling Hooks conditionally, which is not allowed. (https://react.dev/link/invalid-hook-call)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T21:54:18.884Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "%o\n\n%s\n\n%s\n Error: Should have a queue. You are likely calling Hooks conditionally, which is not allowed. (https://react.dev/link/invalid-hook-call) The above error occurred in the <OrganizerPage> component. React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T21:54:18.885Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "React Router caught the following error during render Error: Should have a queue. You are likely calling Hooks conditionally, which is not allowed. (https://react.dev/link/invalid-hook-call)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T21:54:50.226Z] [INFO] Manual reload shortcut triggered
+{
+  "key": "r",
+  "control": true,
+  "meta": false,
+  "shift": false
+}
+[2026-06-22T21:54:50.229Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:54:50.231Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": false,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 8
+}
+[2026-06-22T21:54:50.248Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T21:54:50.440Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:54:50.441Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:54:50.442Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:55:24.424Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165288920"
+}
+[2026-06-22T21:55:24.424Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165288920"
+}
+[2026-06-22T21:55:24.426Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165288920"
+}
+[2026-06-22T21:55:24.426Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165288920"
+}
+[2026-06-22T21:55:24.428Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "%o\n\n%s\n\n%s\n ReferenceError: hasLoadedSessionItems is not defined The above error occurred in the <OrganizerPage> component. React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165288920"
+}
+[2026-06-22T21:55:24.428Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "React Router caught the following error during render ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165288920"
+}
+[2026-06-22T21:57:10.194Z] [INFO] Manual reload shortcut triggered
+{
+  "key": "r",
+  "control": true,
+  "meta": false,
+  "shift": false
+}
+[2026-06-22T21:57:10.197Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:57:10.200Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": false,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 11
+}
+[2026-06-22T21:57:10.215Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T21:57:10.364Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:57:10.365Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:57:10.365Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:57:10.514Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165404150"
+}
+[2026-06-22T21:57:10.515Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165404150"
+}
+[2026-06-22T21:57:10.517Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165404150"
+}
+[2026-06-22T21:57:10.517Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165404150"
+}
+[2026-06-22T21:57:10.696Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "%o\n\n%s\n\n%s\n ReferenceError: hasLoadedSessionItems is not defined The above error occurred in the <OrganizerPage> component. React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165404150"
+}
+[2026-06-22T21:57:10.697Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "React Router caught the following error during render ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165404150"
+}
+[2026-06-22T21:58:20.162Z] [INFO] Manual reload shortcut triggered
+{
+  "key": "r",
+  "control": true,
+  "meta": false,
+  "shift": false
+}
+[2026-06-22T21:58:20.164Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:20.166Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": false,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 14
+}
+[2026-06-22T21:58:20.179Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T21:58:20.303Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:20.304Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:20.304Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:20.451Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165454592"
+}
+[2026-06-22T21:58:20.452Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165454592"
+}
+[2026-06-22T21:58:20.455Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165454592"
+}
+[2026-06-22T21:58:20.455Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165454592"
+}
+[2026-06-22T21:58:20.637Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "%o\n\n%s\n\n%s\n ReferenceError: hasLoadedSessionItems is not defined The above error occurred in the <OrganizerPage> component. React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165454592"
+}
+[2026-06-22T21:58:20.637Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "React Router caught the following error during render ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165454592"
+}
+[2026-06-22T21:58:21.474Z] [INFO] Manual reload shortcut triggered
+{
+  "key": "r",
+  "control": true,
+  "meta": false,
+  "shift": false
+}
+[2026-06-22T21:58:21.477Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:21.478Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": false,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 17
+}
+[2026-06-22T21:58:21.488Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T21:58:21.615Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:21.616Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:21.617Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:21.682Z] [INFO] Manual reload shortcut triggered
+{
+  "key": "r",
+  "control": true,
+  "meta": false,
+  "shift": false
+}
+[2026-06-22T21:58:21.686Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:21.694Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": false,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 20
+}
+[2026-06-22T21:58:21.740Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T21:58:21.847Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:21.850Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:21.851Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:21.922Z] [INFO] Manual reload shortcut triggered
+{
+  "key": "r",
+  "control": true,
+  "meta": false,
+  "shift": false
+}
+[2026-06-22T21:58:21.928Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:21.931Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": false,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 23
+}
+[2026-06-22T21:58:21.970Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T21:58:22.096Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:22.096Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:22.098Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:58:22.251Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165454592"
+}
+[2026-06-22T21:58:22.254Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165454592"
+}
+[2026-06-22T21:58:22.258Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165454592"
+}
+[2026-06-22T21:58:22.258Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165454592"
+}
+[2026-06-22T21:58:22.420Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "%o\n\n%s\n\n%s\n ReferenceError: hasLoadedSessionItems is not defined The above error occurred in the <OrganizerPage> component. React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165454592"
+}
+[2026-06-22T21:58:22.420Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "React Router caught the following error during render ReferenceError: hasLoadedSessionItems is not defined",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782165454592"
+}
+[2026-06-22T21:59:08.018Z] [INFO] Manual reload shortcut triggered
+{
+  "key": "r",
+  "control": true,
+  "meta": false,
+  "shift": false
+}
+[2026-06-22T21:59:08.021Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:59:08.023Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": false,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 26
+}
+[2026-06-22T21:59:08.048Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T21:59:08.257Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:59:08.258Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:59:08.258Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T21:59:21.340Z] [WARN] Renderer requested app quit flow
+[2026-06-22T21:59:21.340Z] [INFO] Requesting renderer close decision
+{
+  "source": "quit-button"
+}
+[2026-06-22T21:59:27.638Z] [INFO] Electron app ready
+[2026-06-22T21:59:27.646Z] [INFO] Dev mode: backend should be started externally.
+[2026-06-22T21:59:32.971Z] [ERROR] Timed out waiting for backend port.txt, starting window anyway
+[2026-06-22T21:59:33.045Z] [INFO] browser-window-created
+{
+  "id": 1
+}
+[2026-06-22T21:59:33.281Z] [INFO] System tray initialized
+{
+  "trayIconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png"
+}
+[2026-06-22T21:59:33.286Z] [INFO] BrowserWindow created
+{
+  "isDev": true,
+  "iconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png",
+  "webPreferences": {
+    "nodeIntegration": true,
+    "contextIsolation": false,
+    "backgroundThrottling": false
+  }
+}
+[2026-06-22T21:59:33.291Z] [INFO] Loading renderer URL
+{
+  "targetUrl": "http://localhost:5173?backend_port=8000"
+}
+[2026-06-22T21:59:33.687Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T21:59:34.010Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:59:34.011Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:59:34.019Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:59:34.105Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:59:34.192Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:59:34.327Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T21:59:34.332Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:59:34.332Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:59:34.335Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:59:34.336Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:59:34.347Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:59:34.348Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:59:34.349Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:59:36.269Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T21:59:36.270Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:59:36.274Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T21:59:36.276Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:01:30.738Z] [WARN] Renderer requested app quit flow
+[2026-06-22T22:01:30.738Z] [INFO] Requesting renderer close decision
+{
+  "source": "quit-button"
+}
+[2026-06-22T22:01:31.539Z] [INFO] Renderer responded to close prompt
+{
+  "action": "quit",
+  "rememberChoice": false
+}
+[2026-06-22T22:01:31.539Z] [WARN] before-quit fired
+[2026-06-22T22:01:37.838Z] [INFO] Electron app ready
+[2026-06-22T22:01:37.849Z] [INFO] Dev mode: backend should be started externally.
+[2026-06-22T22:01:43.377Z] [ERROR] Timed out waiting for backend port.txt, starting window anyway
+[2026-06-22T22:01:43.420Z] [INFO] browser-window-created
+{
+  "id": 1
+}
+[2026-06-22T22:01:43.542Z] [INFO] System tray initialized
+{
+  "trayIconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png"
+}
+[2026-06-22T22:01:43.542Z] [INFO] BrowserWindow created
+{
+  "isDev": true,
+  "iconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png",
+  "webPreferences": {
+    "nodeIntegration": true,
+    "contextIsolation": false,
+    "backgroundThrottling": false
+  }
+}
+[2026-06-22T22:01:43.543Z] [INFO] Loading renderer URL
+{
+  "targetUrl": "http://localhost:5173?backend_port=8000"
+}
+[2026-06-22T22:01:43.695Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T22:01:44.119Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:01:44.120Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:01:44.129Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T22:01:44.133Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T22:01:44.134Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T22:01:44.209Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T22:01:44.219Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:01:44.224Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:01:44.225Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T22:01:44.225Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T22:01:44.226Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:01:44.229Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:01:44.230Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T22:01:47.438Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T22:01:47.439Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:01:47.443Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:01:47.444Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:07:17.298Z] [WARN] Renderer requested app quit flow
+[2026-06-22T22:07:17.299Z] [INFO] Requesting renderer close decision
+{
+  "source": "quit-button"
+}
+[2026-06-22T22:07:18.266Z] [INFO] Renderer responded to close prompt
+{
+  "action": "quit",
+  "rememberChoice": false
+}
+[2026-06-22T22:08:10.077Z] [INFO] Electron app ready
+[2026-06-22T22:08:10.093Z] [INFO] Dev mode: backend should be started externally.
+[2026-06-22T22:08:15.439Z] [ERROR] Timed out waiting for backend port.txt, starting window anyway
+[2026-06-22T22:08:15.791Z] [INFO] browser-window-created
+{
+  "id": 1
+}
+[2026-06-22T22:08:16.249Z] [INFO] System tray initialized
+{
+  "trayIconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png"
+}
+[2026-06-22T22:08:16.250Z] [INFO] BrowserWindow created
+{
+  "isDev": true,
+  "iconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png",
+  "webPreferences": {
+    "nodeIntegration": true,
+    "contextIsolation": false,
+    "backgroundThrottling": false
+  }
+}
+[2026-06-22T22:08:16.252Z] [INFO] Loading renderer URL
+{
+  "targetUrl": "http://localhost:5173?backend_port=8000"
+}
+[2026-06-22T22:08:16.610Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T22:08:16.928Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:08:16.929Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:08:16.942Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T22:08:16.946Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T22:08:16.947Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T22:08:17.041Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T22:08:17.042Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:08:17.045Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:08:17.046Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T22:08:17.049Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T22:08:17.050Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:08:17.050Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:08:17.052Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T22:08:24.747Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T22:08:24.747Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:08:24.748Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:08:24.748Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:08:39.193Z] [INFO] Manual reload shortcut triggered
+{
+  "key": "r",
+  "control": true,
+  "meta": false,
+  "shift": false
+}
+[2026-06-22T22:08:39.197Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:08:39.199Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": false,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 8
+}
+[2026-06-22T22:08:39.218Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T22:08:39.428Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:08:39.429Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:08:39.429Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:11:53.210Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166114499"
+}
+[2026-06-22T22:11:53.216Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166114499"
+}
+[2026-06-22T22:11:53.218Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166114499"
+}
+[2026-06-22T22:11:53.219Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166114499"
+}
+[2026-06-22T22:11:53.219Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "%o\n\n%s\n\n%s\n ReferenceError: Cannot access 'scanMode' before initialization The above error occurred in the <OrganizerPage> component. React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166114499"
+}
+[2026-06-22T22:11:53.220Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "React Router caught the following error during render ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166114499"
+}
+[2026-06-22T22:12:26.530Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166114499"
+}
+[2026-06-22T22:12:26.539Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166114499"
+}
+[2026-06-22T22:12:26.547Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166114499"
+}
+[2026-06-22T22:12:26.553Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166114499"
+}
+[2026-06-22T22:12:26.557Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "%o\n\n%s\n\n%s\n ReferenceError: Cannot access 'scanMode' before initialization The above error occurred in the <OrganizerPage> component. React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166114499"
+}
+[2026-06-22T22:12:26.558Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "React Router caught the following error during render ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166114499"
+}
+[2026-06-22T22:12:56.560Z] [INFO] Manual reload shortcut triggered
+{
+  "key": "r",
+  "control": true,
+  "meta": false,
+  "shift": false
+}
+[2026-06-22T22:12:56.562Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:12:56.564Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": false,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 11
+}
+[2026-06-22T22:12:56.590Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T22:12:56.745Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:12:56.746Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:12:56.750Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:12:56.984Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166346337"
+}
+[2026-06-22T22:12:56.994Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166346337"
+}
+[2026-06-22T22:12:56.995Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166346337"
+}
+[2026-06-22T22:12:56.999Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166346337"
+}
+[2026-06-22T22:12:57.098Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "%o\n\n%s\n\n%s\n ReferenceError: Cannot access 'scanMode' before initialization The above error occurred in the <OrganizerPage> component. React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166346337"
+}
+[2026-06-22T22:12:57.099Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "React Router caught the following error during render ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166346337"
+}
+[2026-06-22T22:12:57.832Z] [INFO] Manual reload shortcut triggered
+{
+  "key": "r",
+  "control": true,
+  "meta": false,
+  "shift": false
+}
+[2026-06-22T22:12:57.836Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:12:57.839Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": false,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 14
+}
+[2026-06-22T22:12:57.854Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T22:12:58.012Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:12:58.014Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:12:58.015Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:12:58.193Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166346337"
+}
+[2026-06-22T22:12:58.194Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166346337"
+}
+[2026-06-22T22:12:58.196Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166346337"
+}
+[2026-06-22T22:12:58.196Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "Error handled by React Router default ErrorBoundary: ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166346337"
+}
+[2026-06-22T22:12:58.350Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "%o\n\n%s\n\n%s\n ReferenceError: Cannot access 'scanMode' before initialization The above error occurred in the <OrganizerPage> component. React will try to recreate this component tree from scratch using the error boundary you provided, RenderErrorBoundary.",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166346337"
+}
+[2026-06-22T22:12:58.351Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "React Router caught the following error during render ReferenceError: Cannot access 'scanMode' before initialization",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx?t=1782166346337"
+}
+[2026-06-22T22:15:05.752Z] [INFO] Manual reload shortcut triggered
+{
+  "key": "r",
+  "control": true,
+  "meta": false,
+  "shift": false
+}
+[2026-06-22T22:15:05.755Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:15:05.757Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": false,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 17
+}
+[2026-06-22T22:15:05.772Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T22:15:05.905Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:15:05.905Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:15:05.906Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:15:12.608Z] [WARN] Renderer requested app quit flow
+[2026-06-22T22:15:12.609Z] [INFO] Requesting renderer close decision
+{
+  "source": "quit-button"
+}
+[2026-06-22T22:15:14.353Z] [INFO] Renderer responded to close prompt
+{
+  "action": "quit",
+  "rememberChoice": false
+}
+[2026-06-22T22:15:20.644Z] [INFO] Electron app ready
+[2026-06-22T22:15:20.652Z] [INFO] Dev mode: backend should be started externally.
+[2026-06-22T22:15:26.058Z] [ERROR] Timed out waiting for backend port.txt, starting window anyway
+[2026-06-22T22:15:26.098Z] [INFO] browser-window-created
+{
+  "id": 1
+}
+[2026-06-22T22:15:26.273Z] [INFO] System tray initialized
+{
+  "trayIconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png"
+}
+[2026-06-22T22:15:26.273Z] [INFO] BrowserWindow created
+{
+  "isDev": true,
+  "iconPath": "E:\\projects\\python\\Swaya\\frontend\\public\\favicon\\96x96.png",
+  "webPreferences": {
+    "nodeIntegration": true,
+    "contextIsolation": false,
+    "backgroundThrottling": false
+  }
+}
+[2026-06-22T22:15:26.274Z] [INFO] Loading renderer URL
+{
+  "targetUrl": "http://localhost:5173?backend_port=8000"
+}
+[2026-06-22T22:15:26.454Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T22:15:26.830Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:15:26.830Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:15:26.840Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T22:15:26.932Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T22:15:26.948Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T22:15:27.116Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000"
+}
+[2026-06-22T22:15:27.118Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:15:27.121Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:15:27.121Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T22:15:27.122Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T22:15:27.123Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:15:27.123Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:15:27.124Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T22:15:31.274Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/dashboard"
+}
+[2026-06-22T22:15:31.275Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:15:31.277Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:15:31.277Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:15:31.813Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:15:31.815Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:15:31.819Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:15:31.820Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-22T22:15:33.322Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/library"
+}
+[2026-06-22T22:15:33.322Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": true,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:15:33.324Z] [INFO] Renderer navigated in-page
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 1
+}
+[2026-06-22T22:15:33.325Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T22:16:00.434Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "In HTML, %s cannot be a descendant of <%s>.\nThis will cause a hydration error.%s <button> button \n\n  ...\n    <OrganizerPage>\n      <OrganizerModalProvider focusFirstAvailableResult={function focusFirstAvailableResult} ...>\n        <OrganizerPageContent activeExtrasTab=\"bonus\" activeManualTab=\"movies\" activeImage={{path:\"/med...\"}} ...>\n          <Page className=\"organizer-...\">\n            <div className=\"ui-page or...\">\n              <div className={\"organize...\"}>\n                <div>\n                <OrganizerDetailsPanel activeImage={{path:\"/med...\"}} activeImageIndex={0} activeImages={[...]} ...>\n                  <aside className=\"organizer-...\" aria-label=\"Details\">\n                    <div>\n                    <div className=\"organizer-...\">\n                      <div className=\"organizer-...\">\n                        <div>\n                        <div className=\"organizer-...\">\n                          <PosterCard className=\"organizer-...\" imageUrl=\"http://loc...\" placeholderText={undefined} ...>\n                            <div className=\"ui-poster-...\" style={undefined}>\n                              <div className=\"ui-poster-...\">\n>                               <button\n>                                 type=\"button\"\n>                                 className=\"ui-poster-card__image-wrapper\"\n>                                 onClick={function handleOpenLightbox}\n>                                 disabled={undefined}\n>                               >\n                                  <MediaCard className=\"ui-poster-...\">\n                                    <div className=\"ui-media-c...\">\n                                      <img>\n>                                     <button\n>                                       type=\"button\"\n>                                       className=\"organizer-details__image-nav organizer-details__image-nav--prev\"\n>                                       aria-label=\"Previous image\"\n>                                       onClick={function onClick}\n>                                     >\n                                      ...\n                          ...\n",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T22:16:00.437Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "<%s> cannot contain a nested %s.\nSee this log for the ancestor stack trace. button <button>",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T22:17:12.706Z] [INFO] Folder picker opened
+{
+  "defaultPath": "E:\\downloads_torrent"
+}
+[2026-06-22T22:18:00.095Z] [INFO] Folder picker closed
+{
+  "canceled": true,
+  "selected": null
+}

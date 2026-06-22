@@ -31,12 +31,12 @@ def get_recommendations(language: Optional[str] = None, db: Session = Depends(ge
     return RecommendationsService(db, scraper_gateway).get_recommendations(language=language)
 
 @router.get("/organizer", response_model=OrganizerGroupsResponse)
-def get_organizer_items(db: Session = Depends(get_db)):
-    return RecommendationsService(db, scraper_gateway).get_organizer_groups()
+def get_organizer_items(scan_mode: Optional[str] = None, session_mode: Optional[str] = None, db: Session = Depends(get_db)):
+    return RecommendationsService(db, scraper_gateway).get_organizer_groups(scan_mode=scan_mode, session_mode=session_mode)
 
 @router.get("/organizer/count", response_model=OrganizerCountResponse)
-def get_organizer_item_count(db: Session = Depends(get_db)):
-    return {"count": RecommendationsService(db, scraper_gateway).get_organizer_item_count()}
+def get_organizer_item_count(scan_mode: Optional[str] = None, session_mode: Optional[str] = None, db: Session = Depends(get_db)):
+    return {"count": RecommendationsService(db, scraper_gateway).get_organizer_item_count(scan_mode=scan_mode, session_mode=session_mode)}
 
 @router.post("/organizer/delete", response_model=ActionResponse)
 def delete_organizer_items(request: OrganizerDeleteRequest, db: Session = Depends(get_db)):

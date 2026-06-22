@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { Database, Inbox } from 'lucide-react';
 
 export function useOrganizerViewModel({
-  organizer,
   organizerItemCount,
   isBrowseStarting,
   isOrganizerCountReady,
@@ -14,13 +13,12 @@ export function useOrganizerViewModel({
   scanPhase,
   sortedRows,
   t,
+  visibleExtraCount,
+  visibleMediaCount,
 }) {
   return useMemo(() => {
-    const loadedMediaCount = (organizer.manual?.length || 0)
-      + (organizer.movies?.length || 0)
-      + (organizer.tv?.length || 0)
-      + (organizer.collisions?.length || 0);
-    const hasVisibleItems = loadedMediaCount > 0 || (organizer.extras?.length || 0) > 0;
+    const loadedMediaCount = visibleMediaCount || 0;
+    const hasVisibleItems = loadedMediaCount > 0 || (visibleExtraCount || 0) > 0;
     const hasDatabaseItems = isOrganizerCountReady && organizerItemCount > 0;
     const remainingOrganizerCount = isOrganizerCountReady
       ? Math.max(0, organizerItemCount - loadedMediaCount)
@@ -45,8 +43,7 @@ export function useOrganizerViewModel({
           }
           : null;
 
-    const emptyState = !hasVisibleItems
-      && !loadingState
+    const emptyState = !hasVisibleItems && !loadingState
       ? hasDatabaseItems
         ? {
           icon: Inbox,
@@ -84,7 +81,6 @@ export function useOrganizerViewModel({
       summaryText,
     };
   }, [
-    organizer,
     organizerItemCount,
     isBrowseStarting,
     isOrganizerCountReady,
@@ -96,5 +92,7 @@ export function useOrganizerViewModel({
     scanPhase,
     sortedRows.length,
     t,
+    visibleExtraCount,
+    visibleMediaCount,
   ]);
 }

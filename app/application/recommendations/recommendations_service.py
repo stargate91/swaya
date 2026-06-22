@@ -72,6 +72,31 @@ class RecommendationsService:
             return MediaType.EPISODE.value
         return MediaType.MOVIE.value
 
+    @staticmethod
+    def _matches_scan_mode_filter(item_scan_mode: str, scan_mode: Optional[str]) -> bool:
+        normalized_filter = str(scan_mode or "").strip().lower()
+        normalized_item = str(item_scan_mode or "").strip().lower()
+
+        if not normalized_filter:
+            return True
+        if normalized_filter == "scenes":
+            return normalized_item == "scenes"
+        if normalized_filter == "movies_tv":
+            return normalized_item in {"", "movies_tv", "porndb_movie"}
+        return normalized_item == normalized_filter
+
+    @staticmethod
+    def _is_adult_path(path: str) -> bool:
+        normalized_path = str(path or "").lower()
+        return any(token in normalized_path for token in ("adult", "porn", "xxx", "scenes"))
+
+    @classmethod
+    def _matches_session_mode_filter(cls, item_scan_mode: str, current_path: str, session_mode: Optional[str]) -> bool:
+        normalized_session = str(session_mode or "sfw").strip().lower()
+        normalized_item = str(item_scan_mode or "").strip().lower()
+        is_adult = normalized_item in {"scenes", "porndb_movie"} or cls._is_adult_path(current_path)
+        return is_adult if normalized_session == "nsfw" else not is_adult
+
     def _resolve_local_recommendation_bindings(self, items: List[Dict[str, Any]]) -> Dict[tuple, Dict[str, Any]]:
         movie_ids = set()
         tv_ids = set()
@@ -165,15 +190,25 @@ class RecommendationsService:
             watchlist_item_ids=watchlist_tmdb_ids
         )
 
-    def get_organizer_groups(self) -> OrganizerGroupsResponse:
+    def get_organizer_groups(self, scan_mode: Optional[str] = None, session_mode: Optional[str] = None) -> OrganizerGroupsResponse:
         # Retrieve all items needing review
-        items = self.db.query(MediaItem).options(
+        all_items = self.db.query(MediaItem).options(
             joinedload(MediaItem.matches).joinedload(MetadataMatch.localizations),
             joinedload(MediaItem.extras),
             joinedload(MediaItem.overrides)
         ).filter(
             ~MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED, ItemStatus.IGNORED])
         ).all()
+
+        items = [
+            item for item in all_items
+            if self._matches_scan_mode_filter((item.parsed_info or {}).get('scan_mode') or '', scan_mode)
+            and self._matches_session_mode_filter(
+                (item.parsed_info or {}).get('scan_mode') or '',
+                item.current_path or '',
+                session_mode,
+            )
+        ]
 
         from app.infrastructure.settings.formatter_config_adapter import build_formatter_from_db
         formatter = build_formatter_from_db(self.db)
@@ -323,6 +358,7 @@ class RecommendationsService:
                     groups["tv"].append(item_dto)
 
         # Retrieve and format extras
+        visible_parent_ids = set(parent_planned_paths.keys())
         extras = self.db.query(ExtraFile).join(
             MediaItem, ExtraFile.media_item_id == MediaItem.id
         ).filter(
@@ -331,6 +367,8 @@ class RecommendationsService:
 
         parent_scan_modes = getattr(self, "_parent_scan_modes", {})
         for ex in extras:
+            if ex.media_item_id not in visible_parent_ids:
+                continue
             parent_p_path = parent_planned_paths.get(ex.media_item_id) or ""
             groups["extras"].append({
                 "id": ex.id,
@@ -351,10 +389,22 @@ class RecommendationsService:
 
         return OrganizerGroupsResponse(**groups)
 
-    def get_organizer_item_count(self) -> int:
-        return self.db.query(MediaItem).filter(
+    def get_organizer_item_count(self, scan_mode: Optional[str] = None, session_mode: Optional[str] = None) -> int:
+        items = self.db.query(MediaItem.parsed_info, MediaItem.relative_path, Library.root_path).join(
+            Library, MediaItem.library_id == Library.id
+        ).filter(
             ~MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED, ItemStatus.IGNORED])
-        ).count()
+        ).all()
+        return sum(
+            1
+            for parsed_info, relative_path, root_path in items
+            if self._matches_scan_mode_filter((parsed_info or {}).get("scan_mode") or "", scan_mode)
+            and self._matches_session_mode_filter(
+                (parsed_info or {}).get("scan_mode") or "",
+                str(Path(root_path) / str(relative_path or "")),
+                session_mode,
+            )
+        )
 
     def delete_organizer_items(self, item_ids: List[int], extra_ids: List[int], mode: str) -> ActionResponse:
         if mode == "ignore":

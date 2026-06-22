@@ -34,8 +34,6 @@ export default function OrganizerPage() {
   const { t } = useTranslation();
   const { closeModal, openModal, toast } = useUi();
   const queryClient = useQueryClient();
-  const organizerQuery = useOrganizerQuery();
-  const organizerCountQuery = useOrganizerCountQuery();
   const statsQuery = useStatsQuery();
   const settingsQuery = useSettingsQuery();
   const scanStatusQuery = useScanStatusQuery({
@@ -46,11 +44,13 @@ export default function OrganizerPage() {
       last_completed: data?.last_completed || 0,
     }),
   });
-  const organizer = organizerQuery.data || EMPTY_ORGANIZER;
   const scanStatus = scanStatusQuery.data || null;
   const settings = settingsQuery.data || EMPTY_SETTINGS;
   const sessionMode = useLibraryModeStore((state) => state.sessionMode);
   const [scanMode, setScanMode] = useState('movies_tv');
+  const organizerQuery = useOrganizerQuery(scanMode, sessionMode);
+  const organizer = organizerQuery.data || EMPTY_ORGANIZER;
+  const organizerCountQuery = useOrganizerCountQuery(scanMode, sessionMode);
   const [provider, setProvider] = useState('tmdb');
   const [utilityBarTarget, setUtilityBarTarget] = useState(null);
 
@@ -83,7 +83,7 @@ export default function OrganizerPage() {
     }
   }, [scanMode, scanModeOptions]);
   const isScanActive = Boolean(scanStatus?.active);
-  const rawOrganizerItemCount = organizerCountQuery.data?.count ?? statsQuery.data?.unmatched;
+  const rawOrganizerItemCount = organizerCountQuery.data?.count ?? null;
   const organizerItemCount = rawOrganizerItemCount == null ? null : Number(rawOrganizerItemCount);
   const isOrganizerCountReady = Number.isFinite(organizerItemCount);
   const organizerRuleSignature = useMemo(() => JSON.stringify({
@@ -155,6 +155,7 @@ export default function OrganizerPage() {
     activeManualTab,
     activeImage,
     activeImageIndex,
+    setActiveImageIndex,
     activeImages,
     activeMainTab,
     activeRow,
@@ -191,6 +192,8 @@ export default function OrganizerPage() {
     restoreDismissedRows,
     dismissedCount,
     dismissedRowIds,
+    visibleExtraCount,
+    visibleMediaCount,
   } = useOrganizerPageState({ organizer, t, scanMode, sessionMode });
 
   const {
@@ -215,6 +218,7 @@ export default function OrganizerPage() {
     dismissedRowIds,
     scanStatusQuery,
     scanMode,
+    sessionMode,
     includeAdult: Boolean(settings.include_adult && sessionMode === 'nsfw'),
     provider,
   });
@@ -241,7 +245,6 @@ export default function OrganizerPage() {
     shouldShowLoadRest,
     summaryText,
   } = useOrganizerViewModel({
-    organizer,
     organizerItemCount,
     isBrowseStarting,
     isOrganizerCountReady,
@@ -253,6 +256,8 @@ export default function OrganizerPage() {
     scanPhase: scanStatus?.phase,
     sortedRows,
     t,
+    visibleExtraCount,
+    visibleMediaCount,
   });
 
   useEffect(() => {
@@ -456,6 +461,7 @@ export default function OrganizerPage() {
         activeManualTab={activeManualTab}
         activeImage={activeImage}
         activeImageIndex={activeImageIndex}
+        setActiveImageIndex={setActiveImageIndex}
         activeImages={activeImages}
         activeMainTab={activeMainTab}
         activeRow={activeRow}
@@ -512,7 +518,8 @@ function OrganizerPageContent({
   activeManualTab,
   activeImage,
   activeImageIndex,
-  activeImages,
+    setActiveImageIndex,
+    activeImages,
   activeMainTab,
   activeRow,
   currentPage,
@@ -657,7 +664,7 @@ function OrganizerPageContent({
             activeImages={activeImages}
             activeRow={activeRow}
             isDetailsCollapsed={isDetailsCollapsed}
-            onAdvanceImage={handleAdvanceDetailsImage}
+            onSelectImage={setActiveImageIndex}
             onToggleDetails={handleToggleDetails}
             shouldShowDetailsCarousel={shouldShowDetailsCarousel}
             shouldShowDetailsPoster={shouldShowDetailsPoster}

@@ -437,7 +437,10 @@ class ScraperPersister:
 
         loc = next((l for l in match.localizations if l.locale == DEFAULT_FALLBACK_LANGUAGE), None)
         if loc:
-            loc.local_poster_path = queue_image(loc.poster_path, "posters", asset_prefix)
+            if match.media_type == MediaType.SCENE and loc.poster_path and loc.poster_path == match.backdrop_path:
+                loc.local_poster_path = match.local_backdrop_path
+            else:
+                loc.local_poster_path = queue_image(loc.poster_path, "posters", asset_prefix)
 
     def _queue_studio_logo(self, studio: Studio) -> None:
         """Queues studio logo downloads."""

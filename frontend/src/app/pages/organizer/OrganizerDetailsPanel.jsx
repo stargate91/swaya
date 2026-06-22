@@ -1,10 +1,12 @@
+import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import UtilityButton from '../../ui/UtilityButton';
 import Button from '../../ui/Button';
 import Tooltip from '../../ui/Tooltip';
 import MediaCard from '../../ui/MediaCard';
 import PosterCard from '../../ui/PosterCard';
 import BackdropCard from '../../ui/BackdropCard';
-import { ChevronLeft, ChevronRight, FileJson, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileJson, Info, X } from 'lucide-react';
 import { API_BASE } from '../../lib/backend';
 import { resolveMediaImageUrl } from '@/lib/imageUrls';
 import { useTranslation } from '../../providers/LanguageContext';
@@ -12,10 +14,7 @@ import { useUi } from '../../providers/UiProvider';
 import { useFullMetadataQuery } from '../../queries';
 import '../../styles/OrganizerDetailsPanel.css';
 
-
-const resolveOrganizerImageUrl = (path) => {
-  return resolveMediaImageUrl(path, 'poster', API_BASE);
-};
+const resolveOrganizerImageUrl = (path) => resolveMediaImageUrl(path, 'poster', API_BASE);
 
 export default function OrganizerDetailsPanel({
   activeImage,
@@ -23,17 +22,20 @@ export default function OrganizerDetailsPanel({
   activeImages,
   activeRow,
   isDetailsCollapsed,
-  onAdvanceImage,
+  onSelectImage,
   onToggleDetails,
   shouldShowDetailsCarousel,
   shouldShowDetailsPoster,
 }) {
   const { t } = useTranslation();
   const { openModal, toast } = useUi();
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const { refetch: refetchFullMetadata } = useFullMetadataQuery(activeRow?.itemId, undefined, {
     enabled: false,
   });
+
+  const activeImageUrl = activeImage ? resolveOrganizerImageUrl(activeImage.path) : undefined;
 
   const buildInspectPayload = async () => {
     if (!activeRow) {
@@ -76,6 +78,21 @@ export default function OrganizerDetailsPanel({
     }, null, 2);
   };
 
+  const handleOpenLightbox = () => {
+    if (!activeImageUrl) {
+      return;
+    }
+    setIsLightboxOpen(true);
+  };
+
+  const handleSelectRelativeImage = (direction) => {
+    if (!onSelectImage || activeImages.length <= 1) {
+      return;
+    }
+    const nextIndex = (activeImageIndex + direction + activeImages.length) % activeImages.length;
+    onSelectImage(nextIndex);
+  };
+
   const handleOpenInspect = async () => {
     if (!activeRow) {
       return;
@@ -116,18 +133,10 @@ export default function OrganizerDetailsPanel({
         ),
         footer: (
           <>
-            <Button
-              type="button"
-              variant="secondary-neutral"
-              onClick={handleCopyInspect}
-            >
+            <Button type="button" variant="secondary-neutral" onClick={handleCopyInspect}>
               {t('organizer.details.inspect.copy')}
             </Button>
-            <Button
-              type="button"
-              variant="secondary-neutral"
-              onClick={handleDownloadInspect}
-            >
+            <Button type="button" variant="secondary-neutral" onClick={handleDownloadInspect}>
               {t('organizer.details.inspect.download')}
             </Button>
           </>
@@ -137,6 +146,70 @@ export default function OrganizerDetailsPanel({
       toast(error.message || t('organizer.toasts.inspectLoadFailed'), 'danger');
     }
   };
+
+  const renderImageNavigation = () => shouldShowDetailsCarousel ? (
+    <>
+      <button
+        type="button"
+        className="organizer-details__image-nav organizer-details__image-nav--prev"
+        aria-label="Previous image"
+        onClick={(event) => {
+          event.stopPropagation();
+          handleSelectRelativeImage(-1);
+        }}
+      >
+        <ChevronLeft size={18} />
+      </button>
+      <button
+        type="button"
+        className="organizer-details__image-nav organizer-details__image-nav--next"
+        aria-label="Next image"
+        onClick={(event) => {
+          event.stopPropagation();
+          handleSelectRelativeImage(1);
+        }}
+      >
+        <ChevronRight size={18} />
+      </button>
+      <div className="organizer-details__image-count" aria-hidden="true">
+        {activeImageIndex + 1} / {activeImages.length}
+      </div>
+    </>
+  ) : null;
+
+  const lightbox = isLightboxOpen ? (
+    <div
+      className="organizer-details__lightbox"
+      role="button"
+      tabIndex={0}
+      aria-label={t('common.close') || 'Close image preview'}
+      onClick={() => setIsLightboxOpen(false)}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          setIsLightboxOpen(false);
+        }
+      }}
+    >
+      <button
+        type="button"
+        className="organizer-details__lightbox-close"
+        aria-label={t('common.close') || 'Close image preview'}
+        onClick={(event) => {
+          event.stopPropagation();
+          setIsLightboxOpen(false);
+        }}
+      >
+        <X size={18} />
+      </button>
+      <img
+        src={activeImageUrl}
+        alt={activeRow?.source || 'Organizer preview'}
+        className="organizer-details__lightbox-image"
+        onClick={(event) => event.stopPropagation()}
+      />
+    </div>
+  ) : null;
 
   return (
     <aside className="organizer-details" aria-label={t('organizer.details.title')}>
@@ -166,93 +239,67 @@ export default function OrganizerDetailsPanel({
                   activeRow?.rawType === 'scene' ? (
                     <BackdropCard
                       className="organizer-details__backdrop-card"
-                      imageUrl={activeImage ? resolveOrganizerImageUrl(activeImage.path) : undefined}
-                      onClick={activeImages.length > 1 ? onAdvanceImage : undefined}
+                      imageUrl={activeImageUrl}
+                      onClick={handleOpenLightbox}
                     >
-                      {activeImages.length > 1 ? (
-                        <div className="organizer-details__poster-dots" aria-hidden="true">
-                          {activeImages.map((image, index) => (
-                            <span
-                              key={`${image.path}-${index}`}
-                              className={`organizer-details__poster-dot${index === activeImageIndex ? ' is-active' : ''}`}
-                            />
-                          ))}
-                        </div>
-                      ) : null}
+                      {renderImageNavigation()}
                     </BackdropCard>
-                  ) : activeImages.length > 1 ? (
-                    <PosterCard
-                      className="organizer-details__poster-card has-image"
-                      imageUrl={resolveOrganizerImageUrl(activeImage?.path)}
-                      onClick={onAdvanceImage}
-                    >
-                      {shouldShowDetailsCarousel ? (
-                        <div className="organizer-details__poster-dots" aria-hidden="true">
-                          {activeImages.map((image, index) => (
-                            <span
-                              key={`${image.path}-${index}`}
-                              className={`organizer-details__poster-dot${index === activeImageIndex ? ' is-active' : ''}`}
-                            />
-                          ))}
-                        </div>
-                      ) : null}
-                    </PosterCard>
                   ) : (
                     <PosterCard
-                      className="organizer-details__poster-card"
-                      imageUrl={activeImage ? resolveOrganizerImageUrl(activeImage.path) : undefined}
+                      className={`organizer-details__poster-card${activeImageUrl ? ' has-image' : ''}`}
+                      imageUrl={activeImageUrl}
                       placeholderText={!activeImage ? t('organizer.details.posterPlaceholder') : undefined}
-                    />
+                      onClick={activeImageUrl ? handleOpenLightbox : undefined}
+                    >
+                      {renderImageNavigation()}
+                    </PosterCard>
                   )
                 ) : null}
-              <MediaCard className="organizer-details__field">
-                <span className="organizer-details__label">{t('organizer.details.fields.source')}</span>
-                <span className="organizer-details__value" title={activeRow.sourcePath}>{activeRow.sourcePath}</span>
-              </MediaCard>
-              {(() => {
-                const unmatchedStatuses = ['new', 'no_match', 'uncertain', 'multiple', 'error'];
-                const isUnmatchedExtra = activeRow.rawType === 'extra' && activeRow.parentStatus && unmatchedStatuses.includes(activeRow.parentStatus.toLowerCase());
-                const isUnmatchedMedia = activeRow.rawType !== 'extra' && unmatchedStatuses.includes(activeRow.rawStatus);
-                
-                if (isUnmatchedMedia || isUnmatchedExtra) {
-                  return null;
-                }
-                
-                return (
-                  <MediaCard className="organizer-details__field">
-                    <span className="organizer-details__label">{t('organizer.details.fields.target')}</span>
-                    <span className="organizer-details__value" title={activeRow.targetPath}>{activeRow.targetPath}</span>
-                  </MediaCard>
-                );
-              })()}
-              <div className="organizer-details__actions">
-                <Button
-                  type="button"
-                  variant="secondary-neutral"
-                  size="sm"
-                  className="organizer-details__inspect-button"
-                  onClick={handleOpenInspect}
-                >
-                  {t('organizer.details.inspect.open')}
-                </Button>
+                <MediaCard className="organizer-details__field">
+                  <span className="organizer-details__label">{t('organizer.details.fields.source')}</span>
+                  <span className="organizer-details__value" title={activeRow.sourcePath}>{activeRow.sourcePath}</span>
+                </MediaCard>
+                {(() => {
+                  const unmatchedStatuses = ['new', 'no_match', 'uncertain', 'multiple', 'error'];
+                  const isUnmatchedExtra = activeRow.rawType === 'extra' && activeRow.parentStatus && unmatchedStatuses.includes(activeRow.parentStatus.toLowerCase());
+                  const isUnmatchedMedia = activeRow.rawType !== 'extra' && unmatchedStatuses.includes(activeRow.rawStatus);
+
+                  if (isUnmatchedMedia || isUnmatchedExtra) {
+                    return null;
+                  }
+
+                  return (
+                    <MediaCard className="organizer-details__field">
+                      <span className="organizer-details__label">{t('organizer.details.fields.target')}</span>
+                      <span className="organizer-details__value" title={activeRow.targetPath}>{activeRow.targetPath}</span>
+                    </MediaCard>
+                  );
+                })()}
+                <div className="organizer-details__actions">
+                  <Button
+                    type="button"
+                    variant="secondary-neutral"
+                    size="sm"
+                    className="organizer-details__inspect-button"
+                    onClick={handleOpenInspect}
+                  >
+                    {t('organizer.details.inspect.open')}
+                  </Button>
+                </div>
               </div>
-            </div>
-          </>
+            </>
           ) : (
             <div className="organizer-details__empty-state">
               <div className="organizer-details__empty-icon-wrapper">
                 <Info className="organizer-details__empty-icon" size={24} />
               </div>
-              <h3 className="organizer-details__empty-title">
-                {t('organizer.details.title')}
-              </h3>
-              <p className="organizer-details__empty-text">
-                {t('organizer.details.empty')}
-              </p>
+              <h3 className="organizer-details__empty-title">{t('organizer.details.title')}</h3>
+              <p className="organizer-details__empty-text">{t('organizer.details.empty')}</p>
             </div>
           )}
         </div>
       </div>
+      {lightbox && typeof document !== 'undefined' ? createPortal(lightbox, document.body) : null}
     </aside>
   );
 }

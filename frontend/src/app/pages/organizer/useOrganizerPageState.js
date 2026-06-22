@@ -27,6 +27,10 @@ export function useOrganizerPageState({ organizer, t, scanMode, sessionMode }) {
   } = useOrganizerDismissState({ organizer });
 
   const {
+    visibleMediaCount,
+    visibleExtraCount,
+    sessionVisibleMediaCount,
+    sessionVisibleExtraCount,
     tabCounts,
     tabFilteredRows,
   } = useOrganizerFilteredRows({
@@ -86,6 +90,7 @@ export function useOrganizerPageState({ organizer, t, scanMode, sessionMode }) {
     activeRowId,
     setActiveRowId,
     activeImageIndex,
+    setActiveImageIndex,
     isDetailsCollapsed,
     setIsDetailsCollapsed,
     activeRow,
@@ -140,10 +145,15 @@ export function useOrganizerPageState({ organizer, t, scanMode, sessionMode }) {
     restoreDismissedRows,
     dismissedCount,
     dismissedRowIds,
+    visibleMediaCount,
+    visibleExtraCount,
+    sessionVisibleMediaCount,
+    sessionVisibleExtraCount,
     activeExtrasTab,
     activeManualTab,
     activeImage,
     activeImageIndex,
+    setActiveImageIndex,
     activeImages,
     activeMainTab,
     activeRow,

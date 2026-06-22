@@ -44,55 +44,47 @@ export function useOrganizerFilteredRows({
   const matchesSessionMode = useMemo(() => {
     return (item) => {
       const itemScanMode = item.scan_mode || '';
-      
-      // 1. Within NSFW mode: movies_tv vs scenes
-      if (scanMode === 'scenes') {
-        if (itemScanMode !== 'scenes') return false;
-      } else if (scanMode === 'movies_tv') {
-        if (itemScanMode !== 'movies_tv' && itemScanMode !== 'porndb_movie') return false;
-      }
+      const isAdult = item.matches?.some((m) => m.is_adult)
+        || String(item.type).toLowerCase() === 'scene'
+        || itemScanMode === 'porndb_movie'
+        || itemScanMode === 'scenes'
+        || isAdultPath(item.current_path);
 
-      // 2. SFW vs NSFW mode separation
-      const isAdult = item.matches?.some(m => m.is_adult) || 
-                      String(item.type).toLowerCase() === 'scene' || 
-                      itemScanMode === 'porndb_movie' || 
-                      itemScanMode === 'scenes' ||
-                      isAdultPath(item.current_path);
-
-      if (sessionMode === 'nsfw') {
-        return isAdult;
-      } else {
-        return !isAdult;
-      }
+      return sessionMode === 'nsfw' ? isAdult : !isAdult;
     };
-  }, [sessionMode, scanMode]);
+  }, [sessionMode]);
 
   const matchesSessionModeExtra = useMemo(() => {
     return (extra) => {
       const parentScanMode = extra.parent_scan_mode || '';
+      const parentIsAdult = extra.parent_type === 'scene'
+        || parentScanMode === 'scenes'
+        || parentScanMode === 'porndb_movie'
+        || isAdultPath(extra.path);
 
-      // 1. Within NSFW mode: movies_tv vs scenes
-      if (scanMode === 'scenes') {
-        if (parentScanMode !== 'scenes') return false;
-      } else if (scanMode === 'movies_tv') {
-        if (parentScanMode === 'scenes') return false;
-      }
-
-      // 2. SFW vs NSFW mode separation
-      const parentIsAdult = extra.parent_type === 'scene' || 
-                            parentScanMode === 'scenes' || 
-                            parentScanMode === 'porndb_movie' || 
-                            isAdultPath(extra.path);
-
-      if (sessionMode === 'nsfw') {
-        return parentIsAdult;
-      } else {
-        return !parentIsAdult;
-      }
+      return sessionMode === 'nsfw' ? parentIsAdult : !parentIsAdult;
     };
-  }, [sessionMode, scanMode]);
+  }, [sessionMode]);
 
-  const reviewOrganizerMedia = useMemo(
+  const matchesCurrentScanMode = useMemo(() => {
+    return (item) => {
+      const itemScanMode = item.scan_mode || '';
+      if (scanMode === 'scenes') return itemScanMode === 'scenes';
+      if (scanMode === 'movies_tv') return itemScanMode === 'movies_tv' || itemScanMode === 'porndb_movie';
+      return true;
+    };
+  }, [scanMode]);
+
+  const matchesCurrentScanModeExtra = useMemo(() => {
+    return (extra) => {
+      const parentScanMode = extra.parent_scan_mode || '';
+      if (scanMode === 'scenes') return parentScanMode === 'scenes';
+      if (scanMode === 'movies_tv') return parentScanMode !== 'scenes';
+      return true;
+    };
+  }, [scanMode]);
+
+  const sessionReviewOrganizerMedia = useMemo(
     () => [
       ...(organizer.manual || []),
       ...(organizer.movies || []),
@@ -101,7 +93,7 @@ export function useOrganizerFilteredRows({
     [organizer, matchesSessionMode],
   );
 
-  const matchedOrganizerMedia = useMemo(
+  const sessionMatchedOrganizerMedia = useMemo(
     () => [
       ...(organizer.movies || []),
       ...(organizer.tv || []),
@@ -110,9 +102,41 @@ export function useOrganizerFilteredRows({
     [organizer, matchesSessionMode],
   );
 
-  const filteredExtras = useMemo(() => {
-    return (organizer.extras || []).filter(matchesSessionModeExtra);
-  }, [organizer.extras, matchesSessionModeExtra]);
+  const reviewOrganizerMedia = useMemo(
+    () => sessionReviewOrganizerMedia.filter(matchesCurrentScanMode),
+    [matchesCurrentScanMode, sessionReviewOrganizerMedia],
+  );
+
+  const matchedOrganizerMedia = useMemo(
+    () => sessionMatchedOrganizerMedia.filter(matchesCurrentScanMode),
+    [matchesCurrentScanMode, sessionMatchedOrganizerMedia],
+  );
+
+  const sessionFilteredExtras = useMemo(
+    () => (organizer.extras || []).filter(matchesSessionModeExtra),
+    [organizer.extras, matchesSessionModeExtra],
+  );
+
+  const filteredExtras = useMemo(
+    () => sessionFilteredExtras.filter(matchesCurrentScanModeExtra),
+    [matchesCurrentScanModeExtra, sessionFilteredExtras],
+  );
+
+  const sessionVisibleMediaCount = useMemo(() => {
+    const ids = new Set([
+      ...sessionReviewOrganizerMedia.map((item) => item.id),
+      ...sessionMatchedOrganizerMedia.map((item) => item.id),
+    ]);
+    return ids.size;
+  }, [sessionMatchedOrganizerMedia, sessionReviewOrganizerMedia]);
+
+  const visibleMediaCount = useMemo(() => {
+    const ids = new Set([
+      ...reviewOrganizerMedia.map((item) => item.id),
+      ...matchedOrganizerMedia.map((item) => item.id),
+    ]);
+    return ids.size;
+  }, [matchedOrganizerMedia, reviewOrganizerMedia]);
 
   const tabCounts = useMemo(() => {
     const visibleReview = reviewOrganizerMedia.filter((item) => {
@@ -152,7 +176,7 @@ export function useOrganizerFilteredRows({
       scenesCount,
       extrasCount,
     };
-  }, [organizer, matchedOrganizerMedia, reviewOrganizerMedia, dismissedRowIds, scanMode, filteredExtras]);
+  }, [matchedOrganizerMedia, reviewOrganizerMedia, dismissedRowIds, scanMode, filteredExtras]);
 
   const tabFilteredRows = useMemo(() => {
     let rows = [];
@@ -186,13 +210,16 @@ export function useOrganizerFilteredRows({
     }
 
     return rows.filter(
-      (row) =>
-        !dismissedRowIds.has(row.id) &&
-        (row.rawType !== 'extra' || !dismissedRowIds.has(`item-${row.parent_id}`))
+      (row) => !dismissedRowIds.has(row.id)
+        && (row.rawType !== 'extra' || !dismissedRowIds.has(`item-${row.parent_id}`)),
     );
-  }, [activeExtrasTab, activeManualTab, activeMainTab, organizer, matchedOrganizerMedia, reviewOrganizerMedia, t, dismissedRowIds, scanMode]);
+  }, [activeExtrasTab, activeManualTab, activeMainTab, matchedOrganizerMedia, reviewOrganizerMedia, t, dismissedRowIds, scanMode, filteredExtras]);
 
   return {
+    visibleMediaCount,
+    visibleExtraCount: filteredExtras.length,
+    sessionVisibleMediaCount,
+    sessionVisibleExtraCount: sessionFilteredExtras.length,
     reviewOrganizerMedia,
     matchedOrganizerMedia,
     tabCounts,

@@ -17,6 +17,7 @@ export function useOrganizerActions({
   dismissedRowIds,
   scanStatusQuery,
   scanMode,
+  sessionMode,
   includeAdult,
   provider,
 }) {
@@ -50,6 +51,8 @@ export function useOrganizerActions({
     renameMutation,
     queryClient,
     renameStartedRef,
+    scanMode,
+    sessionMode,
     t,
     toast,
     openModal,
