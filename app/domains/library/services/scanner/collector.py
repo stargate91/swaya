@@ -1,8 +1,8 @@
 import os
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Optional, Any
 from sqlalchemy.orm import Session
-from app.domains.settings.models import SystemSetting
+from app.shared_kernel.ports.settings_port import SettingsPort
 from app.shared_kernel.constants import (
     DEFAULT_VIDEO_EXTS,
     DEFAULT_SUBTITLE_EXTS,
@@ -17,6 +17,7 @@ class Collector:
     Categorizes them into primary media (Videos) and potential extras (Images, Subtitles, etc.).
     """
     
+    # Rest of class
     VIDEO_EXTS = DEFAULT_VIDEO_EXTS
     SUBTITLE_EXTS = DEFAULT_SUBTITLE_EXTS
     IMAGE_EXTS = DEFAULT_IMAGE_EXTS
@@ -26,7 +27,7 @@ class Collector:
     def __init__(self, min_video_size_mb: float = 50.0):
         self.fast_track_size = min_video_size_mb * 1024 * 1024
 
-    def collect(self, paths: List[str], db_session: Session = None) -> Dict[str, List[Path]]:
+    def collect(self, paths: List[str], db_session: Session = None, settings_port: Optional[SettingsPort] = None) -> Dict[str, List[Path]]:
         """
         Recursively traverses directories and groups files into categories.
         """
@@ -38,16 +39,24 @@ class Collector:
 
         # Load dynamic video extensions from database settings if available
         video_exts = self.VIDEO_EXTS
-        if db_session:
+        setting_val = None
+        if settings_port:
             try:
-                setting = db_session.query(SystemSetting).filter(SystemSetting.key == "naming_video_exts").first()
-                if setting and setting.value:
-                    video_exts = {
-                        e.strip().lower() if e.strip().startswith('.') else f".{e.strip().lower()}"
-                        for e in str(setting.value).split(",") if e.strip()
-                    }
+                setting_val = settings_port.get_system_setting("naming_video_exts")
             except Exception:
                 pass
+        elif db_session:
+            try:
+                from app.infrastructure.settings.db_settings_adapter import DbSettingsAdapter
+                setting_val = DbSettingsAdapter(db_session).get_system_setting("naming_video_exts")
+            except Exception:
+                pass
+
+        if setting_val:
+            video_exts = {
+                e.strip().lower() if e.strip().startswith('.') else f".{e.strip().lower()}"
+                for e in str(setting_val).split(",") if e.strip()
+            }
 
         def process_file(file_path: Path):
             # Skip hidden files and directories

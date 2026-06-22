@@ -44,6 +44,16 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+from app.shared_kernel.exceptions import DomainException
+from fastapi.responses import JSONResponse
+
+@app.exception_handler(DomainException)
+async def domain_exception_handler(request, exc: DomainException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": exc.message}
+    )
+
 from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
@@ -61,6 +71,9 @@ from app.domains.people.routes import router as people_router, mainstream_router
 from app.domains.settings.routes import router as settings_router, db_router
 from app.domains.users.routes import router as users_router, catalog_router
 from app.domains.history.routes import router as history_router
+from app.application.media.routes import router as app_media_router
+from app.application.media.playback_routes import router as app_playback_router
+from app.application.recommendations.routes import router as app_rec_router
 
 app.include_router(tasks_router)
 app.include_router(media_router)
@@ -76,6 +89,9 @@ app.include_router(db_router)
 app.include_router(users_router)
 app.include_router(catalog_router)
 app.include_router(history_router)
+app.include_router(app_media_router)
+app.include_router(app_playback_router)
+app.include_router(app_rec_router)
 
 
 

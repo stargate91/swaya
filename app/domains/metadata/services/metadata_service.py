@@ -152,11 +152,13 @@ class MetadataService:
         provider_str = request.provider or "tmdb"
 
         if not item_id or not external_id:
-            return {"error": "item_id and external_id (tmdb_id) are required"}
+            from app.shared_kernel.exceptions import BadRequestException
+            raise BadRequestException("item_id and external_id (tmdb_id) are required")
 
         item = self.db.query(MediaItem).filter(MediaItem.id == int(item_id)).first()
         if not item:
-            return {"error": "Media item not found"}
+            from app.shared_kernel.exceptions import NotFoundException
+            raise NotFoundException("Media item not found")
 
         # Delete any existing metadata match mappings for this physical item
         self.db.query(MetadataMatch).filter(MetadataMatch.media_item_id == item.id).delete()
@@ -183,11 +185,13 @@ class MetadataService:
                 scraper = self.scrapers.adult(Provider.FANSDB, self.db)
 
             if not scraper:
-                return {"error": "Selected adult scraper is not configured"}
+                from app.shared_kernel.exceptions import BadRequestException
+                raise BadRequestException("Selected adult scraper is not configured")
 
             scene_data = scraper.fetch_scene(str(external_id))
             if not scene_data:
-                return {"error": f"Failed to fetch scene details from {provider.value}"}
+                from app.shared_kernel.exceptions import BadRequestException
+                raise BadRequestException(f"Failed to fetch scene details from {provider.value}")
 
             normalized = self.scrapers.normalize_adult_scene(provider, scene_data)
             match = self.scrapers.persist_adult_scene(self.db, provider, str(scene_data["id"]), normalized)
@@ -249,7 +253,8 @@ class MetadataService:
     def get_full_metadata(self, item_id: int) -> Dict[str, Any]:
         item = self.db.query(MediaItem).filter(MediaItem.id == item_id).first()
         if not item:
-            return {"error": "Item not found"}
+            from app.shared_kernel.exceptions import NotFoundException
+            raise NotFoundException("Item not found")
 
         # Find active metadata match
         match = self.db.query(MetadataMatch).filter(MetadataMatch.media_item_id == item.id).first()

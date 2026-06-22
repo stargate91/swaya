@@ -53,7 +53,8 @@ class TagsService:
         custom_images = payload.get("custom_images", [])
 
         if not name:
-            return {"error": "Name required"}
+            from app.shared_kernel.exceptions import BadRequestException
+            raise BadRequestException("Name required")
 
         existing = self.db.query(Tag).filter(
             func.lower(Tag.name) == func.lower(name),
@@ -61,7 +62,8 @@ class TagsService:
         ).first()
 
         if existing:
-            return {"error": "Tag already exists"}
+            from app.shared_kernel.exceptions import BadRequestException
+            raise BadRequestException("Tag already exists")
 
         paths = self._parse_custom_images(custom_images)
         poster_1 = paths[0] if len(paths) > 0 else None
@@ -83,7 +85,8 @@ class TagsService:
     def update_tag(self, tag_id: int, payload: Dict[str, Any]) -> Dict[str, Any]:
         tag = self.db.query(Tag).filter(Tag.id == tag_id).first()
         if not tag:
-            return {"error": "Not found"}
+            from app.shared_kernel.exceptions import NotFoundException
+            raise NotFoundException("Not found")
 
         if "name" in payload:
             name = payload["name"].strip()
@@ -94,7 +97,8 @@ class TagsService:
                     Tag.id != tag_id
                 ).first()
                 if existing:
-                    return {"error": "Name already taken"}
+                    from app.shared_kernel.exceptions import BadRequestException
+                    raise BadRequestException("Name already taken")
                 tag.name = name
 
         if "color" in payload:
@@ -112,7 +116,8 @@ class TagsService:
     def delete_tag(self, tag_id: int) -> Dict[str, Any]:
         tag = self.db.query(Tag).filter(Tag.id == tag_id).first()
         if not tag:
-            return {"error": "Not found"}
+            from app.shared_kernel.exceptions import NotFoundException
+            raise NotFoundException("Not found")
 
         # Delete association links
         self.db.execute(user_override_tags.delete().where(user_override_tags.c.tag_id == tag_id))

@@ -6,9 +6,6 @@ from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from app.shared_kernel.enums import Provider, MediaType, ItemStatus
-from app.domains.library.models import MediaItem
-from app.domains.metadata.models import MetadataMatch
 from app.domains.users.models import UserOverride, Tag
 from app.domains.media_assets.services.images import ImageProcessingService
 from app.domains.users.schemas import (
@@ -17,72 +14,40 @@ from app.domains.users.schemas import (
     BulkTagsUpdate,
     BulkWatchedUpdate,
 )
+from app.shared_kernel.ports.media_resolver import MediaResolverPort
+from app.shared_kernel.exceptions import NotFoundException, BadRequestException
 
 logger = logging.getLogger(__name__)
 
 class OverridesService:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, resolver: MediaResolverPort, user_id: int = 1):
         self.db = db
+        self.resolver = resolver
+        self.user_id = user_id
 
     def _get_or_create_override(self, item_id: str) -> Optional[UserOverride]:
-        user_id = 1  # Default single user anchor
-        media_item_id = None
-        metadata_match_id = None
+        media_item_id, metadata_match_id = self.resolver.resolve_ids(item_id)
 
-        if isinstance(item_id, str) and item_id.startswith("tmdb_"):
-            tmdb_id = item_id.split("_")[1]
-            match = self.db.query(MetadataMatch).filter(
-                MetadataMatch.provider == Provider.TMDB,
-                MetadataMatch.external_id == tmdb_id
-            ).first()
-            if not match:
-                # Create a placeholder match record to link the override to
-                match = MetadataMatch(provider=Provider.TMDB, external_id=tmdb_id, media_type=MediaType.MOVIE)
-                self.db.add(match)
-                self.db.flush()
-            metadata_match_id = match.id
-        elif isinstance(item_id, str) and item_id.startswith("stash_"):
-            stash_id = item_id.split("_")[1]
-            match = self.db.query(MetadataMatch).filter(
-                MetadataMatch.provider == Provider.STASHDB,
-                MetadataMatch.external_id == stash_id
-            ).first()
-            if not match:
-                match = MetadataMatch(provider=Provider.STASHDB, external_id=stash_id, media_type=MediaType.SCENE)
-                self.db.add(match)
-                self.db.flush()
-            metadata_match_id = match.id
-        else:
-            try:
-                media_item_id = int(item_id)
-            except ValueError:
-                # Fallback check if it is a pure tmdb string id passed directly
-                match = self.db.query(MetadataMatch).filter(
-                    MetadataMatch.provider == Provider.TMDB,
-                    MetadataMatch.external_id == str(item_id)
-                ).first()
-                if match:
-                    metadata_match_id = match.id
-                else:
-                    return None
+        if not media_item_id and not metadata_match_id:
+            return None
 
         # Retrieve or create UserOverride
         if media_item_id:
             override = self.db.query(UserOverride).filter(
-                UserOverride.user_id == user_id,
+                UserOverride.user_id == self.user_id,
                 UserOverride.media_item_id == media_item_id
             ).first()
             if not override:
-                override = UserOverride(user_id=user_id, media_item_id=media_item_id)
+                override = UserOverride(user_id=self.user_id, media_item_id=media_item_id)
                 self.db.add(override)
             return override
         elif metadata_match_id:
             override = self.db.query(UserOverride).filter(
-                UserOverride.user_id == user_id,
+                UserOverride.user_id == self.user_id,
                 UserOverride.metadata_match_id == metadata_match_id
             ).first()
             if not override:
-                override = UserOverride(user_id=user_id, metadata_match_id=metadata_match_id)
+                override = UserOverride(user_id=self.user_id, metadata_match_id=metadata_match_id)
                 self.db.add(override)
             return override
 
@@ -92,7 +57,7 @@ class OverridesService:
         item_id = request.item_id
         override = self._get_or_create_override(str(item_id))
         if not override:
-            return {"error": "Target item not found"}
+            raise NotFoundException("Target item not found")
 
         # Custom text and details
         if request.custom_title is not None:
@@ -155,30 +120,12 @@ class OverridesService:
         return {"status": "success", "item_id": item_id}
 
     def update_item_status(self, item_id: int, status: str) -> Dict[str, Any]:
-        item = self.db.query(MediaItem).filter(MediaItem.id == item_id).first()
-        if not item:
-            return {"error": "Item not found"}
-
-        try:
-            new_status = ItemStatus(status.lower())
-        except ValueError:
-            return {"error": f"Invalid status: {status}"}
-
-        if new_status == ItemStatus.IGNORED and item.status != ItemStatus.IGNORED:
-            item.ignored_previous_status = item.status
-            item.ignored_at = datetime.now(timezone.utc)
-        elif new_status != ItemStatus.IGNORED:
-            item.ignored_previous_status = None
-            item.ignored_at = None
-
-        item.status = new_status
-        self.db.commit()
-        return {"status": "success", "item_id": item_id, "new_status": item.status.value}
+        return self.resolver.update_item_status(item_id, status)
 
     def update_item_image(self, item_id: str, image_type: str, path: str) -> Dict[str, Any]:
         override = self._get_or_create_override(item_id)
         if not override:
-            return {"error": "Target item not found"}
+            raise NotFoundException("Target item not found")
 
         if image_type == "poster":
             override.custom_poster = path
@@ -187,7 +134,7 @@ class OverridesService:
         elif image_type == "logo":
             override.custom_logo = path
         else:
-            return {"error": f"Invalid image type: {image_type}"}
+            raise BadRequestException(f"Invalid image type: {image_type}")
 
         self.db.commit()
         return {"status": "success", "image_type": image_type, "path": path}
@@ -195,7 +142,7 @@ class OverridesService:
     def handle_image_upload(self, item_id: str, image_type: str, filename: str, file_stream) -> Dict[str, Any]:
         override = self._get_or_create_override(item_id)
         if not override:
-            return {"error": "Target item not found"}
+            raise NotFoundException("Target item not found")
 
         subfolder = "posters"
         if image_type == "backdrop":
@@ -214,7 +161,7 @@ class OverridesService:
         # Write uploaded image file stream
         saved_path = img_service.write_upload(original_path, file_stream)
         if not saved_path:
-            return {"error": "Failed to save uploaded image"}
+            raise BadRequestException("Failed to save uploaded image")
 
         # Try to generate a thumbnail
         img_service.generate_thumbnail(original_path, thumbnail_path, subfolder)
@@ -329,7 +276,7 @@ class OverridesService:
     def track_virtual(self, item_id: str, is_tracked: bool) -> Dict[str, Any]:
         override = self._get_or_create_override(item_id)
         if not override:
-            return {"error": "Target item not found"}
+            raise NotFoundException("Target item not found")
 
         override.is_tracked = is_tracked
         self.db.commit()

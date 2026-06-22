@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -11,6 +11,12 @@ from app.domains.users.schemas import (
     UserOverrideCreate,
     CustomListRead,
     CustomListCreate,
+    ItemOverridesUpdate,
+    ItemStatusUpdate,
+    ImageOverrideUpdate,
+    BulkOverridesUpdate,
+    BulkTagsUpdate,
+    BulkWatchedUpdate,
 )
 
 router = APIRouter(prefix="/api/v1/users", tags=["Users"])
@@ -233,3 +239,98 @@ def get_user_catalog(
 @catalog_router.post("/user/catalog/bulk-status")
 def bulk_update_catalog_status(payload: dict, db: Session = Depends(get_db)):
     return ListsService(db).bulk_update_catalog_status(payload)
+
+
+from app.domains.users.services.overrides_service import OverridesService
+from app.infrastructure.media.db_media_resolver import DbMediaResolver
+
+@catalog_router.post("/media/update")
+def update_item_overrides(payload: ItemOverridesUpdate, db: Session = Depends(get_db)):
+    res = OverridesService(db, DbMediaResolver(db)).update_item_overrides(payload)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+@catalog_router.post("/item/{item_id}/status")
+def update_item_status(item_id: int, payload: ItemStatusUpdate, db: Session = Depends(get_db)):
+    res = OverridesService(db, DbMediaResolver(db)).update_item_status(item_id, payload.status)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+@catalog_router.post("/item/{item_id}/poster")
+def update_item_poster(item_id: str, payload: ImageOverrideUpdate, db: Session = Depends(get_db)):
+    path = payload.path or payload.url or payload.poster_path
+    if not path:
+        raise HTTPException(status_code=400, detail="Image path/url is required")
+    res = OverridesService(db, DbMediaResolver(db)).update_item_image(item_id, "poster", path)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+@catalog_router.post("/item/{item_id}/backdrop")
+def update_item_backdrop(item_id: str, payload: ImageOverrideUpdate, db: Session = Depends(get_db)):
+    path = payload.path or payload.url or payload.backdrop_path
+    if not path:
+        raise HTTPException(status_code=400, detail="Image path/url is required")
+    res = OverridesService(db, DbMediaResolver(db)).update_item_image(item_id, "backdrop", path)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+@catalog_router.post("/item/{item_id}/logo")
+def update_item_logo(item_id: str, payload: ImageOverrideUpdate, db: Session = Depends(get_db)):
+    path = payload.path or payload.url or payload.logo_path
+    if not path:
+        raise HTTPException(status_code=400, detail="Image path/url is required")
+    res = OverridesService(db, DbMediaResolver(db)).update_item_image(item_id, "logo", path)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+@catalog_router.post("/item/{item_id}/upload-poster")
+def upload_item_poster(item_id: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    res = OverridesService(db, DbMediaResolver(db)).handle_image_upload(item_id, "poster", file.filename, file.file)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+@catalog_router.post("/item/{item_id}/upload-backdrop")
+def upload_item_backdrop(item_id: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    res = OverridesService(db, DbMediaResolver(db)).handle_image_upload(item_id, "backdrop", file.filename, file.file)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+@catalog_router.post("/item/{item_id}/upload-logo")
+def upload_item_logo(item_id: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
+    res = OverridesService(db, DbMediaResolver(db)).handle_image_upload(item_id, "logo", file.filename, file.file)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+@catalog_router.post("/media/bulk-update")
+def bulk_update(payload: BulkOverridesUpdate, db: Session = Depends(get_db)):
+    return OverridesService(db, DbMediaResolver(db)).bulk_update(payload)
+
+@catalog_router.post("/media/bulk-tags")
+def bulk_tags(payload: BulkTagsUpdate, db: Session = Depends(get_db)):
+    return OverridesService(db, DbMediaResolver(db)).bulk_tags(payload)
+
+@catalog_router.post("/media/bulk-watched")
+def bulk_watched(payload: BulkWatchedUpdate, db: Session = Depends(get_db)):
+    return OverridesService(db, DbMediaResolver(db)).bulk_watched(payload)
+
+@catalog_router.post("/library/item/{item_id}/track")
+def track_item(item_id: str, db: Session = Depends(get_db)):
+    res = OverridesService(db, DbMediaResolver(db)).track_virtual(item_id, True)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res
+
+@catalog_router.post("/library/item/{item_id}/untrack")
+def untrack_item(item_id: str, db: Session = Depends(get_db)):
+    res = OverridesService(db, DbMediaResolver(db)).track_virtual(item_id, False)
+    if "error" in res:
+        raise HTTPException(status_code=400, detail=res["error"])
+    return res

@@ -1,31 +1,31 @@
 import logging
 import math
 from typing import Optional, List, Dict, Any
-from sqlalchemy import case, func, or_
+from sqlalchemy import case, func
 from sqlalchemy.orm import Session, joinedload
 from fastapi.responses import JSONResponse
 
-from app.shared_kernel.enums import Provider, MediaType, ItemStatus, RoleType
+from app.shared_kernel.enums import MediaType, ItemStatus, RoleType
 from app.domains.library.models import MediaItem
-from app.domains.metadata.models import MetadataMatch, MetadataLocalization
-from app.domains.people.models import Person, PersonLocalization, MediaPersonLink, ExternalSourceLink
-from app.domains.settings.models import UserSetting
+from app.domains.metadata.models import MetadataMatch
+from app.domains.people.models import Person, PersonLocalization, MediaPersonLink
 from app.shared_kernel.ports.scrapers import ScraperGatewayPort
-from app.domains.media_assets.services.images import ImageProcessingService
 from app.shared_kernel.language import LanguageService
-
 from app.shared_kernel.constants import DEFAULT_FALLBACK_LANGUAGE
+from app.domains.people.services.filmography_service import FilmographyService
 
 logger = logging.getLogger(__name__)
 
 class PeopleDetailService:
     def __init__(self, db: Session, scrapers: ScraperGatewayPort):
         self.db = db
+        from app.domains.media_assets.services.images import ImageProcessingService
         self.img_service = ImageProcessingService()
         self.tmdb = scrapers.tmdb(db)
+        self.filmography_service = FilmographyService(db)
 
     def _resolve_img(self, path: Optional[str], subfolder: str) -> Optional[str]:
-        if not path:
+        if not path or not self.img_service:
             return None
         return self.img_service.resolve_image_url(path, subfolder)
 
@@ -165,48 +165,8 @@ class PeopleDetailService:
         ui_lang = DEFAULT_FALLBACK_LANGUAGE
         loc = LanguageService.get_best_localization(person.localizations, ui_lang)
         
-        # Load credits linked to this person
-        links = db.query(MediaPersonLink).join(MediaPersonLink.match).join(MetadataMatch.media_item).filter(
-            MediaPersonLink.person_id == person_id,
-            MetadataMatch.is_active == True,
-            MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED])
-        ).all()
-        
-        movies = []
-        tv_map = {}
-        scenes = []
-        
-        for link in links:
-            match = link.match
-            item = match.media_item
-            match_loc = LanguageService.get_best_localization(match.localizations, ui_lang)
-            title = match_loc.title if match_loc else item.filename
-            
-            credit_entry = {
-                "id": item.id,
-                "title": title,
-                "type": item.item_type.value,
-                "tmdb_id": int(match.external_id) if match.external_id.isdigit() else 0,
-                "year": match.release_date.year if match.release_date else None,
-                "poster_path": self._resolve_img(match_loc.poster_path if match_loc else None, "posters"),
-                "backdrop_path": self._resolve_img(match.backdrop_path, "backdrops"),
-                "rating": match.rating_porndb or match.rating_tmdb or 0.0,
-                "rating_porndb": match.rating_porndb,
-                "job": link.role.value if hasattr(link.role, "value") else str(link.role),
-                "character": link.character_name,
-                "in_library": True,
-            }
-            
-            if item.item_type in (MediaType.SCENE, MediaType.JAV):
-                scenes.append(credit_entry)
-            elif item.item_type == MediaType.MOVIE:
-                movies.append(credit_entry)
-            elif item.item_type in (MediaType.TV, MediaType.EPISODE):
-                sid = match.parent_id or match.id
-                if sid not in tv_map:
-                    tv_map[sid] = credit_entry
-        
-        tv = list(tv_map.values())
+        # Delegate credits lookups to FilmographyService
+        movies, tv, scenes = self.filmography_service.aggregate_credits(person_id)
         
         # Dynamically enrich from TMDB if tmdb_id is available and we lack images/biography
         ext_ids = person.external_ids or {}
@@ -225,7 +185,6 @@ class PeopleDetailService:
                     if tmdb_details.get("images", {}).get("profiles"):
                         person.images = [p.get("file_path") for p in tmdb_details["images"]["profiles"]]
                     if tmdb_details.get("biography"):
-                        # save localization
                         if not loc:
                             loc = PersonLocalization(person_id=person.id, locale=ui_lang, biography=tmdb_details["biography"])
                             db.add(loc)
@@ -269,150 +228,21 @@ class PeopleDetailService:
         person = db.query(Person).filter(Person.id == person_id).first()
         if not person:
             return JSONResponse(status_code=404, content={"error": "Person not found"})
-        
-        # Load movie credits
-        links = db.query(MediaPersonLink).join(MediaPersonLink.match).join(MetadataMatch.media_item).filter(
-            MediaPersonLink.person_id == person_id,
-            MetadataMatch.media_type == MediaType.MOVIE,
-            MetadataMatch.is_active == True,
-            MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED])
-        ).all()
-        
-        movies = []
-        ui_lang = DEFAULT_FALLBACK_LANGUAGE
-        for link in links:
-            match = link.match
-            item = match.media_item
-            match_loc = LanguageService.get_best_localization(match.localizations, ui_lang)
-            title = match_loc.title if match_loc else item.filename
-            
-            movies.append({
-                "id": item.id,
-                "title": title,
-                "type": "movie",
-                "tmdb_id": int(match.external_id) if match.external_id.isdigit() else 0,
-                "year": match.release_date.year if match.release_date else None,
-                "poster_path": self._resolve_img(match_loc.poster_path if match_loc else None, "posters"),
-                "backdrop_path": self._resolve_img(match.backdrop_path, "backdrops"),
-                "rating": match.rating_porndb or match.rating_tmdb or 0.0,
-                "rating_porndb": match.rating_porndb,
-                "job": link.role.value if hasattr(link.role, "value") else str(link.role),
-                "character": link.character_name,
-                "in_library": True,
-            })
-            
-        total_items = len(movies)
-        total_pages = max(1, math.ceil(total_items / page_size))
-        start_idx = (page - 1) * page_size
-        sliced = movies[start_idx : start_idx + page_size]
-        
-        return JSONResponse(content={
-            "items": sliced,
-            "page": page,
-            "page_size": page_size,
-            "total_items": total_items,
-            "total_pages": total_pages,
-        })
+        res = self.filmography_service.get_person_movies(person_id, page, page_size)
+        return JSONResponse(content=res)
 
     def get_person_tv(self, person_id: int, page: int = 1, page_size: int = 12):
         db = self.db
         person = db.query(Person).filter(Person.id == person_id).first()
         if not person:
             return JSONResponse(status_code=404, content={"error": "Person not found"})
-        
-        # Load tv credits
-        links = db.query(MediaPersonLink).join(MediaPersonLink.match).join(MetadataMatch.media_item).filter(
-            MediaPersonLink.person_id == person_id,
-            MetadataMatch.media_type.in_([MediaType.TV, MediaType.EPISODE]),
-            MetadataMatch.is_active == True,
-            MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED])
-        ).all()
-        
-        tv_map = {}
-        ui_lang = DEFAULT_FALLBACK_LANGUAGE
-        for link in links:
-            match = link.match
-            item = match.media_item
-            match_loc = LanguageService.get_best_localization(match.localizations, ui_lang)
-            title = match_loc.title if match_loc else item.filename
-            
-            sid = match.parent_id or match.id
-            if sid not in tv_map:
-                tv_map[sid] = {
-                    "id": item.id,
-                    "title": title,
-                    "type": "tv",
-                    "tmdb_id": int(match.external_id) if match.external_id.isdigit() else 0,
-                    "year": match.release_date.year if match.release_date else None,
-                    "poster_path": self._resolve_img(match_loc.poster_path if match_loc else None, "posters"),
-                    "backdrop_path": self._resolve_img(match.backdrop_path, "backdrops"),
-                    "rating": match.rating_porndb or match.rating_tmdb or 0.0,
-                    "rating_porndb": match.rating_porndb,
-                    "job": link.role.value if hasattr(link.role, "value") else str(link.role),
-                    "character": link.character_name,
-                    "in_library": True,
-                }
-                
-        tv_list = list(tv_map.values())
-        total_items = len(tv_list)
-        total_pages = max(1, math.ceil(total_items / page_size))
-        start_idx = (page - 1) * page_size
-        sliced = tv_list[start_idx : start_idx + page_size]
-        
-        return JSONResponse(content={
-            "items": sliced,
-            "page": page,
-            "page_size": page_size,
-            "total_items": total_items,
-            "total_pages": total_pages,
-        })
+        res = self.filmography_service.get_person_tv(person_id, page, page_size)
+        return JSONResponse(content=res)
 
     def get_person_scenes(self, person_id: int, page: int = 1, page_size: int = 12):
         db = self.db
         person = db.query(Person).filter(Person.id == person_id).first()
         if not person:
             return JSONResponse(status_code=404, content={"error": "Person not found"})
-        
-        # Load scene credits
-        links = db.query(MediaPersonLink).join(MediaPersonLink.match).join(MetadataMatch.media_item).filter(
-            MediaPersonLink.person_id == person_id,
-            MetadataMatch.media_type.in_([MediaType.SCENE, MediaType.JAV]),
-            MetadataMatch.is_active == True,
-            MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED])
-        ).all()
-        
-        scenes = []
-        ui_lang = DEFAULT_FALLBACK_LANGUAGE
-        for link in links:
-            match = link.match
-            item = match.media_item
-            match_loc = LanguageService.get_best_localization(match.localizations, ui_lang)
-            title = match_loc.title if match_loc else item.filename
-            
-            scenes.append({
-                "id": item.id,
-                "title": title,
-                "type": "scene",
-                "tmdb_id": int(match.external_id) if match.external_id.isdigit() else 0,
-                "year": match.release_date.year if match.release_date else None,
-                "poster_path": self._resolve_img(match_loc.poster_path if match_loc else None, "posters"),
-                "backdrop_path": self._resolve_img(match.backdrop_path, "backdrops"),
-                "rating": match.rating_porndb or match.rating_tmdb or 0.0,
-                "rating_porndb": match.rating_porndb,
-                "job": link.role.value if hasattr(link.role, "value") else str(link.role),
-                "character": link.character_name,
-                "in_library": True,
-            })
-            
-        total_items = len(scenes)
-        total_pages = max(1, math.ceil(total_items / page_size))
-        start_idx = (page - 1) * page_size
-        sliced = scenes[start_idx : start_idx + page_size]
-        
-        return JSONResponse(content={
-            "items": sliced,
-            "page": page,
-            "page_size": page_size,
-            "total_items": total_items,
-            "total_pages": total_pages,
-        })
+        res = self.filmography_service.get_person_scenes(person_id, page, page_size)
+        return JSONResponse(content=res)

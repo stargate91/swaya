@@ -88,7 +88,8 @@ class ListsService:
     def get_list_details(self, list_id: int) -> Dict[str, Any]:
         l = self.db.query(CustomList).filter(CustomList.id == list_id).first()
         if not l:
-            return {"error": "Not found"}
+            from app.shared_kernel.exceptions import NotFoundException
+            raise NotFoundException("Not found")
 
         return {
             "id": l.id,
@@ -108,11 +109,13 @@ class ListsService:
         icon = payload.get("icon", "").strip() or "ListVideo"
 
         if not name:
-            return {"error": "List name is required"}
+            from app.shared_kernel.exceptions import BadRequestException
+            raise BadRequestException("List name is required")
 
         existing = self.db.query(CustomList).filter(CustomList.name == name).first()
         if existing:
-            return {"error": "A list with this name already exists"}
+            from app.shared_kernel.exceptions import BadRequestException
+            raise BadRequestException("A list with this name already exists")
 
         new_list = CustomList(name=name, description=description, color=color, icon=icon)
         self.db.add(new_list)
@@ -132,7 +135,8 @@ class ListsService:
     def update_list(self, list_id: int, payload: Dict[str, Any]) -> Dict[str, Any]:
         l = self.db.query(CustomList).filter(CustomList.id == list_id).first()
         if not l:
-            return {"error": "Not found"}
+            from app.shared_kernel.exceptions import NotFoundException
+            raise NotFoundException("Not found")
 
         l.name = payload.get("name", l.name).strip()
         l.description = payload.get("description", l.description)
@@ -144,9 +148,11 @@ class ListsService:
     def delete_list(self, list_id: int) -> Dict[str, Any]:
         l = self.db.query(CustomList).filter(CustomList.id == list_id).first()
         if not l:
-            return {"error": "Not found"}
+            from app.shared_kernel.exceptions import NotFoundException
+            raise NotFoundException("Not found")
         if l.name == "Watchlist":
-            return {"error": "Watchlist cannot be deleted"}
+            from app.shared_kernel.exceptions import BadRequestException
+            raise BadRequestException("Watchlist cannot be deleted")
 
         self.db.delete(l)
         self.db.commit()
@@ -155,7 +161,8 @@ class ListsService:
     def add_item_to_list(self, list_id: int, payload: Dict[str, Any]) -> Dict[str, Any]:
         l = self.db.query(CustomList).filter(CustomList.id == list_id).first()
         if not l:
-            return {"error": "Not found"}
+            from app.shared_kernel.exceptions import NotFoundException
+            raise NotFoundException("Not found")
 
         media_item_id = payload.get("media_item_id")
         tmdb_id = payload.get("tmdb_id")
@@ -184,7 +191,8 @@ class ListsService:
         elif match_id:
             exists_query = exists_query.filter(CustomListItem.match_id == match_id)
         else:
-            return {"error": "Missing item identifier"}
+            from app.shared_kernel.exceptions import BadRequestException
+            raise BadRequestException("Missing item identifier")
 
         exists = exists_query.first()
         if exists:
@@ -198,7 +206,8 @@ class ListsService:
     def remove_item_from_list(self, list_id: int, item_id: int) -> Dict[str, Any]:
         item = self.db.query(CustomListItem).filter(CustomListItem.list_id == list_id, CustomListItem.id == item_id).first()
         if not item:
-            return {"error": "Not found"}
+            from app.shared_kernel.exceptions import NotFoundException
+            raise NotFoundException("Not found")
         self.db.delete(item)
         self.db.commit()
         return {"status": "success"}

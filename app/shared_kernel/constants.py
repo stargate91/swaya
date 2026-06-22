@@ -28,12 +28,12 @@ MIN_CACHED_IMAGE_BYTES = 512
 MEDIA_IMAGE_SUBFOLDERS = ["posters", "backdrops", "logos", "stills", "scene_stills", "people", "avatars"]
 
 TMDB_DOWNLOAD_SIZES = {
-    "posters": "w500",
-    "backdrops": "w1280",
-    "logos": "w500",
-    "stills": "w500",
-    "people": "h632",
-    "avatars": "w185"
+    "posters": "w780",
+    "backdrops": "original",
+    "logos": "original",
+    "stills": "500",
+    "people": "632",
+    "avatars": "w500"
 }
 
 MEDIA_IMAGE_LIMITS = {

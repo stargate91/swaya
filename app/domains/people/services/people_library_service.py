@@ -19,8 +19,9 @@ class PeopleLibraryService:
     queries and formats Person entities.
     """
 
-    def __init__(self, db_session: Session):
+    def __init__(self, db_session: Session, user_id: int = 1):
         self.db = db_session
+        self.user_id = user_id
 
     def get_people_group(
         self,
@@ -114,7 +115,7 @@ class PeopleLibraryService:
 
         people_list = []
         for person in people:
-            o = next((ov for ov in person.overrides if ov.user_id == 1), None) if person.overrides else None
+            o = next((ov for ov in person.overrides if ov.user_id == self.user_id), None) if person.overrides else None
             
             poster_path = (o.custom_poster if (o and o.custom_poster) else None) or person.local_profile_path or person.profile_path
             
