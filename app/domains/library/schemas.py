@@ -65,6 +65,7 @@ class MediaItemRead(BaseSchema):
     mtime: Optional[float] = None
     hash_md5: Optional[str] = None
     hash_oshash: Optional[str] = None
+    hash_phash: Optional[str] = None
     hash_sha256: Optional[str] = None
     group_hash: Optional[str] = None
     part_number: Optional[int] = None

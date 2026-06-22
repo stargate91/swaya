@@ -7,10 +7,10 @@ from sqlalchemy.orm import Session
 from app.shared_kernel.enums import ItemStatus, MediaType, Provider
 from app.domains.library.models import MediaItem
 from app.domains.metadata.models import MetadataMatch
-from app.infrastructure.scrapers.normalizer import ScraperNormalizer
-from app.infrastructure.scrapers.omdb import OMDBScraper
-from app.infrastructure.scrapers.persistence import ScraperPersister
-from app.infrastructure.scrapers.porndb import PornDBScraper
+from app.infrastructure.scrapers.support.normalizer import ScraperNormalizer
+from app.infrastructure.scrapers.providers.omdb import OMDBScraper
+from app.infrastructure.scrapers.support.persistence import ScraperPersister
+from app.infrastructure.scrapers.providers.porndb import PornDBScraper
 from app.infrastructure.scrapers.resolver import normalize_title
 
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class PornDBMovieResolver:
-    """Resolves adult movies without mixing PornDB scene/JAV results into the profile."""
+    """Resolves adult movies without mixing PornDB scene results into the profile."""
 
     def __init__(self, db_session: Session):
         self.db = db_session
@@ -51,12 +51,50 @@ class PornDBMovieResolver:
             year = None
         return is_tv, title, year
 
-    def resolve_hash(self, item: MediaItem, task_id: Optional[int] = None) -> bool:
-        is_tv, _title, _year = self._parsed_identity(item)
-        if is_tv or not item.hash_oshash or not self.is_available():
+    @staticmethod
+    def _movie_runtime_seconds(movie: dict) -> Optional[float]:
+        candidates = [movie.get("runtime"), movie.get("duration"), movie.get("length")]
+        for value in candidates:
+            if value in (None, ""):
+                continue
+            try:
+                numeric = float(value)
+            except (TypeError, ValueError):
+                continue
+            if numeric <= 0:
+                continue
+            # PornDB movie runtime is expected in minutes; treat larger values as already-seconds.
+            return numeric if numeric >= 600 else numeric * 60.0
+        return None
+
+    @classmethod
+    def _duration_score_delta(cls, item: MediaItem, movie: dict) -> float:
+        item_duration = float(item.duration) if item.duration not in (None, "") else None
+        movie_duration = cls._movie_runtime_seconds(movie)
+        if not item_duration or not movie_duration:
+            return 0.0
+
+        diff_seconds = abs(item_duration - movie_duration)
+        longer = max(item_duration, movie_duration, 1.0)
+        diff_ratio = diff_seconds / longer
+
+        if diff_seconds <= 90:
+            return 0.12
+        if diff_ratio <= 0.05:
+            return 0.08
+        if diff_ratio <= 0.10:
+            return 0.04
+        if diff_ratio >= 0.25:
+            return -0.12
+        if diff_ratio >= 0.15:
+            return -0.06
+        return 0.0
+
+    def _resolve_hash_type(self, item: MediaItem, *, file_hash: Optional[str], hash_type: str, task_id: Optional[int]) -> bool:
+        if not file_hash or not self.is_available():
             return False
 
-        movie = self.scraper.find_movie_by_hash(item.hash_oshash)
+        movie = self.scraper.find_movie_by_hash(file_hash, hash_type=hash_type)
         if not movie:
             return False
 
@@ -64,16 +102,28 @@ class PornDBMovieResolver:
         self.scraper.log_search(
             task_id=task_id,
             media_item_id=item.id,
-            search_query=f"movie hash: oshash={item.hash_oshash}",
+            search_query=f"movie hash: {hash_type.lower()}={file_hash}",
             result_count=1,
             details={
                 "hash_match": True,
+                "hash_type": hash_type,
                 "matched_movie_id": str(movie.get("id")),
                 "matched_title": movie.get("title"),
                 "final_status": "matched",
             },
         )
         return True
+
+    def resolve_hash(self, item: MediaItem, task_id: Optional[int] = None) -> bool:
+        is_tv, _title, _year = self._parsed_identity(item)
+        if is_tv or not self.is_available():
+            return False
+
+        if self._resolve_hash_type(item, file_hash=item.hash_oshash, hash_type="OSHASH", task_id=task_id):
+            return True
+        if self._resolve_hash_type(item, file_hash=item.hash_phash, hash_type="PHASH", task_id=task_id):
+            return True
+        return False
 
     def resolve_text(self, item: MediaItem, task_id: Optional[int] = None) -> bool:
         is_tv, title, year = self._parsed_identity(item)
@@ -100,6 +150,8 @@ class PornDBMovieResolver:
                     pass
             if year and candidate_year:
                 score += 0.05 if year == candidate_year else -0.1
+
+            score += self._duration_score_delta(item, movie)
             candidates.append((max(0.0, min(score, 1.0)), movie))
 
         candidates.sort(key=lambda entry: entry[0], reverse=True)
@@ -113,6 +165,7 @@ class PornDBMovieResolver:
                     "hash_match": False,
                     "entity_type": "movie",
                     "best_score": candidates[0][0] if candidates else None,
+                    "best_duration_delta": self._duration_score_delta(item, candidates[0][1]) if candidates else None,
                     "final_status": "no_match",
                 },
             )
@@ -130,6 +183,7 @@ class PornDBMovieResolver:
                 "hash_match": False,
                 "entity_type": "movie",
                 "best_score": best_score,
+                "duration_score_delta": self._duration_score_delta(item, movie),
                 "matched_movie_id": str(movie.get("id")),
                 "matched_title": movie.get("title"),
                 "final_status": "matched",

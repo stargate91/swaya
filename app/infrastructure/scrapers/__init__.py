@@ -3,16 +3,16 @@ from sqlalchemy.orm import Session
 
 from app.shared_kernel.enums import Provider, MediaType
 from app.infrastructure.cache.cache_service import CacheService
-from app.infrastructure.scrapers.tmdb import TMDBScraper
-from app.infrastructure.scrapers.omdb import OMDBScraper
-from app.infrastructure.scrapers.stashdb import StashDBScraper
-from app.infrastructure.scrapers.porndb import PornDBScraper
-from app.infrastructure.scrapers.fansdb import FansDBScraper
+from app.infrastructure.scrapers.providers.tmdb import TMDBScraper
+from app.infrastructure.scrapers.providers.omdb import OMDBScraper
+from app.infrastructure.scrapers.providers.stashdb import StashDBScraper
+from app.infrastructure.scrapers.providers.porndb import PornDBScraper
+from app.infrastructure.scrapers.providers.fansdb import FansDBScraper
 
 
 class ScraperService:
     """
-    Unified facade service that delegates scraper operations to specialized 
+    Unified facade service that delegates scraper operations to specialized
     sub-scraper classes (TMDB, OMDB, StashDB, PornDB, FansDB) to maintain domain separation.
     """
 

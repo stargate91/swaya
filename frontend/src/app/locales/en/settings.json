@@ -20,7 +20,6 @@
     "fileNaming": "File Names",
     "folderStructure": "Folders",
     "scenes": "Scenes",
-    "jav": "JAV",
     "extras": "Extras",
     "rules": "File Conflicts",
     "collections": "Collections",
@@ -295,23 +294,6 @@
       "squeezeStudioNames": "Remove spaces from studio names",
       "squeezeStudioNamesHint": "For example, 'Velvet Studios' becomes 'VelvetStudios' in filenames and grouping folders."
     },
-    "jav": {
-      "eyebrow": "Adult JAV",
-      "namingTitle": "JAV File Names",
-      "filenameTemplate": "JAV Filename Pattern",
-      "filenameTemplateHint": "Choose which JAV metadata appears in renamed filenames.",
-      "groupingTitle": "JAV Folder Grouping",
-      "groupingMode": "Group JAVs By",
-      "groupingModeHint": "Build studio folders inside the Adult JAV folder before applying the optional JAV folder pattern.",
-      "groupingOptions": {
-        "none": "No studio grouping",
-        "studio": "Studio",
-        "parentStudio": "Parent studio",
-        "parentStudioStudio": "Parent studio / Studio"
-      },
-      "folderTemplate": "Additional JAV Folder Pattern",
-      "folderTemplateHint": "Optional final folder below the selected studio hierarchy. Leave blank to store JAV files directly in the group folder."
-    },
     "folderStructure": {
       "behaviorTitle": "Basic Rules",
       "behaviorEyebrow": "Organizer Settings",
@@ -356,8 +338,7 @@
       "defaultAdultName": "Adult",
       "defaultAdultMoviesName": "Movies",
       "defaultAdultTvName": "TV Shows",
-      "defaultAdultScenesName": "Scenes",
-      "defaultAdultJavName": "JAV"
+      "defaultAdultScenesName": "Scenes"
     },
     "rules": {
       "title": "When a File Already Exists",
@@ -556,3 +537,6 @@
     "syncFailed": "Could not start language synchronization."
   }
 }
+
+
+

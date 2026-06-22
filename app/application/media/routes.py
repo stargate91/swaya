@@ -14,6 +14,7 @@ class ScanRequest(BaseModel):
     stop_after: Optional[str] = None
     mode: ScanMode = ScanMode.MOVIES_TV
     include_adult: Optional[bool] = None
+    provider: Optional[str] = None
 
 class RenameRequest(BaseModel):
     item_ids: Optional[List[int]] = None
@@ -42,6 +43,7 @@ def start_scan(request: ScanRequest, db: Session = Depends(get_db)):
         request.stop_after,
         request.mode,
         request.include_adult,
+        request.provider,
     )
 
 @router.post("/task/stop")

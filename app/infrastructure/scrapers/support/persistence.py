@@ -317,7 +317,7 @@ class ScraperPersister:
             return f"{subfolder}/{filename}"
 
         asset_prefix = f"{match.provider.value}_{match.external_id}"
-        backdrop_subfolder = "scene_stills" if match.media_type in (MediaType.SCENE, MediaType.JAV) else "backdrops"
+        backdrop_subfolder = "scene_stills" if match.media_type == MediaType.SCENE else "backdrops"
         match.local_backdrop_path = queue_image(match.backdrop_path, backdrop_subfolder, asset_prefix)
 
         loc = next((l for l in match.localizations if l.locale == DEFAULT_FALLBACK_LANGUAGE), None)

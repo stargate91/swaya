@@ -10,7 +10,6 @@ const ADULT_SUBFOLDER_PRESET = {
   folder_adult_movies_name: 'Movies',
   folder_adult_tv_name: 'TV Shows',
   folder_adult_scenes_name: 'Scenes',
-  folder_adult_jav_name: 'JAV',
 };
 
 const ADULT_STANDARD_PRESET = {
@@ -29,9 +28,6 @@ const ADULT_STANDARD_PRESET = {
   naming_performer_sort: 'popularity',
   scene_grouping_mode: 'parent_studio_studio',
   folder_scene_template: '{date} - {title}',
-  naming_jav_template: '{studio} - {date} - {performers} - {title} [{resolution}]',
-  jav_grouping_mode: 'parent_studio_studio',
-  folder_jav_template: '{date} - {title}',
 };
 
 const ADULT_MINIMAL_PRESET = {
@@ -50,9 +46,6 @@ const ADULT_MINIMAL_PRESET = {
   naming_performer_sort: 'popularity',
   scene_grouping_mode: 'none',
   folder_scene_template: '',
-  naming_jav_template: '{date} - {performers} - {title}',
-  jav_grouping_mode: 'none',
-  folder_jav_template: '',
 };
 
 export const PRESETS_CONFIG = {
@@ -182,3 +175,4 @@ export function getPresetCards(t) {
     }
   ];
 }
+

@@ -5,8 +5,8 @@ from typing import Optional, List, Dict, Any
 
 from app.shared_kernel.enums import Provider, MediaType
 from app.shared_kernel.language import LanguageService
-from app.infrastructure.scrapers.base import BaseScraper
-from app.infrastructure.scrapers.normalizer import ScraperNormalizer
+from app.infrastructure.scrapers.support.base import BaseScraper
+from app.infrastructure.scrapers.support.normalizer import ScraperNormalizer
 
 from app.shared_kernel.constants import TMDB_API_BASE, DEFAULT_FALLBACK_LANGUAGE, TMDB_MOVIE_APPEND_PARTS, TMDB_TV_APPEND_PARTS, SCRAPER_REQUEST_TIMEOUT
 

@@ -2,7 +2,7 @@ import logging
 from typing import Optional
 from app.shared_kernel.enums import Provider
 from app.domains.metadata.models import MetadataMatch
-from app.infrastructure.scrapers.base import BaseScraper
+from app.infrastructure.scrapers.support.base import BaseScraper
 
 from app.shared_kernel.constants import OMDB_DEFAULT_ENDPOINT, OMDB_REQUEST_TIMEOUT
 

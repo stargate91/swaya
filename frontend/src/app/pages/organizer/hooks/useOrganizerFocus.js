@@ -11,13 +11,14 @@ import { isEpisodeMediaType, isMovieMediaType, isTvLikeMediaType } from '@/lib/m
 
 const normalizeType = (value) => String(value || '').toLowerCase();
 const isSceneType = (value) => normalizeType(value) === 'scene';
-const isJavType = (value) => normalizeType(value) === 'jav';
-const isRegularMovieType = (value) => isMovieMediaType(value) && !isJavType(value);
+const isRegularMovieType = (value) => isMovieMediaType(value);
+const isPornDbMovieMode = (scanMode) => scanMode === 'porndb_movie';
+
 const isExtraForMode = (item, scanMode) => {
   const parentType = String(item.parent_type || '').toLowerCase();
   if (scanMode === 'scenes') return parentType === 'scene' && item.category !== 'video';
-  if (scanMode === 'jav') return parentType === 'jav';
-  return parentType !== 'scene' && parentType !== 'jav';
+  if (isPornDbMovieMode(scanMode)) return parentType === 'movie';
+  return parentType !== 'scene';
 };
 
 export function useOrganizerFocus({
@@ -73,15 +74,11 @@ export function useOrganizerFocus({
     const sceneRows = matchedMedia
       .filter((item) => isSceneType(item.type) && MATCHED_STATUSES.has(normalizeItemStatus(item.status)))
       .map((item) => mapOrganizerItemRow(item, t));
-    const javRows = matchedMedia
-      .filter((item) => isJavType(item.type) && MATCHED_STATUSES.has(normalizeItemStatus(item.status)))
-      .map((item) => mapOrganizerItemRow(item, t));
+
     const manualSceneRows = reviewMedia
       .filter((item) => isSceneType(item.type) && MANUAL_REVIEW_STATUSES.has(normalizeItemStatus(item.status)))
       .map((item) => mapOrganizerItemRow(item, t));
-    const manualJavRows = reviewMedia
-      .filter((item) => isJavType(item.type) && MANUAL_REVIEW_STATUSES.has(normalizeItemStatus(item.status)))
-      .map((item) => mapOrganizerItemRow(item, t));
+
     const extraTabPriority = ['bonus', 'subtitles', 'audio', 'images', 'metadata'];
     const firstExtraTab = extraTabPriority.find((tab) =>
       modeExtras.some((item) => item.category === EXTRA_CATEGORY_BY_TAB[tab]));
@@ -97,10 +94,10 @@ export function useOrganizerFocus({
           { mainTab: 'manual', rows: manualSceneRows, manualTab: 'scenes' },
           { mainTab: 'extras', rows: extraRows, extrasTab: firstExtraTab },
         ]
-      : scanMode === 'jav'
+      : isPornDbMovieMode(scanMode)
         ? [
-            { mainTab: 'jav', rows: javRows },
-            { mainTab: 'manual', rows: manualJavRows, manualTab: 'jav' },
+            { mainTab: 'movies', rows: movieRows },
+            { mainTab: 'manual', rows: manualMovieRows, manualTab: 'movies' },
             { mainTab: 'extras', rows: extraRows, extrasTab: firstExtraTab },
           ]
         : [
@@ -132,7 +129,6 @@ export function useOrganizerFocus({
     try {
       localStorage.setItem('organizer_details_collapsed', JSON.stringify(false));
     } catch {
-      // Ignore storage access errors.
     }
     scrollOrganizerToTop();
   };

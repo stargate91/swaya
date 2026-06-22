@@ -8,8 +8,7 @@ from sqlalchemy.exc import OperationalError
 from app.domains.library.models import MediaItem
 from app.shared_kernel.enums import ItemStatus, ScanMode
 from app.domains.settings.models import UserSetting, SystemSetting
-from app.infrastructure.scrapers.resolver import Resolver
-from app.infrastructure.scrapers.metadata_enricher import MetadataEnricher
+from app.infrastructure.scrapers.scan_resolution_pipelines import get_scan_resolution_pipeline
 from app.shared_kernel.database import SessionLocal
 from app.shared_kernel.constants import DEFAULT_MAX_WORKERS, DEFAULT_FALLBACK_LANGUAGE
 
@@ -22,11 +21,13 @@ class ScanResolver:
         mode: ScanMode = ScanMode.MOVIES_TV,
         stop_checker: Optional[Callable[[], bool]] = None,
         include_adult: Optional[bool] = None,
+        provider: Optional[str] = None,
     ):
         self.db = db_session
         self.mode = mode
         self.stop_checker = stop_checker
         self.include_adult = include_adult
+        self.provider = provider
 
     def _stop_requested(self, task_id: Optional[int] = None) -> bool:
         if self.stop_checker and self.stop_checker():
@@ -94,38 +95,19 @@ class ScanResolver:
 
                         if self._stop_requested(task_id):
                             return
-                        resolver = Resolver(local_db)
-                        resolver.resolve_item(
-                            item,
+                        pipeline = get_scan_resolution_pipeline(
+                            local_db,
                             mode=self.mode,
-                            language=primary_lang,
-                            task_id=task_id,
                             include_adult=self.include_adult,
+                            provider=self.provider,
                         )
-                        
-                        if self._stop_requested(task_id):
-                            return
-                        resolver.propagate_match(item)
-
-                        if item.status == ItemStatus.MATCHED:
-                            if self._stop_requested(task_id):
-                                return
-                            enricher = MetadataEnricher(local_db)
-                            enricher.enrich_matched_item(item, language=primary_lang, fallback_language=fallback_lang)
-
-                            if item.group_hash:
-                                siblings = local_db.query(MediaItem).filter(
-                                    MediaItem.group_hash == item.group_hash,
-                                    MediaItem.id != item.id,
-                                    MediaItem.status == ItemStatus.MATCHED
-                                ).all()
-                                for sib in siblings:
-                                    try:
-                                        if self._stop_requested(task_id):
-                                            return
-                                        enricher.enrich_matched_item(sib, language=primary_lang, fallback_language=fallback_lang)
-                                    except Exception as sib_ex:
-                                        logger.warning(f"Failed to enrich sibling item {sib.id}: {sib_ex}")
+                        pipeline.resolve_and_enrich(
+                            item,
+                            primary_language=primary_lang,
+                            fallback_language=fallback_lang,
+                            task_id=task_id,
+                            stop_requested=lambda: self._stop_requested(task_id),
+                        )
                         local_db.commit()
                         return
                     except OperationalError as e:

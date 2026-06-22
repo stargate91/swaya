@@ -20,7 +20,6 @@ class Library(Base):
     watch_for_changes: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
-    # Relationships
     media_items: Mapped[List["MediaItem"]] = relationship("MediaItem", back_populates="library", cascade="all, delete-orphan")
 
 
@@ -34,28 +33,26 @@ class MediaItem(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     library_id: Mapped[int] = mapped_column(ForeignKey("libraries.id", ondelete="CASCADE"), index=True)
-    relative_path: Mapped[str] = mapped_column(String, nullable=False, index=True) # relative to library.root_path
-    folder_name: Mapped[Optional[str]] = mapped_column(String, index=True) # Immediate parent directory name
-    
+    relative_path: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    folder_name: Mapped[Optional[str]] = mapped_column(String, index=True)
+
     filename: Mapped[str] = mapped_column(String, nullable=False, index=True)
     extension: Mapped[str] = mapped_column(String, nullable=False)
     size: Mapped[int] = mapped_column(BigInteger, default=0, index=True)
-    mtime: Mapped[Optional[float]] = mapped_column(Float, index=True) # Last modified time of file
-    
-    # Hashes for precise scene/file identification (e.g. StashDB matches)
-    hash_md5: Mapped[Optional[str]] = mapped_column(String, index=True) # MD5 hash (StashDB primary file lookup)
-    hash_oshash: Mapped[Optional[str]] = mapped_column(String, index=True) # OpenSubtitles Hash (fallback scene lookup)
-    hash_sha256: Mapped[Optional[str]] = mapped_column(String, index=True) # SHA256 (modern unique file fingerprint)
-    group_hash: Mapped[Optional[str]] = mapped_column(String, index=True) # For multi-part file grouping (CD1/CD2)
-    part_number: Mapped[Optional[int]] = mapped_column(Integer) # Part number (e.g. 1 for CD1, 2 for CD2)
-    total_parts: Mapped[Optional[int]] = mapped_column(Integer) # Total number of parts
-    
-    # Raw Local Metadata (extracted from file headers or filename parsing)
-    internal_title: Mapped[Optional[str]] = mapped_column(String) # Embedded title in file container (ffmpeg/mediainfo)
-    nfo_imdb_id: Mapped[Optional[str]] = mapped_column(String) # IMDb ID extracted from local .nfo files
-    parsed_info: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON) # JSON containing guessit output (title, year, season, episode, etc.)
-    
-    # Technical Media Specifications (extracted via media info/ffprobe)
+    mtime: Mapped[Optional[float]] = mapped_column(Float, index=True)
+
+    hash_md5: Mapped[Optional[str]] = mapped_column(String, index=True)
+    hash_oshash: Mapped[Optional[str]] = mapped_column(String, index=True)
+    hash_phash: Mapped[Optional[str]] = mapped_column(String, index=True)
+    hash_sha256: Mapped[Optional[str]] = mapped_column(String, index=True)
+    group_hash: Mapped[Optional[str]] = mapped_column(String, index=True)
+    part_number: Mapped[Optional[int]] = mapped_column(Integer)
+    total_parts: Mapped[Optional[int]] = mapped_column(Integer)
+
+    internal_title: Mapped[Optional[str]] = mapped_column(String)
+    nfo_imdb_id: Mapped[Optional[str]] = mapped_column(String)
+    parsed_info: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON)
+
     duration: Mapped[Optional[float]] = mapped_column(Float)
     resolution: Mapped[Optional[str]] = mapped_column(String)
     video_codec: Mapped[Optional[str]] = mapped_column(String)
@@ -66,15 +63,13 @@ class MediaItem(Base):
     audio_codec: Mapped[Optional[str]] = mapped_column(String)
     audio_channels: Mapped[Optional[str]] = mapped_column(String)
     audio_bitrate: Mapped[Optional[int]] = mapped_column(Integer)
-    audio_streams: Mapped[Optional[List[dict]]] = mapped_column(JSON) # Detailed audio tracks info
-    subtitle_streams: Mapped[Optional[List[dict]]] = mapped_column(JSON) # Detailed internal subtitle tracks info
-    
-    # Media properties
+    audio_streams: Mapped[Optional[List[dict]]] = mapped_column(JSON)
+    subtitle_streams: Mapped[Optional[List[dict]]] = mapped_column(JSON)
+
     edition: Mapped[MovieEdition] = mapped_column(SQLEnum(MovieEdition), default=MovieEdition.NONE, index=True)
     audio_type: Mapped[MediaAudioType] = mapped_column(SQLEnum(MediaAudioType), default=MediaAudioType.NONE, index=True)
     source: Mapped[MediaSource] = mapped_column(SQLEnum(MediaSource), default=MediaSource.NONE, index=True)
 
-    # Indexing status
     status: Mapped[ItemStatus] = mapped_column(SQLEnum(ItemStatus), default=ItemStatus.NEW, index=True)
     ignored_previous_status: Mapped[Optional[ItemStatus]] = mapped_column(SQLEnum(ItemStatus), nullable=True)
     ignored_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, index=True)
@@ -82,7 +77,6 @@ class MediaItem(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
-    # Relationships
     library: Mapped["Library"] = relationship(back_populates="media_items")
     extras: Mapped[List["ExtraFile"]] = relationship(back_populates="media_item", cascade="all, delete-orphan")
     matches: Mapped[List["MetadataMatch"]] = relationship("MetadataMatch", back_populates="media_item", cascade="all, delete-orphan")
@@ -109,16 +103,15 @@ class ExtraFile(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     media_item_id: Mapped[int] = mapped_column(ForeignKey("media_items.id", ondelete="CASCADE"), index=True)
-    relative_path: Mapped[str] = mapped_column(String, nullable=False, index=True) # relative to library.root_path
-    
+    relative_path: Mapped[str] = mapped_column(String, nullable=False, index=True)
+
     filename: Mapped[str] = mapped_column(String, nullable=False)
     extension: Mapped[str] = mapped_column(String, nullable=False)
     category: Mapped[ExtraCategory] = mapped_column(SQLEnum(ExtraCategory), nullable=False, index=True)
     subtype: Mapped[Optional[ExtraSubtype]] = mapped_column(SQLEnum(ExtraSubtype), nullable=True, index=True)
-    language: Mapped[Optional[str]] = mapped_column(String) # e.g. "hu", "en"
-    file_hash: Mapped[Optional[str]] = mapped_column(String, index=True) # MD5 or SHA256 of the extra file
+    language: Mapped[Optional[str]] = mapped_column(String)
+    file_hash: Mapped[Optional[str]] = mapped_column(String, index=True)
 
-    # Relationships
     media_item: Mapped["MediaItem"] = relationship(back_populates="extras")
 
     @property
@@ -130,4 +123,3 @@ class ExtraFile(Base):
     def current_path(self, val: str):
         import os
         self.relative_path = os.path.relpath(val, self.media_item.library.root_path).replace("\\", "/")
-

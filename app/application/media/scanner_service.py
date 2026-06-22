@@ -109,6 +109,7 @@ class ScannerService:
         stop_after: Optional[str] = None,
         mode: Optional[Any] = None,
         include_adult: Optional[bool] = None,
+        provider: Optional[str] = None,
     ) -> Dict[str, Any]:
         with ScannerService.scan_status_lock:
             if ScannerService.scan_status.get("active"):
@@ -129,7 +130,7 @@ class ScannerService:
         task_id = self.task_manager.create_task("Library Scan")
         
         # Run background job
-        self.task_manager.start_task(task_id, self._run_scan, paths, stop_after, mode, include_adult)
+        self.task_manager.start_task(task_id, self._run_scan, paths, stop_after, mode, include_adult, provider)
         return {"message": "Scan started in background", "paths": paths}
 
     async def _run_scan(
@@ -139,6 +140,7 @@ class ScannerService:
         stop_after: Optional[str] = None,
         mode: Optional[Any] = None,
         include_adult: Optional[bool] = None,
+        provider: Optional[str] = None,
     ):
         self.task_manager.download_worker.is_paused = True
         with ScannerService.scan_status_lock:
@@ -228,6 +230,7 @@ class ScannerService:
                         mode=scan_mode,
                         stop_checker=self._is_stop_requested,
                         include_adult=include_adult,
+                        provider=provider,
                     )
                 else:
                     raise RuntimeError("scan_resolver_factory is required but not provided")

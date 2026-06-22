@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
     
     # Start background download worker on the main event loop
     from app.domains.tasks import task_manager
-    from app.infrastructure.scrapers.gateway import scraper_gateway
+    from app.infrastructure.scrapers.support.gateway import scraper_gateway
     task_manager.people_enrich_worker.scrapers = scraper_gateway
     await task_manager.download_worker.start()
     await task_manager.people_enrich_worker.start()

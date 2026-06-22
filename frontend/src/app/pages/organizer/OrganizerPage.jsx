@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import Page from '../../ui/Page';
 import Button from '../../ui/Button';
 import SegmentedControl from '../../ui/SegmentedControl';
+import Dropdown from '../../ui/Dropdown';
 import OrganizerDetailsPanel from './OrganizerDetailsPanel';
 import OrganizerHeaderPanel from './OrganizerHeaderPanel';
 import OrganizerResultsPanel from './OrganizerResultsPanel';
@@ -50,7 +51,16 @@ export default function OrganizerPage() {
   const settings = settingsQuery.data || EMPTY_SETTINGS;
   const sessionMode = useLibraryModeStore((state) => state.sessionMode);
   const [scanMode, setScanMode] = useState('movies_tv');
+  const [provider, setProvider] = useState('tmdb');
   const [utilityBarTarget, setUtilityBarTarget] = useState(null);
+
+  useEffect(() => {
+    if (scanMode === 'scenes') {
+      setProvider('stashdb');
+    } else {
+      setProvider('tmdb');
+    }
+  }, [scanMode]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -61,10 +71,7 @@ export default function OrganizerPage() {
       { value: 'movies_tv', label: t('organizer.scanModes.moviesTv') },
     ];
     if (settings.include_adult && sessionMode === 'nsfw') {
-      options.push(
-        { value: 'scenes', label: t('organizer.scanModes.scenes') },
-        { value: 'jav', label: t('organizer.scanModes.jav') },
-      );
+      options.push({ value: 'scenes', label: t('organizer.scanModes.scenes') });
     }
     return options;
   }, [sessionMode, settings.include_adult, t]);
@@ -209,6 +216,7 @@ export default function OrganizerPage() {
     scanStatusQuery,
     scanMode,
     includeAdult: Boolean(settings.include_adult && sessionMode === 'nsfw'),
+    provider,
   });
 
 
@@ -412,11 +420,35 @@ export default function OrganizerPage() {
       selectedRows={selectedRows}
     >
       {utilityBarTarget && scanModeOptions.length > 1 && createPortal(
-        <SegmentedControl
-          value={scanMode}
-          onChange={setScanMode}
-          options={scanModeOptions}
-        />,
+        <div className="organizer-utility-bar-wrapper">
+          <SegmentedControl
+            value={scanMode}
+            onChange={setScanMode}
+            options={scanModeOptions}
+            className="main-scan-mode"
+          />
+          {sessionMode === 'nsfw' && (
+            <div key={scanMode} className="provider-segmented-control-wrapper animate-slide-in">
+              <SegmentedControl
+                variant="filter"
+                value={provider}
+                onChange={setProvider}
+                options={
+                  scanMode === 'scenes'
+                    ? [
+                        { value: 'stashdb', label: 'StashDB' },
+                        { value: 'porndb', label: 'PornDB' },
+                        { value: 'fansdb', label: 'FansDB' },
+                      ]
+                    : [
+                        { value: 'tmdb', label: 'TMDb' },
+                        { value: 'porndb', label: 'PornDB' },
+                      ]
+                }
+              />
+            </div>
+          )}
+        </div>,
         utilityBarTarget
       )}
       <OrganizerPageContent
@@ -467,6 +499,8 @@ export default function OrganizerPage() {
         scanModeOptions={scanModeOptions}
         setScanMode={setScanMode}
         sessionMode={sessionMode}
+        provider={provider}
+        setProvider={setProvider}
         t={t}
       />
     </OrganizerModalProvider>
@@ -521,6 +555,8 @@ function OrganizerPageContent({
   scanModeOptions,
   setScanMode,
   sessionMode,
+  provider,
+  setProvider,
   t,
 }) {
   const { columns } = useOrganizerColumns({
@@ -569,6 +605,9 @@ function OrganizerPageContent({
             onChangeExtrasTab={setActiveExtrasTab}
             onChangeManualTab={setActiveManualTab}
             onChangeMainTab={setActiveMainTab}
+            provider={provider}
+            onChangeProvider={setProvider}
+            sessionMode={sessionMode}
             searchPlaceholder={
               activeMainTab === 'manual'
                 ? t('organizer.searchPlaceholderManual')
@@ -628,3 +667,5 @@ function OrganizerPageContent({
     </Page>
   );
 }
+
+

@@ -32,7 +32,6 @@ def _localized_builtin_folder_name(settings: Dict[str, Any], setting_key: str, c
         "folder_adult_movies_name": {"en": {"Movies"}, "hu": {"Movies", "Filmek"}},
         "folder_adult_tv_name": {"en": {"TV Shows", "Shows", "TV"}, "hu": {"TV Shows", "Shows", "TV", "Sorozatok"}},
         "folder_adult_scenes_name": {"en": {"Scenes"}, "hu": {"Scenes", "Jelenetek"}},
-        "folder_adult_jav_name": {"en": {"JAV"}, "hu": {"JAV", "JAW"}},
         "folder_scenes_name": {"en": {"Scenes"}, "hu": {"Scenes", "Jelenetek"}},
         "extras_subfolder_name": {"en": {"Extras", "extras"}, "hu": {"Extras", "extras", "Extrak", "Extr\u00e1k"}},
     }
@@ -44,7 +43,6 @@ def _localized_builtin_folder_name(settings: Dict[str, Any], setting_key: str, c
             "folder_adult_movies_name": "Movies",
             "folder_adult_tv_name": "TV Shows",
             "folder_adult_scenes_name": "Scenes",
-            "folder_adult_jav_name": "JAV",
             "folder_scenes_name": "Scenes",
             "extras_subfolder_name": "Extras",
         },
@@ -55,7 +53,6 @@ def _localized_builtin_folder_name(settings: Dict[str, Any], setting_key: str, c
             "folder_adult_movies_name": "Filmek",
             "folder_adult_tv_name": "Sorozatok",
             "folder_adult_scenes_name": "Jelenetek",
-            "folder_adult_jav_name": "JAW",
             "folder_scenes_name": "Jelenetek",
             "extras_subfolder_name": "Extr\u00e1k",
         },
@@ -142,16 +139,11 @@ def load_formatter_config_from_db(db_session, user_id: int = 1) -> FormatterConf
         config.adult_movies_dir_name = _localized_builtin_folder_name(settings, "folder_adult_movies_name", settings.get("folder_adult_movies_name", "Movies"))
         config.adult_tv_dir_name = _localized_builtin_folder_name(settings, "folder_adult_tv_name", settings.get("folder_adult_tv_name", "TV Shows"))
         config.adult_scenes_dir_name = _localized_builtin_folder_name(settings, "folder_adult_scenes_name", settings.get("folder_adult_scenes_name", "Scenes"))
-        config.adult_jav_dir_name = _localized_builtin_folder_name(settings, "folder_adult_jav_name", settings.get("folder_adult_jav_name", "JAV"))
         config.scenes_dir_name = _localized_builtin_folder_name(settings, "folder_scenes_name", settings.get("folder_scenes_name", "Scenes"))
         config.naming_adult_subfolders_enabled = settings.get("naming_adult_subfolders_enabled", config.naming_adult_subfolders_enabled)
         grouping_mode = settings.get("scene_grouping_mode", config.scene_grouping_mode)
         config.scene_grouping_mode = grouping_mode if grouping_mode in {"none", "studio", "parent_studio", "parent_studio_studio"} else "none"
-        jav_group_mode = settings.get("jav_grouping_mode", config.jav_grouping_mode)
-        config.jav_grouping_mode = jav_group_mode if jav_group_mode in {"none", "studio", "parent_studio", "parent_studio_studio"} else "none"
         config.folder_scene_template = _normalize_template(settings.get("folder_scene_template", config.folder_scene_template))
-        config.folder_jav_template = _normalize_template(settings.get("folder_jav_template", config.folder_jav_template))
-        config.naming_jav_template = _normalize_template(settings.get("naming_jav_template", config.naming_jav_template))
         config.collision_strategy = settings.get("collision_strategy", "keep_both")
         config.collision_duration_tolerance_seconds = int(settings.get("collision_duration_tolerance_seconds", 10) or 10)
 
@@ -257,3 +249,4 @@ def _resolution_height(resolution: str) -> int:
     if "8k" in str(resolution).lower():
         return 4320
     return 0
+

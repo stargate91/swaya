@@ -47,23 +47,12 @@ class RecommendationsService:
             return resolved
         return self.img_service.resolve_image_url(remote_path, subfolder)
 
-    def _looks_like_jav_code(self, value: Optional[str]) -> bool:
-        import re
-
-        text = str(value or "")
-        return bool(
-            re.search(r"\b([a-zA-Z0-9]{2,10})[-.]([0-9]{3,5})\b", text)
-            or re.search(r"\b([a-zA-Z]{2,6})([0-9]{3,5})\b", text)
-        )
 
     def _infer_organizer_type(self, item: MediaItem) -> str:
         scan_mode = str((item.parsed_info or {}).get("scan_mode") or "").lower()
 
         if item.matches:
-            primary_type = item.matches[0].media_type.value
-            if primary_type == MediaType.SCENE.value and (scan_mode == MediaType.JAV.value or self._looks_like_jav_code(item.filename) or "jav" in str(item.folder_name or "").lower()):
-                return MediaType.JAV.value
-            return primary_type
+            return item.matches[0].media_type.value
 
         gtype = None
         if item.parsed_info:
@@ -73,15 +62,7 @@ class RecommendationsService:
             gtype = fn_data.get("type") or it_data.get("type") or fd_data.get("type")
 
         if gtype:
-            normalized = str(gtype).lower()
-            if scan_mode == MediaType.JAV.value:
-                return MediaType.JAV.value
-            if normalized == "scene" and (self._looks_like_jav_code(item.filename) or "jav" in str(item.folder_name or "").lower()):
-                return MediaType.JAV.value
-            return normalized
-
-        if scan_mode == MediaType.JAV.value or self._looks_like_jav_code(item.filename) or "jav" in str(item.folder_name or "").lower():
-            return MediaType.JAV.value
+            return str(gtype).lower()
 
         import re
         filename = item.filename.lower()
@@ -276,7 +257,7 @@ class RecommendationsService:
                             resolved = self._resolve_image_with_fallback(active_m.local_still_path, active_m.still_path, "stills")
                             if resolved:
                                 images_list.append({"path": resolved})
-                    elif active_m.media_type in (MediaType.SCENE, MediaType.JAV):
+                    elif active_m.media_type == MediaType.SCENE:
                         resolved = self._resolve_image_with_fallback(active_m.local_backdrop_path, active_m.backdrop_path, "scene_stills")
                         if resolved:
                             images_list.append({"path": resolved})
@@ -430,3 +411,4 @@ class RecommendationsService:
             return ActionResponse(status="success")
 
         return ActionResponse(status="error", message="Item not found in watchlist")
+

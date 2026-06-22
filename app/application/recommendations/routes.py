@@ -10,7 +10,7 @@ from app.application.recommendations.schemas import (
     OrganizerGroupsResponse,
     ActionResponse,
 )
-from app.infrastructure.scrapers.gateway import scraper_gateway
+from app.infrastructure.scrapers.support.gateway import scraper_gateway
 
 router = APIRouter(prefix="/api/v1", tags=["Recommendations"])
 

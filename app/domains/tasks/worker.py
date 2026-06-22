@@ -57,7 +57,7 @@ class DownloadWorker:
             return
 
         # Background resolver threads do not have a durable event loop.
-        # Fall back to an immediate download so adult/JAV assets still get cached.
+        # Fall back to an immediate download so adult assets still get cached.
         self.batch_total += 1
         try:
             self._do_download(url, subfolder, filename)
@@ -170,3 +170,4 @@ class DownloadWorker:
             except Exception as e:
                 logger.error(f"Exception in DownloadWorker loop-{worker_id}: {e}")
                 await asyncio.sleep(2)
+

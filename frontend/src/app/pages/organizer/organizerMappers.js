@@ -55,7 +55,6 @@ const mapItemType = (type, t) => {
   if (value === 'movie') return t('organizer.typeLabels.movie');
   if (value === 'tv') return t('organizer.typeLabels.tv');
   if (value === 'scene') return t('organizer.typeLabels.scene');
-  if (value === 'jav') return t('organizer.typeLabels.jav');
   return prettifyToken(value) || t('organizer.typeLabels.media');
 };
 
@@ -111,3 +110,4 @@ export const mapExtraRow = (item, t) => ({
   images: [],
   rawPayload: item,
 });
+

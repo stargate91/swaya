@@ -12,8 +12,8 @@ from app.domains.metadata.models import MetadataMatch, MetadataLocalization, Stu
 from app.shared_kernel.enums import Provider, MediaType, RoleType
 from app.domains.people.models import MediaPersonLink
 from app.domains.people.services import PersonService
-from app.infrastructure.scrapers.tmdb import TMDBScraper
-from app.infrastructure.scrapers.omdb import OMDBScraper
+from app.infrastructure.scrapers.providers.tmdb import TMDBScraper
+from app.infrastructure.scrapers.providers.omdb import OMDBScraper
 from app.shared_kernel.language import LanguageService
 
 logger = logging.getLogger(__name__)

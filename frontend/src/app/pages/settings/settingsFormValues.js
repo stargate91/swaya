@@ -51,7 +51,6 @@ export const SETTINGS_BASE_DEFAULTS = {
   naming_movie_template: '{title} ({year}) {resolution}',
   naming_episode_template: '{tv_title} - S{season}E{episode} - {episode_title}',
   naming_scene_template: '{studio} - {date} - {performers} - {title} [{resolution}]',
-  naming_jav_template: '{studio} - {date} - {performers} - {title} [{resolution}]',
   naming_scene_date_format: '%Y-%m-%d',
   naming_scene_prevent_title_performer: true,
   scenes_scraper_order: 'stashdb,porndb,fansdb',
@@ -65,9 +64,7 @@ export const SETTINGS_BASE_DEFAULTS = {
   naming_performer_gender_filter: 'all',
   naming_performer_sort: 'popularity',
   scene_grouping_mode: 'parent_studio_studio',
-  jav_grouping_mode: 'parent_studio_studio',
   folder_scene_template: '{date} - {title}',
-  folder_jav_template: '{date} - {title}',
   naming_custom_tag: 'default',
   naming_video_exts: '.mkv, .mp4, .avi, .m4v, .mov, .wmv, .mpg, .mpeg',
   folder_organization_enabled: true,
@@ -80,7 +77,6 @@ export const SETTINGS_BASE_DEFAULTS = {
   folder_adult_movies_name: 'Movies',
   folder_adult_tv_name: 'TV Shows',
   folder_adult_scenes_name: 'Scenes',
-  folder_adult_jav_name: 'JAV',
   folder_create_movie_subdir: true,
   folder_movie_template: '{title} ({year})',
   folder_create_show_dir: true,
@@ -114,7 +110,6 @@ export function getLocalizedSettingsDefaults(t = null) {
       folder_adult_movies_name: SETTINGS_BASE_DEFAULTS.folder_adult_movies_name,
       folder_adult_tv_name: SETTINGS_BASE_DEFAULTS.folder_adult_tv_name,
       folder_adult_scenes_name: SETTINGS_BASE_DEFAULTS.folder_adult_scenes_name,
-      folder_adult_jav_name: SETTINGS_BASE_DEFAULTS.folder_adult_jav_name,
       extras_subfolder_name: SETTINGS_BASE_DEFAULTS.extras_subfolder_name,
     };
   }
@@ -126,7 +121,6 @@ export function getLocalizedSettingsDefaults(t = null) {
     folder_adult_movies_name: t('settingsPage.sections.folderStructure.defaultAdultMoviesName'),
     folder_adult_tv_name: t('settingsPage.sections.folderStructure.defaultAdultTvName'),
     folder_adult_scenes_name: t('settingsPage.sections.folderStructure.defaultAdultScenesName'),
-    folder_adult_jav_name: t('settingsPage.sections.folderStructure.defaultAdultJavName'),
     extras_subfolder_name: t('settingsPage.sections.extras.defaultSubfolderName'),
   };
 }
@@ -233,7 +227,6 @@ export function getInitialFormValues(settingsData = null, t = null) {
     naming_movie_template: getStringValue(settingsData.naming_movie_template, defaults.naming_movie_template),
     naming_episode_template: getStringValue(settingsData.naming_episode_template, defaults.naming_episode_template),
     naming_scene_template: getStringValue(settingsData.naming_scene_template, defaults.naming_scene_template),
-    naming_jav_template: getStringValue(settingsData.naming_jav_template, defaults.naming_jav_template),
     naming_scene_date_format: getStringValue(settingsData.naming_scene_date_format, defaults.naming_scene_date_format),
     naming_scene_prevent_title_performer: getBooleanValue(settingsData.naming_scene_prevent_title_performer, defaults.naming_scene_prevent_title_performer),
     scenes_scraper_order: getStringValue(settingsData.scenes_scraper_order, defaults.scenes_scraper_order),
@@ -247,9 +240,7 @@ export function getInitialFormValues(settingsData = null, t = null) {
     naming_performer_gender_filter: getStringValue(settingsData.naming_performer_gender_filter, defaults.naming_performer_gender_filter),
     naming_performer_sort: getStringValue(settingsData.naming_performer_sort, defaults.naming_performer_sort),
     scene_grouping_mode: getStringValue(settingsData.scene_grouping_mode, defaults.scene_grouping_mode),
-    jav_grouping_mode: getStringValue(settingsData.jav_grouping_mode, defaults.jav_grouping_mode),
     folder_scene_template: getStringValue(settingsData.folder_scene_template, defaults.folder_scene_template),
-    folder_jav_template: getStringValue(settingsData.folder_jav_template, defaults.folder_jav_template),
     naming_custom_tag: getStringValue(settingsData.naming_custom_tag, defaults.naming_custom_tag),
     naming_video_exts: getStringValue(settingsData.naming_video_exts, defaults.naming_video_exts),
     folder_organization_enabled: getBooleanValue(
@@ -276,10 +267,6 @@ export function getInitialFormValues(settingsData = null, t = null) {
     folder_adult_scenes_name: getStringValue(
       settingsData.folder_adult_scenes_name,
       defaults.folder_adult_scenes_name
-    ),
-    folder_adult_jav_name: getStringValue(
-      settingsData.folder_adult_jav_name,
-      defaults.folder_adult_jav_name
     ),
     folder_create_movie_subdir: getBooleanValue(
       settingsData.folder_create_movie_subdir,
@@ -317,3 +304,5 @@ export function getInitialFormValues(settingsData = null, t = null) {
     extras_subfolder_name: getStringValue(settingsData.extras_subfolder_name, defaults.extras_subfolder_name),
   };
 }
+
+

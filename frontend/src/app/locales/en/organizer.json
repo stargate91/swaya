@@ -4,15 +4,13 @@
   "scanModeLabel": "Scan as",
   "scanModes": {
     "moviesTv": "Movies & TV",
-    "scenes": "Scenes",
-    "jav": "JAV"
+    "scenes": "Scenes"
   },
   "tabs": {
     "manual": "Review Needed",
     "movies": "Movies",
     "episodes": "Episodes",
     "scenes": "Scenes",
-    "jav": "JAVs",
     "extras": "Extras"
   },
   "extrasTabs": {
@@ -424,3 +422,5 @@
     "extra": "Extra"
   }
 }
+
+

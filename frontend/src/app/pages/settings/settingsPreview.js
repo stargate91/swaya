@@ -42,17 +42,6 @@ const PREVIEW_CONTEXTS = {
     source: 'WEB-DL',
     video_codec: 'h264',
   },
-  jav: {
-    studio: 'S1 NO.1 STYLE',
-    performers: 'Yua Mikami',
-    performer: 'Yua Mikami',
-    rating_porndb: '9.5',
-    date: '2020-11-19',
-    title: 'SSNI-942',
-    resolution: '1080p',
-    source: 'WEB-DL',
-    video_codec: 'h264',
-  },
   tv: {
     tv_title: 'Stranger Things',
     tv_original_title: 'Stranger Things',
@@ -194,3 +183,4 @@ export function generatePreview(template, type, casing, separator, customTag, is
 
   return finalResult;
 }
+

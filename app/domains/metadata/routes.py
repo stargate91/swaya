@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 
 from app.shared_kernel.database import get_db
-from app.infrastructure.scrapers.gateway import scraper_gateway
+from app.infrastructure.scrapers.support.gateway import scraper_gateway
 from app.domains.metadata.services.metadata_service import MetadataService
 from app.domains.metadata.schemas import MetadataResolveRequest, BulkResolveRequest
 

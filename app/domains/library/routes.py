@@ -190,7 +190,7 @@ from app.domains.library.services.detail.collection_detail_service import Collec
 from app.shared_kernel.ports.scrapers import ScraperGatewayPort
 
 def get_scraper_gateway() -> ScraperGatewayPort:
-    from app.infrastructure.scrapers.gateway import scraper_gateway
+    from app.infrastructure.scrapers.support.gateway import scraper_gateway
     return scraper_gateway
 
 @library_router.get("/library/item/{item_id}", response_model=Union[MovieDetailResponse, SceneDetailResponse])

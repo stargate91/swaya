@@ -14,7 +14,7 @@ class MetadataEnricher:
 
     def __init__(self, db_session: Session):
         self.db = db_session
-        from app.infrastructure.scrapers.mainstream_enricher import MainstreamEnricher
+        from app.infrastructure.scrapers.enrichment.mainstream_enricher import MainstreamEnricher
         self.mainstream = MainstreamEnricher(db_session)
 
     def enrich_matched_item(

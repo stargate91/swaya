@@ -150,13 +150,7 @@ export default function FolderStructureTab({
                             onChange={handleChange('folder_adult_scenes_name')}
                             placeholder={t('settingsPage.sections.folderStructure.defaultAdultScenesName')}
                           />
-                          <Input
-                            label={t('settingsPage.sections.folderStructure.adultJavDirName')}
-                            value={form.folder_adult_jav_name}
-                            disabled={isScanActive}
-                            onChange={handleChange('folder_adult_jav_name')}
-                            placeholder={t('settingsPage.sections.folderStructure.defaultAdultJavName')}
-                          />
+
                         </Stack>
                       </div>
                     )}
@@ -337,3 +331,5 @@ export default function FolderStructureTab({
     </Stack>
   );
 }
+
+

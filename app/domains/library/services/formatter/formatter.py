@@ -84,18 +84,18 @@ class Formatter:
         if is_inplace:
              if media_type == MediaType.SCENE:
                  target_name = self.format_scene_filename(self.build_scene_context(item, match, loc))
-             elif media_type == MediaType.JAV:
-                 target_name = self.format_jav_filename(self.build_scene_context(item, match, loc))
+             elif media_type == MediaType.SCENE:
+                 target_name = self.format_scene_filename(self.build_scene_context(item, match, loc))
              elif media_type == MediaType.MOVIE:
                  target_name = self.format_movie_filename(self.build_movie_context(item, match, loc))
              else:
                  target_name = self.format_episode_filename(self.build_tv_context(item, match, loc))
              return target_name, ""
 
-        if media_type in (MediaType.SCENE, MediaType.JAV):
+        if media_type in (MediaType.SCENE, MediaType.SCENE):
             context = self.build_scene_context(item, match, loc)
-            if media_type == MediaType.JAV:
-                target_name = self.format_jav_filename(context)
+            if media_type == MediaType.SCENE:
+                target_name = self.format_scene_filename(context)
             else:
                 target_name = self.format_scene_filename(context)
             
@@ -103,12 +103,12 @@ class Formatter:
             if match and getattr(match, "is_adult", False):
                 sub_path_parts.append(self.config.adult_dir_name)
                 if self.config.naming_adult_subfolders_enabled:
-                    if media_type == MediaType.JAV:
-                        sub_path_parts.append(self.config.adult_jav_dir_name)
+                    if media_type == MediaType.SCENE:
+                        sub_path_parts.append(self.config.adult_scenes_dir_name)
                     else:
                         sub_path_parts.append(self.config.adult_scenes_dir_name)
                 
-                grouping_mode = self.config.jav_grouping_mode if media_type == MediaType.JAV else self.config.scene_grouping_mode
+                grouping_mode = self.config.scene_grouping_mode if media_type == MediaType.SCENE else self.config.scene_grouping_mode
                 if grouping_mode == "studio" and context.get("studio"):
                     sub_path_parts.append(context["studio"])
                 elif grouping_mode == "parent_studio" and context.get("parent_studio"):
@@ -121,13 +121,13 @@ class Formatter:
                     if studio and studio != parent_studio:
                         sub_path_parts.append(studio)
             else:
-                if media_type == MediaType.JAV:
-                    sub_path_parts.append(getattr(self.config, "adult_jav_dir_name", "JAV"))
+                if media_type == MediaType.SCENE:
+                    sub_path_parts.append(getattr(self.config, "adult_scenes_dir_name", "Scenes"))
                 else:
                     scenes_dir = getattr(self.config, "scenes_dir_name", "Scenes")
                     sub_path_parts.append(scenes_dir)
                 
-            folder_tmpl = self.config.folder_jav_template if media_type == MediaType.JAV else self.config.folder_scene_template
+            folder_tmpl = self.config.folder_scene_template if media_type == MediaType.SCENE else self.config.folder_scene_template
             if folder_tmpl:
                 scene_folder = self._render(folder_tmpl, context, is_file=False)
                 sub_path_parts.append(scene_folder)
@@ -338,8 +338,8 @@ class Formatter:
     def format_scene_filename(self, context: Dict[str, Any]) -> str:
         return self._render(self.config.scene_file, context, is_file=True)
 
-    def format_jav_filename(self, context: Dict[str, Any]) -> str:
-        return self._render(self.config.naming_jav_template, context, is_file=True)
+    def format_scene_filename(self, context: Dict[str, Any]) -> str:
+        return self._render(self.config.scene_file, context, is_file=True)
 
     def format_movie_foldername(self, context: Dict[str, Any], match: Optional[Any] = None) -> str:
         if not self.config.create_movie_subdir:
@@ -504,3 +504,7 @@ class Formatter:
 
     def sanitize(self, text: str) -> str:
         return self.renderer.sanitize(text)
+
+
+
+

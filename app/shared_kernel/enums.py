@@ -13,19 +13,15 @@ class ScanMode(enum.Enum):
     """Explicit metadata strategy for a scan run."""
     MOVIES_TV = "movies_tv"
     SCENES = "scenes"
-    JAV = "jav"
+    PORNDB_MOVIE = "porndb_movie"
 
     @property
     def uses_scene_pipeline(self) -> bool:
-        return self in (ScanMode.SCENES, ScanMode.JAV)
+        return self == ScanMode.SCENES
 
     @property
     def requires_adult_access(self) -> bool:
-        return self in (ScanMode.SCENES, ScanMode.JAV)
-
-    @property
-    def is_jav(self) -> bool:
-        return self == ScanMode.JAV
+        return self in (ScanMode.SCENES, ScanMode.PORNDB_MOVIE)
 
 class MediaType(enum.Enum):
     """Types of media content supported by the application."""
@@ -34,7 +30,6 @@ class MediaType(enum.Enum):
     SEASON = "season"
     EPISODE = "episode"
     SCENE = "scene"
-    JAV = "jav"
     PERSON = "person"
     VIDEO = "video"
     COLLECTION = "collection"

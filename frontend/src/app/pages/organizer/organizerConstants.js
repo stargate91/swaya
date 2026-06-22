@@ -5,7 +5,6 @@ export const MAIN_TABS = [
   { value: 'movies', labelKey: 'organizer.tabs.movies', icon: Film, tone: 'success' },
   { value: 'episodes', labelKey: 'organizer.tabs.episodes', icon: Tv, tone: 'success' },
   { value: 'scenes', labelKey: 'organizer.tabs.scenes', icon: Film, tone: 'success' },
-  { value: 'jav', labelKey: 'organizer.tabs.jav', icon: Film, tone: 'success' },
   { value: 'extras', labelKey: 'organizer.tabs.extras', icon: FolderPlus },
 ];
 
@@ -13,7 +12,6 @@ export const MANUAL_TABS = [
   { value: 'movies', labelKey: 'organizer.tabs.movies', icon: Film, tone: 'warning' },
   { value: 'episodes', labelKey: 'organizer.tabs.episodes', icon: Tv, tone: 'warning' },
   { value: 'scenes', labelKey: 'organizer.tabs.scenes', icon: Film, tone: 'warning' },
-  { value: 'jav', labelKey: 'organizer.tabs.jav', icon: Film, tone: 'warning' },
 ];
 
 export const EXTRAS_TABS = [
@@ -31,3 +29,4 @@ export const EMPTY_ORGANIZER = {
   extras: [],
   collisions: [],
 };
+

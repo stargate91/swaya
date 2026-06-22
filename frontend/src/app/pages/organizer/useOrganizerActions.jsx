@@ -18,6 +18,7 @@ export function useOrganizerActions({
   scanStatusQuery,
   scanMode,
   includeAdult,
+  provider,
 }) {
   const [isLoadingAll, setIsLoadingAll] = useState(false);
   const renameStartedRef = useRef(false);
@@ -39,6 +40,7 @@ export function useOrganizerActions({
     renameStartedRef,
     scanMode,
     includeAdult,
+    provider,
   });
 
   const { handleRename, isRenameStarting } = useOrganizerRename({

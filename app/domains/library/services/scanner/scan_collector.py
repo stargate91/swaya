@@ -18,6 +18,7 @@ from app.infrastructure.filesystem.fs_utils import (
     calculate_fast_hash,
     to_win_long_path,
     calculate_oshash,
+    calculate_phash,
     calculate_full_md5,
     calculate_full_sha256,
 )
@@ -174,7 +175,7 @@ class ScanCollector:
                             probe_durations[path_str] = info.get("duration")
                         else:
                             probe_durations[path_str] = None
-                        logger.info("[scan:%s] Probed %s | duration=%s | video=%s | md5=%s | oshash=%s", self.mode.value, path.name, probe_durations[path_str], bool(info and info.get("video_codec")), (res.get("hash_md5") or "")[:12], (res.get("hash_oshash") or "")[:12])
+                        logger.info("[scan:%s] Probed %s | duration=%s | video=%s | md5=%s | oshash=%s | phash=%s", self.mode.value, path.name, probe_durations[path_str], bool(info and info.get("video_codec")), (res.get("hash_md5") or "")[:12], (res.get("hash_oshash") or "")[:12], (res.get("hash_phash") or "")[:12])
                     except Exception as exc:
                         probe_durations[path_str] = None
                         logger.warning("[scan:%s] Probe failed for %s: %s", self.mode.value, path.name, exc)
@@ -273,16 +274,14 @@ class ScanCollector:
                     if res:
                         moved_item.hash_md5 = res.get("hash_md5")
                         moved_item.hash_oshash = res.get("hash_oshash")
+                        moved_item.hash_phash = res.get("hash_phash")
                         moved_item.hash_sha256 = res.get("hash_sha256")
                     else:
                         if self.mode == ScanMode.SCENES:
                             moved_item.hash_md5 = calculate_full_md5(str(p))
                             moved_item.hash_oshash = calculate_oshash(str(p))
+                            moved_item.hash_phash = None
                             moved_item.hash_sha256 = calculate_full_sha256(str(p))
-                        elif self.mode == ScanMode.JAV:
-                            moved_item.hash_md5 = file_hash
-                            moved_item.hash_oshash = calculate_oshash(str(p))
-                            moved_item.hash_sha256 = None
                         else:
                             moved_item.hash_md5 = file_hash
                             moved_item.hash_oshash = calculate_oshash(str(p))
@@ -299,16 +298,14 @@ class ScanCollector:
                         if res:
                             existing.hash_md5 = res.get("hash_md5")
                             existing.hash_oshash = res.get("hash_oshash")
+                            existing.hash_phash = res.get("hash_phash")
                             existing.hash_sha256 = res.get("hash_sha256")
                         else:
                             if self.mode == ScanMode.SCENES:
                                 existing.hash_md5 = calculate_full_md5(str(p))
                                 existing.hash_oshash = calculate_oshash(str(p))
+                                existing.hash_phash = None
                                 existing.hash_sha256 = calculate_full_sha256(str(p))
-                            elif self.mode == ScanMode.JAV:
-                                existing.hash_md5 = file_hash
-                                existing.hash_oshash = calculate_oshash(str(p))
-                                existing.hash_sha256 = None
                             else:
                                 existing.hash_md5 = file_hash
                                 existing.hash_oshash = calculate_oshash(str(p))
@@ -329,21 +326,19 @@ class ScanCollector:
                         if res:
                             item.hash_md5 = res.get("hash_md5")
                             item.hash_oshash = res.get("hash_oshash")
+                            item.hash_phash = res.get("hash_phash")
                             item.hash_sha256 = res.get("hash_sha256")
                         else:
                             if self.mode == ScanMode.SCENES:
                                 item.hash_md5 = calculate_full_md5(str(p))
                                 item.hash_oshash = calculate_oshash(str(p))
+                                item.hash_phash = None
                                 item.hash_sha256 = calculate_full_sha256(str(p))
-                            elif self.mode == ScanMode.JAV:
-                                item.hash_md5 = file_hash
-                                item.hash_oshash = calculate_oshash(str(p))
-                                item.hash_sha256 = None
                             else:
                                 item.hash_md5 = file_hash
                                 item.hash_oshash = calculate_oshash(str(p))
                         self.db.add(item)
-                        logger.info("[scan:%s] Created media item %s | rel=%s | md5=%s | oshash=%s", self.mode.value, p.name, rel_path, (item.hash_md5 or "")[:12], (item.hash_oshash or "")[:12])
+                        logger.info("[scan:%s] Created media item %s | rel=%s | md5=%s | oshash=%s | phash=%s", self.mode.value, p.name, rel_path, (item.hash_md5 or "")[:12], (item.hash_oshash or "")[:12], (item.hash_phash or "")[:12])
                     
                     path_to_item[p] = item
                     to_process.append(item)
@@ -477,6 +472,7 @@ class ScanCollector:
             "probe_spec": None,
             "hash_md5": None,
             "hash_oshash": None,
+            "hash_phash": None,
             "hash_sha256": None,
             "guessit_info": None,
         }
@@ -493,12 +489,11 @@ class ScanCollector:
         result["hash_oshash"] = calculate_oshash(filepath_str)
         if self.mode == ScanMode.SCENES:
             result["hash_md5"] = calculate_full_md5(filepath_str)
+            result["hash_phash"] = None
             result["hash_sha256"] = calculate_full_sha256(filepath_str)
-        elif self.mode == ScanMode.JAV:
-            result["hash_md5"] = calculate_fast_hash(filepath_str)
-            result["hash_sha256"] = None
         else:
             result["hash_md5"] = calculate_fast_hash(filepath_str)
+            result["hash_phash"] = None
 
         # 3. Analyze text with Guessit
         internal_title = None
@@ -512,3 +507,5 @@ class ScanCollector:
         )
         
         return result
+
+

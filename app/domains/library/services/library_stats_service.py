@@ -61,7 +61,7 @@ class LibraryStatsService:
             MetadataMatch, (MetadataMatch.media_item_id == MediaItem.id)
         ).filter(
             MediaItem.status.in_(library_statuses),
-            MetadataMatch.media_type.in_([MediaType.SCENE, MediaType.JAV]),
+            MetadataMatch.media_type == MediaType.SCENE,
             MetadataMatch.is_adult == include_adult
         )
         total_scenes = scenes_query.scalar() or 0
@@ -93,7 +93,7 @@ class LibraryStatsService:
                     is_adult_item = True
                 if m.media_type in (MediaType.TV, MediaType.EPISODE):
                     is_tv = True
-                elif m.media_type in (MediaType.SCENE, MediaType.JAV):
+                elif m.media_type == MediaType.SCENE:
                     is_scene = True
 
             if is_adult_item and not include_adult:
@@ -244,3 +244,4 @@ class LibraryStatsService:
             genre_constellation={"nodes": constellation_nodes, "links": constellation_links},
             decade_distribution=decade_dist
         )
+

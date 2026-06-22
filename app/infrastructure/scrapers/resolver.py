@@ -6,6 +6,7 @@ from app.domains.library.models import MediaItem
 from app.domains.metadata.models import MetadataMatch, MetadataLocalization
 from app.domains.settings.models import SystemSetting, UserSetting
 from app.shared_kernel.enums import Provider, MediaType, ItemStatus, ScanMode
+from app.infrastructure.scrapers.resolve_pipelines import get_resolver_pipeline
 
 def _has_episode_value(episode) -> bool:
     if isinstance(episode, list):
@@ -17,8 +18,6 @@ def determine_resolved_media_shape(media_kind: Any, season=None, episode=None):
         return MediaType.MOVIE, ItemStatus.MATCHED
     if media_kind in (MediaType.SCENE, "scene"):
         return MediaType.SCENE, ItemStatus.MATCHED
-    if media_kind in (MediaType.JAV, "jav"):
-        return MediaType.JAV, ItemStatus.MATCHED
 
     has_season = season not in (None, "")
     has_episode = _has_episode_value(episode)
@@ -52,9 +51,9 @@ class Resolver:
 
     def __init__(self, db_session: Session):
         self.db = db_session
-        from app.infrastructure.scrapers.mainstream_resolver import MainstreamResolver
-        from app.infrastructure.scrapers.adult_resolver import AdultResolver
-        from app.infrastructure.scrapers.porndb_movie_resolver import PornDBMovieResolver
+        from app.infrastructure.scrapers.resolvers.mainstream_resolver import MainstreamResolver
+        from app.infrastructure.scrapers.resolvers.adult_resolver import AdultResolver
+        from app.infrastructure.scrapers.resolvers.porndb_movie_resolver import PornDBMovieResolver
         self.mainstream = MainstreamResolver(db_session)
         self.adult = AdultResolver(db_session)
         self.porndb_movies = PornDBMovieResolver(db_session)
@@ -66,25 +65,25 @@ class Resolver:
         language: str = DEFAULT_FALLBACK_LANGUAGE,
         task_id: Optional[int] = None,
         include_adult: Optional[bool] = None,
+        provider: Optional[str] = None,
     ):
         """Resolves MediaItem search candidates and populates matches."""
-        if mode.uses_scene_pipeline:
-            self._resolve_adult_item(item, mode, task_id)
-            return
-
         if include_adult is None:
             include_adult = self._adult_access_enabled()
-        if include_adult and self.porndb_movies.resolve_hash(item, task_id):
-            return
 
-        self.mainstream.resolve_item(
-            item,
-            language,
-            task_id,
+        pipeline = get_resolver_pipeline(
+            mode,
+            self.mainstream,
+            self.adult,
+            self.porndb_movies,
             include_adult=include_adult,
+            provider=provider,
         )
-        if include_adult and item.status != ItemStatus.MATCHED:
-            self.porndb_movies.resolve_text(item, task_id)
+        pipeline.resolve_item(
+            item,
+            language=language,
+            task_id=task_id,
+        )
 
     def _adult_access_enabled(self, user_id: int = 1) -> bool:
         setting = self.db.query(UserSetting).filter(
@@ -183,3 +182,5 @@ class Resolver:
             sib.status = sib_status
         
         self.db.flush()
+
+

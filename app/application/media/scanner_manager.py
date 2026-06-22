@@ -6,11 +6,10 @@ from app.shared_kernel.enums import ScanMode
 
 from app.domains.library.models import Library, MediaItem
 from app.domains.settings.models import SystemSetting, UserSetting
-from app.domains.library.services.scanner.collector import Collector
 from app.domains.library.services.scanner.categorizer import Categorizer
 from app.domains.library.services.scanner.linker import Linker
 from app.domains.library.services.scanner.probe import TechnicalProber
-from app.domains.library.services.scanner.scan_collector import ScanCollector
+from app.application.media.scan_pipelines import get_scan_pipeline
 
 logger = logging.getLogger(__name__)
 
@@ -59,34 +58,23 @@ class ScannerManager:
             return [], {}
 
         logger.info(f"Starting scan for source root: {library.name} (Root: {library.root_path}, Mode: {mode.value})")
-        
-        if mode.uses_scene_pipeline:
-            size_key = "adult_min_video_size_mb"
-            dur_key = "adult_min_video_duration_minutes"
-            default_size = 1.0
-            default_dur = 0.1
-        else:
-            size_key = "min_video_size_mb"
-            dur_key = "min_video_duration_minutes"
-            default_size = float(self.default_min_video_size_mb)
-            default_dur = float(self.default_min_video_duration_minutes)
 
-        min_size_mb = self._get_numeric_setting(size_key, default_size)
-        min_duration_mins = self._get_numeric_setting(dur_key, default_dur)
+        pipeline = get_scan_pipeline(mode)
+        thresholds = pipeline.threshold_config()
+        min_size_mb = self._get_numeric_setting(thresholds.size_key, thresholds.default_size_mb)
+        min_duration_mins = self._get_numeric_setting(thresholds.duration_key, thresholds.default_duration_minutes)
 
         logger.info(f"Scan settings ({mode.value}) - min_size_mb: {min_size_mb}, min_duration_mins: {min_duration_mins}")
 
-        collector = Collector(min_size_mb)
-        collector_phase = ScanCollector(
-            db=self.db,
-            library=library,
+        collector_phase = pipeline.build_collector_phase(
+            self.db,
+            library,
             prober=self.prober,
-            collector=collector,
             categorizer=self.categorizer,
             linker=self.linker,
-            mode=mode,
-            min_video_duration_minutes=min_duration_mins,
-            progress_callback=progress_callback
+            min_size_mb=min_size_mb,
+            min_duration_minutes=min_duration_mins,
+            progress_callback=progress_callback,
         )
         
         try:

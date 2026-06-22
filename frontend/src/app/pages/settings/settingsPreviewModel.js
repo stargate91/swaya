@@ -26,7 +26,6 @@ function getFolderLabel(path) {
   const parts = cleanPath.split('/').filter(Boolean);
   if (parts.length > 0) {
     const lastPart = parts[parts.length - 1];
-    // If the last part has a file extension, it's a filename, so strip it
     if (/\.(mp4|mkv|avi|m4v|mov|wmv|mpg|mpeg|srt|sub|ass|vtt|ac3|dts|mp3|flac|wav|m4a|jpg|jpeg|png|gif|bmp|webp|nfo|xml|txt)$/i.test(lastPart)) {
       parts.pop();
     }
@@ -71,40 +70,11 @@ function getScenePreviewContext(form) {
   };
 }
 
-function getJavPreviewContext(form) {
-  const squeezeStudios = Boolean(form.naming_squeeze_studio_names);
-  const parentStudio = squeezeStudios ? 'AliceGroup' : 'Alice Group';
-  const studio = squeezeStudios ? 'AliceJapan' : 'Alice Japan';
-  const separator = form.naming_performer_splitchar || ' & ';
-  const blacklist = new Set(
-    String(form.scene_tag_blacklist || '')
-      .split(',')
-      .map((tag) => tag.trim().toLocaleLowerCase())
-      .filter(Boolean)
-  );
-  const tagLimit = Math.max(0, Number.parseInt(form.scene_tag_limit, 10) || 0);
-  let tags = ['AV', 'Debut', 'Featured', 'HD', 'Uncensored']
-    .filter((tag) => !blacklist.has(tag.toLocaleLowerCase()))
-    .sort((left, right) => left.localeCompare(right));
-  tags = tagLimit > 0 ? tags.slice(0, tagLimit) : [];
-  return {
-    date: '2020-11-19',
-    studio,
-    parent_studio: parentStudio,
-    studio_family: parentStudio,
-    performers: ['Yua Mikami'].join(separator),
-    performer: ['Yua Mikami'].join(separator),
-    tags: tags.join(form.scene_tag_separator || ' '),
-    title: 'SSNI-942',
-  };
-}
-
 function buildPreviewAssets(form) {
   const sceneContext = getScenePreviewContext(form);
-  const javContext = getJavPreviewContext(form);
   const movieFile = generatePreview(form.naming_movie_template, 'movie', form.naming_filename_casing, form.naming_word_separator, form.naming_custom_tag, true);
   const movieNameNoExt = movieFile.replace(/\.mp4$/, '');
-  
+
   const helper = (template, type, defaultTmpl, defaultExt) => {
     let result = generatePreview(
       template || defaultTmpl,
@@ -151,28 +121,6 @@ function buildPreviewAssets(form) {
           sceneContext
         )
       : '',
-    adultJavFile: generatePreview(
-      form.naming_jav_template || '{studio} - {date} - {performers} - {title} [{resolution}]',
-      'jav',
-      form.naming_filename_casing,
-      form.naming_word_separator,
-      form.naming_custom_tag,
-      true,
-      null,
-      javContext
-    ),
-    adultJavFolder: form.folder_jav_template
-      ? generatePreview(
-          form.folder_jav_template,
-          'jav',
-          form.naming_filename_casing,
-          form.naming_word_separator,
-          form.naming_custom_tag,
-          false,
-          null,
-          javContext
-        )
-      : '',
     episodeFile: generatePreview(form.naming_episode_template, 'episode', form.naming_filename_casing, form.naming_word_separator, form.naming_custom_tag, true),
     folderMovie: generatePreview(form.folder_movie_template, 'movie', form.naming_filename_casing, form.naming_word_separator, form.naming_custom_tag, false),
     folderTv: generatePreview(form.folder_tv_template, 'tv', form.naming_filename_casing, form.naming_word_separator, form.naming_custom_tag, false),
@@ -208,15 +156,9 @@ function buildMovieExtraNodes(form, assets) {
   }
 
   if (form.extras_folder_mode === EXTRAS_FOLDER_MODES.SUBFOLDER) {
-    return [
-      createFolderNode(form.extras_subfolder_name, {
-        topSpacing: true,
-        children: fileNodes,
-      }),
-    ];
+    return [createFolderNode(form.extras_subfolder_name, { topSpacing: true, children: fileNodes })];
   }
 
-  // Set top spacing for root-level extras (only first item)
   if (fileNodes.length > 0) {
     fileNodes[0].topSpacing = true;
   }
@@ -228,25 +170,15 @@ function buildMovieNodes(form, assets) {
   if (form.folder_create_movie_subdir) {
     nodes = [
       createFolderNode(getFolderLabel(assets.folderMovie), {
-        children: [
-          createFileNode(assets.movieFile),
-          ...buildMovieExtraNodes(form, assets),
-        ],
+        children: [createFileNode(assets.movieFile), ...buildMovieExtraNodes(form, assets)],
       }),
     ];
   } else {
-    nodes = [
-      createFileNode(assets.movieFile),
-      ...buildMovieExtraNodes(form, assets),
-    ];
+    nodes = [createFileNode(assets.movieFile), ...buildMovieExtraNodes(form, assets)];
   }
 
   if (form.folder_create_collection_dir) {
-    return [
-      createFolderNode(getFolderLabel(assets.folderCollection), {
-        children: nodes,
-      }),
-    ];
+    return [createFolderNode(getFolderLabel(assets.folderCollection), { children: nodes })];
   }
 
   return nodes;
@@ -254,12 +186,7 @@ function buildMovieNodes(form, assets) {
 
 function buildAdultNodes(form, assets) {
   const movieNodes = form.folder_create_movie_subdir
-    ? [
-        createFolderNode(getFolderLabel(assets.adultFolderMovie), {
-          tone: 'adult',
-          children: [createFileNode(assets.adultMovieFile, { tone: 'adult' })],
-        }),
-      ]
+    ? [createFolderNode(getFolderLabel(assets.adultFolderMovie), { tone: 'adult', children: [createFileNode(assets.adultMovieFile, { tone: 'adult' })] })]
     : [createFileNode(assets.adultMovieFile, { tone: 'adult' })];
   const tvNodes = [
     createFolderNode(getFolderLabel(assets.folderTv), {
@@ -284,32 +211,14 @@ function buildAdultNodes(form, assets) {
     ];
   }
 
-  let javNodes = [createFileNode(assets.adultJavFile, { tone: 'adult' })];
-  if (assets.adultJavFolder) {
-    javNodes = [createFolderNode(getFolderLabel(assets.adultJavFolder), { tone: 'adult', children: javNodes })];
-  }
-  if (form.jav_grouping_mode === 'studio') {
-    javNodes = [createFolderNode(getJavPreviewContext(form).studio, { tone: 'adult', children: javNodes })];
-  } else if (form.jav_grouping_mode === 'parent_studio') {
-    javNodes = [createFolderNode(getJavPreviewContext(form).parent_studio, { tone: 'adult', children: javNodes })];
-  } else if (form.jav_grouping_mode === 'parent_studio_studio') {
-    javNodes = [
-      createFolderNode(getJavPreviewContext(form).parent_studio, {
-        tone: 'adult',
-        children: [createFolderNode(getJavPreviewContext(form).studio, { tone: 'adult', children: javNodes })],
-      }),
-    ];
-  }
-
   if (!form.naming_adult_subfolders_enabled) {
-    return [...movieNodes, ...tvNodes, ...sceneNodes, ...javNodes];
+    return [...movieNodes, ...tvNodes, ...sceneNodes];
   }
 
   return [
     createFolderNode(form.folder_adult_movies_name, { tone: 'adult', children: movieNodes }),
     createFolderNode(form.folder_adult_tv_name, { tone: 'adult', children: tvNodes }),
     createFolderNode(form.folder_adult_scenes_name, { tone: 'adult', children: sceneNodes }),
-    createFolderNode(form.folder_adult_jav_name, { tone: 'adult', children: javNodes }),
   ];
 }
 
@@ -323,30 +232,17 @@ function buildShowNodes(form, assets, options = {}) {
   }
 
   if (!form.folder_create_season_dir) {
-    return [
-      createFolderNode(getFolderLabel(assets.folderTv), {
-        topSpacing: Boolean(options.topSpacing),
-        children: [buildEpisodeFileNode(assets)],
-      }),
-    ];
+    return [createFolderNode(getFolderLabel(assets.folderTv), { topSpacing: Boolean(options.topSpacing), children: [buildEpisodeFileNode(assets)] })];
   }
 
   const seasonChildren = form.folder_create_episode_dir
-    ? [
-        createFolderNode(getFolderLabel(assets.folderEpisode), {
-          children: [buildEpisodeFileNode(assets)],
-        }),
-      ]
+    ? [createFolderNode(getFolderLabel(assets.folderEpisode), { children: [buildEpisodeFileNode(assets)] })]
     : [buildEpisodeFileNode(assets)];
 
   return [
     createFolderNode(getFolderLabel(assets.folderTv), {
       topSpacing: Boolean(options.topSpacing),
-      children: [
-        createFolderNode(getFolderLabel(assets.folderSeason), {
-          children: seasonChildren,
-        }),
-      ],
+      children: [createFolderNode(getFolderLabel(assets.folderSeason), { children: seasonChildren })],
     }),
   ];
 }
@@ -354,30 +250,16 @@ function buildShowNodes(form, assets, options = {}) {
 function buildOrganizedNodes(form, assets) {
   if (form.folder_sort_by_type) {
     return [
-      createFolderNode(form.folder_movies_name, {
-        children: buildMovieNodes(form, assets),
-      }),
-      createFolderNode(form.folder_tv_name, {
-        topSpacing: true,
-        children: buildShowNodes(form, assets),
-      }),
-      ...(form.include_adult ? [
-        createFolderNode(form.folder_adult_name, {
-          tone: 'adult',
-          topSpacing: true,
-          children: buildAdultNodes(form, assets),
-        }),
-      ] : []),
+      createFolderNode(form.folder_movies_name, { children: buildMovieNodes(form, assets) }),
+      createFolderNode(form.folder_tv_name, { topSpacing: true, children: buildShowNodes(form, assets) }),
+      ...(form.include_adult ? [createFolderNode(form.folder_adult_name, { tone: 'adult', topSpacing: true, children: buildAdultNodes(form, assets) })] : []),
     ];
   }
 
   return [
     ...buildMovieNodes(form, assets),
     ...buildShowNodes(form, assets, { topSpacing: true }),
-    ...(form.include_adult ? buildAdultNodes(form, assets).map((node, index) => ({
-      ...node,
-      topSpacing: index === 0,
-    })) : []),
+    ...(form.include_adult ? buildAdultNodes(form, assets).map((node, index) => ({ ...node, topSpacing: index === 0 })) : []),
   ];
 }
 
@@ -396,8 +278,8 @@ function buildUnorganizedNodes(form, assets) {
       const node = action === 'ignore'
         ? createFileNode(t.origName, { tone: 'muted' })
         : action === 'delete'
-        ? createFileNode(assets[t.assetKey] || t.origName, { tone: 'danger', strike: true })
-        : createFileNode(assets[t.assetKey], { tone: 'muted' });
+          ? createFileNode(assets[t.assetKey] || t.origName, { tone: 'danger', strike: true })
+          : createFileNode(assets[t.assetKey], { tone: 'muted' });
       extraNodes.push(node);
     }
     if (extraNodes.length > 0) {
@@ -409,25 +291,14 @@ function buildUnorganizedNodes(form, assets) {
     createFileNode(assets.movieFile),
     ...extraNodes,
     createFileNode(assets.episodeFile),
-    ...(form.include_adult ? [
-      createFileNode(assets.adultMovieFile, { topSpacing: true }),
-      createFileNode(assets.adultJavFile),
-    ] : []),
+    ...(form.include_adult ? [createFileNode(assets.adultMovieFile, { topSpacing: true })] : []),
   ];
 }
 
 function buildRenameItems(form, assets) {
   const items = [
-    {
-      before: 'original_movie_file.mp4',
-      after: assets.movieFile,
-      afterTone: 'success',
-    },
-    {
-      before: 'original_episode_file.mp4',
-      after: assets.episodeFile,
-      afterTone: 'success',
-    },
+    { before: 'original_movie_file.mp4', after: assets.movieFile, afterTone: 'success' },
+    { before: 'original_episode_file.mp4', after: assets.episodeFile, afterTone: 'success' },
   ];
 
   if (form.extras_enabled) {
@@ -442,39 +313,17 @@ function buildRenameItems(form, assets) {
     for (const t of types) {
       const action = t.action || 'rename';
       if (action === 'delete') {
-        items.push({
-          before: t.origName,
-          after: 'Deleted',
-          afterTone: 'danger',
-          strike: true,
-        });
+        items.push({ before: t.origName, after: 'Deleted', afterTone: 'danger', strike: true });
       } else if (action === 'ignore') {
-        items.push({
-          before: t.origName,
-          after: t.origName,
-          afterTone: 'muted',
-        });
+        items.push({ before: t.origName, after: t.origName, afterTone: 'muted' });
       } else {
-        items.push({
-          before: t.origName,
-          after: assets[t.assetKey] || t.origName,
-          afterTone: 'muted',
-        });
+        items.push({ before: t.origName, after: assets[t.assetKey] || t.origName, afterTone: 'muted' });
       }
     }
   }
 
   if (form.include_adult) {
-    items.push({
-      before: 'original_adult_movie_file.mp4',
-      after: assets.adultMovieFile,
-      afterTone: 'adult',
-    });
-    items.push({
-      before: 'original_adult_jav_file.mp4',
-      after: assets.adultJavFile,
-      afterTone: 'adult',
-    });
+    items.push({ before: 'original_adult_movie_file.mp4', after: assets.adultMovieFile, afterTone: 'adult' });
   }
 
   return items;

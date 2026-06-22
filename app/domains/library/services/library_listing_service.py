@@ -140,7 +140,7 @@ class LibraryListingService:
         if tab == "tv":
             query = query.filter(MetadataMatch.media_type.in_([MediaType.TV, MediaType.EPISODE, MediaType.SEASON]))
         elif tab in ("adult", "scenes"):
-            query = query.filter(MetadataMatch.media_type.in_([MediaType.SCENE, MediaType.JAV]))
+            query = query.filter(MetadataMatch.media_type == MediaType.SCENE)
         else:
             query = query.filter(MetadataMatch.media_type == MediaType.MOVIE)
 
@@ -283,7 +283,7 @@ class LibraryListingService:
             MediaItem.status.in_(lib_statuses), MetadataMatch.media_type.in_([MediaType.TV, MediaType.EPISODE, MediaType.SEASON])
         )
         adult_cnt_query = self.db.query(MediaItem).select_from(MediaItem).join(MetadataMatch).filter(
-            MediaItem.status.in_(lib_statuses), MetadataMatch.media_type.in_([MediaType.SCENE, MediaType.JAV])
+            MediaItem.status.in_(lib_statuses), MetadataMatch.media_type == MediaType.SCENE
         )
         movies_cnt_query = movies_cnt_query.filter(MetadataMatch.is_adult == include_adult)
         tv_cnt_query = tv_cnt_query.filter(MetadataMatch.is_adult == include_adult)
@@ -324,3 +324,4 @@ class LibraryListingService:
             people=[],
             counts=res_movies.counts
         )
+

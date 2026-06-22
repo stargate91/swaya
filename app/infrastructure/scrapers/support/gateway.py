@@ -2,13 +2,13 @@ from typing import Any, Optional
 
 from app.shared_kernel.enums import MediaType, Provider
 from app.shared_kernel.ports.scrapers import ScraperGatewayPort
-from app.infrastructure.scrapers.fansdb import FansDBScraper
-from app.infrastructure.scrapers.mainstream_enricher import MainstreamEnricher
-from app.infrastructure.scrapers.normalizer import ScraperNormalizer
-from app.infrastructure.scrapers.persistence import ScraperPersister
-from app.infrastructure.scrapers.porndb import PornDBScraper
-from app.infrastructure.scrapers.stashdb import StashDBScraper
-from app.infrastructure.scrapers.tmdb import TMDBScraper
+from app.infrastructure.scrapers.providers.fansdb import FansDBScraper
+from app.infrastructure.scrapers.enrichment.mainstream_enricher import MainstreamEnricher
+from app.infrastructure.scrapers.support.normalizer import ScraperNormalizer
+from app.infrastructure.scrapers.support.persistence import ScraperPersister
+from app.infrastructure.scrapers.providers.porndb import PornDBScraper
+from app.infrastructure.scrapers.providers.stashdb import StashDBScraper
+from app.infrastructure.scrapers.providers.tmdb import TMDBScraper
 
 
 class InfrastructureScraperGateway(ScraperGatewayPort):

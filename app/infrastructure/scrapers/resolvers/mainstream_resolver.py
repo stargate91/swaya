@@ -7,7 +7,7 @@ from app.domains.library.models import MediaItem
 from app.domains.metadata.models import MetadataMatch, MetadataLocalization
 from app.shared_kernel.enums import Provider, MediaType, ItemStatus
 from app.domains.settings.models import SystemSetting, UserSetting
-from app.infrastructure.scrapers.tmdb import TMDBScraper
+from app.infrastructure.scrapers.providers.tmdb import TMDBScraper
 from app.shared_kernel.constants import DEFAULT_FALLBACK_LANGUAGE
 
 class MainstreamResolver:

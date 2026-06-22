@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from app.shared_kernel.database import get_db
-from app.infrastructure.scrapers.gateway import scraper_gateway
+from app.infrastructure.scrapers.support.gateway import scraper_gateway
 from app.domains.people.models import Person
 from app.domains.people.schemas import (
     PersonRead,

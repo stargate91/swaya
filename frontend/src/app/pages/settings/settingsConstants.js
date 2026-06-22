@@ -7,7 +7,6 @@ export const SETTINGS_TAB_IDS = {
   FOLDER_STRUCTURE: 'folderStructure',
   EXTRAS: 'extras',
   SCENES: 'scenes',
-  JAV: 'jav',
   RULES: 'rules',
   COLLECTIONS: 'collections',
   API_KEYS: 'apiKeys',
@@ -32,7 +31,6 @@ export const ORGANIZATION_TAB_IDS = [
   SETTINGS_TAB_IDS.FOLDER_STRUCTURE,
   SETTINGS_TAB_IDS.EXTRAS,
   SETTINGS_TAB_IDS.SCENES,
-  SETTINGS_TAB_IDS.JAV,
   SETTINGS_TAB_IDS.RULES,
   SETTINGS_TAB_IDS.COLLECTIONS,
 ];

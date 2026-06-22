@@ -15,7 +15,6 @@ import {
   AdvancedTab,
   MaintenanceTab,
   ScenesTab,
-  JavTab,
 } from './components';
 
 const alwaysVisible = () => true;
@@ -147,22 +146,7 @@ export const settingsTabDefinitions = [
       formInputs: ctx.formInputs,
     }),
   },
-  {
-    id: SETTINGS_TAB_IDS.JAV,
-    group: SETTINGS_TAB_GROUP_IDS.ORGANIZATION,
-    labelKey: 'settingsPage.sidebar.jav',
-    component: JavTab,
-    isVisible: whenAdultScenes,
-    className: 'custom-only',
-    getProps: (ctx) => ({
-      form: ctx.form,
-      t: ctx.t,
-      handleChange: ctx.handleChange,
-      handleCheckboxChange: ctx.handleCheckboxChange,
-      insertTag: ctx.insertTag,
-      formInputs: ctx.formInputs,
-    }),
-  },
+
   {
     id: SETTINGS_TAB_IDS.RULES,
     group: SETTINGS_TAB_GROUP_IDS.ORGANIZATION,
@@ -227,3 +211,5 @@ export function getVisibleOrganizationTabs(ctx) {
 export function getTabDefinition(tabId) {
   return settingsTabDefinitions.find((tab) => tab.id === tabId) || null;
 }
+
+

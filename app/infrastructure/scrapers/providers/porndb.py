@@ -3,8 +3,8 @@ import requests
 from typing import Optional
 
 from app.shared_kernel.enums import Provider, MediaType
-from app.infrastructure.scrapers.base import BaseScraper
-from app.infrastructure.scrapers.normalizer import ScraperNormalizer
+from app.infrastructure.scrapers.support.base import BaseScraper
+from app.infrastructure.scrapers.support.normalizer import ScraperNormalizer
 
 from app.shared_kernel.constants import PORNDB_API_BASE, PORNDB_DEFAULT_ENDPOINT, SCRAPER_REQUEST_TIMEOUT
 
@@ -172,45 +172,6 @@ class PornDBScraper(BaseScraper):
             return movies
         except (AttributeError, ValueError, requests.RequestException) as exc:
             logger.error(f"Error searching PornDB movies for {normalized_query}: {exc}")
-            return []
-
-    def search_jav(
-        self,
-        query: str,
-        per_page: int = 10,
-        force_refresh: bool = False,
-    ) -> list[dict]:
-        normalized_query = str(query or "").strip()
-        if not normalized_query:
-            return []
-
-        cache_key = f"porndb/jav/search/v1/{normalized_query.lower()}"
-        cached_data = self.cache.get(Provider.PORNDB, cache_key, force_refresh=force_refresh)
-        if cached_data is not None:
-            return [] if cached_data.get("cached_error") else cached_data.get("data", [])
-
-        api_token = self.get_setting("porndb_api_key") or self.get_setting("porndb_api_token")
-        if not api_token:
-            return []
-
-        try:
-            response = self.session.get(
-                f"{PORNDB_API_BASE}/jav",
-                params={"q": normalized_query, "per_page": max(1, min(per_page, 25))},
-                headers={"Authorization": f"Bearer {api_token}", "Accept": "application/json"},
-                timeout=SCRAPER_REQUEST_TIMEOUT,
-            )
-            jav_items = response.json().get("data") or [] if response.status_code == 200 else []
-            self.cache.set(
-                Provider.PORNDB,
-                cache_key,
-                {"data": jav_items},
-                status_code=response.status_code,
-                media_type=MediaType.JAV,
-            )
-            return jav_items
-        except (AttributeError, ValueError, requests.RequestException) as exc:
-            logger.error(f"Error searching PornDB JAV for {normalized_query}: {exc}")
             return []
 
     def fetch_scene(self, scene_id: str, force_refresh: bool = False) -> Optional[dict]:

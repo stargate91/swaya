@@ -58,7 +58,7 @@ class FilmographyService:
                 "in_library": True,
             }
             
-            if item.item_type in (MediaType.SCENE, MediaType.JAV):
+            if item.item_type == MediaType.SCENE:
                 scenes.append(credit_entry)
             elif item.item_type == MediaType.MOVIE:
                 movies.append(credit_entry)
@@ -169,7 +169,7 @@ class FilmographyService:
         # Load scene credits
         links = db.query(MediaPersonLink).join(MediaPersonLink.match).join(MetadataMatch.media_item).filter(
             MediaPersonLink.person_id == person_id,
-            MetadataMatch.media_type.in_([MediaType.SCENE, MediaType.JAV]),
+            MetadataMatch.media_type == MediaType.SCENE,
             MetadataMatch.is_active == True,
             MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED])
         ).all()
@@ -209,3 +209,4 @@ class FilmographyService:
             "total_items": total_items,
             "total_pages": total_pages,
         }
+

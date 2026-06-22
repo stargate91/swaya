@@ -78,6 +78,7 @@ export function useOrganizerScan({
   renameStartedRef,
   scanMode,
   includeAdult,
+  provider,
 }) {
   const [isBrowseStarting, setIsBrowseStarting] = useState(false);
   const previousScanActiveRef = useRef(false);
@@ -174,6 +175,7 @@ export function useOrganizerScan({
         paths: uniquePaths,
         mode: scanMode,
         include_adult: includeAdult,
+        provider: provider,
       });
 
       if (response?.status === 'error') {

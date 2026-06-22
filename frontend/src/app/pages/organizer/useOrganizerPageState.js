@@ -7,6 +7,8 @@ import { useOrganizerDismissState } from './hooks/useOrganizerDismissState';
 import { useOrganizerFilteredRows } from './hooks/useOrganizerFilteredRows';
 import { useOrganizerFocus } from './hooks/useOrganizerFocus';
 
+const isPornDbMovieMode = (scanMode) => scanMode === 'porndb_movie';
+
 export function useOrganizerPageState({ organizer, t, scanMode }) {
   const {
     activeMainTab,
@@ -39,13 +41,13 @@ export function useOrganizerPageState({ organizer, t, scanMode }) {
   useEffect(() => {
     const allowedMainTabs = scanMode === 'scenes'
       ? ['manual', 'scenes', 'extras']
-      : scanMode === 'jav'
-        ? ['manual', 'jav', 'extras']
+      : isPornDbMovieMode(scanMode)
+        ? ['manual', 'movies', 'extras']
         : ['manual', 'movies', 'episodes', 'extras'];
     const allowedManualTabs = scanMode === 'scenes'
       ? ['scenes']
-      : scanMode === 'jav'
-        ? ['jav']
+      : isPornDbMovieMode(scanMode)
+        ? ['movies']
         : ['movies', 'episodes'];
 
     if (!allowedMainTabs.includes(activeMainTab)) {
@@ -109,7 +111,6 @@ export function useOrganizerPageState({ organizer, t, scanMode }) {
     paginatedRows,
   });
 
-  // Sync selected rows with paginated rows to prune out-of-view/deleted items
   useEffect(() => {
     setSelectedRowIds((current) => {
       const visibleIds = new Set(paginatedRows.map((row) => row.id));
