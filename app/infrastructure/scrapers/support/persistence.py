@@ -1,5 +1,6 @@
 import os
 import re
+from pathlib import Path
 from urllib.parse import urlparse
 import logging
 from typing import Dict, Any, Optional
@@ -17,6 +18,73 @@ logger = logging.getLogger(__name__)
 import threading
 
 persistence_lock = threading.Lock()
+
+def _detect_remote_image_extension(url: str, fallback_name: str = "") -> str:
+    fallback_ext = Path(urlparse(fallback_name).path).suffix.lower()
+    if fallback_ext in {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'}:
+        return '.jpg' if fallback_ext == '.jpeg' else fallback_ext
+
+    def from_content_type(content_type: str) -> Optional[str]:
+        value = (content_type or '').lower()
+        if 'image/svg+xml' in value or 'svg' in value:
+            return '.svg'
+        if 'image/png' in value or 'png' in value:
+            return '.png'
+        if 'image/webp' in value or 'webp' in value:
+            return '.webp'
+        if 'image/gif' in value or 'gif' in value:
+            return '.gif'
+        if 'image/jpeg' in value or 'image/jpg' in value or 'jpeg' in value or 'jpg' in value:
+            return '.jpg'
+        return None
+
+    def from_bytes(data: bytes) -> Optional[str]:
+        sample = (data or b'').lstrip()
+        if sample.startswith(b'\x89PNG\r\n\x1a\n'):
+            return '.png'
+        if sample.startswith(b'GIF87a') or sample.startswith(b'GIF89a'):
+            return '.gif'
+        if sample.startswith(b'\xff\xd8\xff'):
+            return '.jpg'
+        if sample.startswith(b'RIFF') and b'WEBP' in sample[:16]:
+            return '.webp'
+        lowered = sample[:4096].lower()
+        if lowered.startswith(b'<?xml') or lowered.startswith(b'<svg') or b'<svg' in lowered:
+            return '.svg'
+        return None
+
+    try:
+        import requests
+
+        resp = requests.head(url, timeout=3, allow_redirects=True)
+        ext = from_content_type(resp.headers.get('Content-Type', ''))
+        if ext:
+            return ext
+    except Exception:
+        pass
+
+    try:
+        import requests
+
+        resp = requests.get(url, timeout=5, allow_redirects=True, stream=True)
+        ext = from_content_type(resp.headers.get('Content-Type', ''))
+        if ext:
+            resp.close()
+            return ext
+
+        for chunk in resp.iter_content(chunk_size=4096):
+            if chunk:
+                ext = from_bytes(chunk)
+                resp.close()
+                if ext:
+                    return ext
+                break
+        resp.close()
+    except Exception:
+        pass
+
+    return '.jpg'
+
 
 class ScraperPersister:
     """
@@ -76,6 +144,11 @@ class ScraperPersister:
                             self.db.flush()
                     except Exception:
                         studio = self.db.query(Studio).filter(Studio.name == s_name).first()
+                elif studio_info.get("logo_path") and (
+                    not studio.logo_path 
+                    or (studio.logo_path.startswith("logos/") and studio.logo_path.lower().endswith((".jpg", ".jpeg")))
+                ):
+                    studio.logo_path = studio_info["logo_path"]
                 
                 # Map parent studio
                 parent_info = studio_info["parent"]
@@ -90,7 +163,15 @@ class ScraperPersister:
                                 self.db.flush()
                         except Exception:
                             parent_studio = self.db.query(Studio).filter(Studio.name == p_name).first()
+                    elif parent_info.get("logo_path") and (
+                        not parent_studio.logo_path 
+                        or (parent_studio.logo_path.startswith("logos/") and parent_studio.logo_path.lower().endswith((".jpg", ".jpeg")))
+                    ):
+                        parent_studio.logo_path = parent_info["logo_path"]
                     studio.parent_studio = parent_studio
+                    self._queue_studio_logo(parent_studio)
+
+                self._queue_studio_logo(studio)
 
                 if studio not in match.studios:
                     match.studios.append(studio)
@@ -142,6 +223,9 @@ class ScraperPersister:
                     provider=prov_enum,
                     external_id=perf.get("external_id")
                 )
+
+                # Queue profile image download
+                self._queue_person_profile(person)
 
                 # Link person to match
                 link = self.db.query(MediaPersonLink).filter(
@@ -204,8 +288,16 @@ class ScraperPersister:
                             self.db.flush()
                     except Exception:
                         studio = self.db.query(Studio).filter(Studio.name == s_name).first()
+                elif studio_info.get("logo_path") and (
+                    not studio.logo_path 
+                    or (studio.logo_path.startswith("logos/") and studio.logo_path.lower().endswith((".jpg", ".jpeg")))
+                ):
+                    studio.logo_path = studio_info["logo_path"]
+
                 if studio not in match.studios:
                     match.studios.append(studio)
+                
+                self._queue_studio_logo(studio)
 
             # 3. Map Collection details
             coll_info = norm["collection"]
@@ -271,6 +363,9 @@ class ScraperPersister:
                     tmdb_id=cast_member["tmdb_id"]
                 )
                 
+                # Queue profile image download
+                self._queue_person_profile(person)
+
                 # Check Link
                 link = self.db.query(MediaPersonLink).filter(
                     MediaPersonLink.match_id == match.id if match.id else False,
@@ -311,6 +406,26 @@ class ScraperPersister:
             if not basename:
                 return None
 
+            ext = os.path.splitext(basename)[1].lower()
+            if ext not in {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'}:
+                try:
+                    import requests
+                    resp = requests.head(url, timeout=3, allow_redirects=True)
+                    ct = resp.headers.get("Content-Type", "").lower()
+                    if "png" in ct:
+                        ext = ".png"
+                    elif "webp" in ct:
+                        ext = ".webp"
+                    elif "gif" in ct:
+                        ext = ".gif"
+                    elif "svg" in ct:
+                        ext = ".svg"
+                    else:
+                        ext = ".jpg"
+                except Exception:
+                    ext = ".jpg"
+                basename = f"{basename}{ext}"
+
             safe_prefix = re.sub(r"[^A-Za-z0-9_.-]+", "_", prefix).strip("_")
             filename = f"{safe_prefix}_{basename}"
             task_manager.download_worker.enqueue_download(url, subfolder, filename)
@@ -323,3 +438,86 @@ class ScraperPersister:
         loc = next((l for l in match.localizations if l.locale == DEFAULT_FALLBACK_LANGUAGE), None)
         if loc:
             loc.local_poster_path = queue_image(loc.poster_path, "posters", asset_prefix)
+
+    def _queue_studio_logo(self, studio: Studio) -> None:
+        """Queues studio logo downloads."""
+        if not studio or not studio.logo_path:
+            return
+        if studio.logo_path.startswith("logos/"):
+            return
+
+        try:
+            from app.domains.tasks import task_manager
+            image_service = task_manager.download_worker.image_service
+        except Exception:
+            return
+
+        url = image_service.get_download_url(studio.logo_path, "logos")
+        if not url:
+            return
+
+        basename = os.path.basename(urlparse(studio.logo_path).path)
+        if not basename:
+            return
+
+        ext = _detect_remote_image_extension(url, studio.logo_path)
+        basename_root = Path(basename).stem or basename
+        basename = f"{basename_root}{ext}"
+
+        safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", studio.name).strip("_")
+        filename = f"studio_{safe_name}_{basename}"
+        studio.logo_path = f"logos/{filename}"
+        task_manager.download_worker.enqueue_download(url, "logos", filename)
+
+    def _queue_person_profile(self, person: Person) -> None:
+        """Queues person profile image downloads."""
+        if not person or not person.profile_path:
+            return
+        if person.local_profile_path and person.local_profile_path.startswith("people/"):
+            return
+
+        try:
+            from app.domains.tasks import task_manager
+            image_service = task_manager.download_worker.image_service
+        except Exception:
+            return
+
+        url = image_service.get_download_url(person.profile_path, "people")
+        if not url:
+            return
+
+        basename = os.path.basename(urlparse(person.profile_path).path)
+        if not basename:
+            return
+
+        try:
+            import requests
+            resp = requests.head(url, timeout=3, allow_redirects=True)
+            ct = resp.headers.get("Content-Type", "").lower()
+            if "png" in ct:
+                ext = ".png"
+            elif "webp" in ct:
+                ext = ".webp"
+            elif "gif" in ct:
+                ext = ".gif"
+            elif "svg" in ct:
+                ext = ".svg"
+            elif "jpeg" in ct or "jpg" in ct:
+                ext = ".jpg"
+            else:
+                ext = os.path.splitext(basename)[1].lower() or ".jpg"
+        except Exception:
+            ext = os.path.splitext(basename)[1].lower() or ".jpg"
+        basename = f"{basename}{ext}"
+
+        safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", person.name).strip("_")
+        ext_id = "unknown"
+        prov_val = "perf"
+        if person.external_ids:
+            for k, v in person.external_ids.items():
+                prov_val = k
+                ext_id = v
+                break
+        filename = f"{prov_val}_{ext_id}_{safe_name}_{basename}"
+        person.local_profile_path = f"people/{filename}"
+        task_manager.download_worker.enqueue_download(url, "people", filename)

@@ -36,7 +36,8 @@ class BaseScanResolutionPipeline:
         if stop_requested and stop_requested():
             return
 
-        self.resolver.propagate_match(item)
+        if self.mode != ScanMode.SCENES:
+            self.resolver.propagate_match(item)
 
         if item.status != ItemStatus.MATCHED:
             return

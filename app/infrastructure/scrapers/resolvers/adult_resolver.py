@@ -118,6 +118,24 @@ class AdultResolver:
             self.db.flush()
             return
 
+        from app.infrastructure.settings.db_settings_adapter import DbSettingsAdapter
+        settings_adapter = DbSettingsAdapter(self.db)
+        tolerance = int(settings_adapter.get_setting("scenes_duration_tolerance") or settings_adapter.get_setting("collision_duration_tolerance_seconds") or 10)
+
+        def validate_duration(scene):
+            if not item.duration:
+                return True
+            s_duration = scene.get("duration")
+            if s_duration in (None, "", 0):
+                return True
+            try:
+                scene_sec = float(s_duration)
+            except (TypeError, ValueError):
+                return True
+            if scene_sec <= 0:
+                return True
+            return abs(float(item.duration) - scene_sec) <= tolerance
+
         for scraper, provider in scrapers_to_try:
             scene_data = None
 
@@ -129,6 +147,7 @@ class AdultResolver:
                       id
                       title
                       details
+                      duration
                       date
                       tags { name }
                       studio { id name images { url } }
@@ -143,44 +162,64 @@ class AdultResolver:
                   }
                 }
                 """
-                for hash_type, hash_value in [('md5', item.hash_md5), ('oshash', item.hash_oshash)]:
+                for hash_type, hash_value in [('md5', item.hash_md5), ('oshash', item.hash_oshash), ('phash', item.hash_phash)]:
                     if scene_data or not hash_value:
                         continue
                     logger.info('[adult:%s] Trying %s %s lookup for %s', mode.value, provider.value, hash_type.upper(), item.filename)
                     cache_key = f'{provider.value}/hash/v3/{hash_type}/{hash_value}'
                     cached = scraper.cache.get(provider, cache_key)
                     if cached is not None:
-                        scene_data = cached or None
+                        # Verify cached match duration
+                        if cached and validate_duration(cached):
+                            scene_data = cached
                         continue
                     try:
                         res = scraper.execute_query(hash_query, {'hash': hash_value})
                         scenes = res.get('queryScenes', {}).get('scenes') if res else []
-                        scene_data = scenes[0] if scenes else None
-                        scraper.cache.set(provider, cache_key, scene_data or {})
+                        candidate = scenes[0] if scenes else None
+                        if candidate and validate_duration(candidate):
+                            scene_data = candidate
+                            scraper.cache.set(provider, cache_key, scene_data or {})
+                        else:
+                            if candidate:
+                                logger.info('[adult:%s] Hash match found but duration check failed (local: %s, remote: %s, tol: %s)', mode.value, item.duration, candidate.get("duration"), tolerance)
+                            scraper.cache.set(provider, cache_key, {})
                     except Exception as exc:
                         logger.error('%s %s hash query failed: %s', provider.value, hash_type.upper(), exc)
-            elif provider == Provider.PORNDB and item.hash_oshash:
+            elif provider == Provider.PORNDB:
                 api_token = scraper.get_setting('porndb_api_key') or scraper.get_setting('porndb_api_token')
                 headers = {
                     'Authorization': f'Bearer {api_token}',
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                 }
-                cache_key = f'porndb/scenes/hash/oshash/{item.hash_oshash}'
-                cached = scraper.cache.get(provider, cache_key)
-                if cached is not None:
-                    scene_data = cached or None
-                else:
-                    url = f'{PORNDB_API_BASE}/scenes/hash/{item.hash_oshash}?type=OSHASH'
+                for hash_type, hash_value in [('oshash', item.hash_oshash), ('md5', item.hash_md5)]:
+                    if scene_data or not hash_value:
+                        continue
+                    cache_key = f'porndb/scenes/hash/v2/{hash_type.lower()}/{hash_value}'
+                    cached = scraper.cache.get(provider, cache_key)
+                    if cached is not None:
+                        if cached and validate_duration(cached):
+                            scene_data = cached
+                        continue
+                    url = f'{PORNDB_API_BASE}/scenes/hash/{hash_value}?type={hash_type.upper()}'
                     try:
                         resp = scraper.session.get(url, headers=headers, timeout=SCRAPER_REQUEST_TIMEOUT)
                         logger.info('[adult:%s] PornDB GET %s -> status %s', mode.value, url, resp.status_code)
                         if resp.status_code == 200:
                             res_json = resp.json()
-                            scene_data = (res_json or {}).get('data')
-                        scraper.cache.set(provider, cache_key, scene_data or {})
+                            candidate = (res_json or {}).get('data')
+                            if candidate and validate_duration(candidate):
+                                scene_data = candidate
+                                scraper.cache.set(provider, cache_key, scene_data or {})
+                            else:
+                                if candidate:
+                                    logger.info('[adult:%s] PornDB hash match found but duration check failed (local: %s, remote: %s, tol: %s)', mode.value, item.duration, candidate.get("duration"), tolerance)
+                                scraper.cache.set(provider, cache_key, {})
+                        else:
+                            scraper.cache.set(provider, cache_key, {})
                     except Exception as exc:
-                        logger.error('PornDB OSHASH query failed for scenes: %s', exc)
+                        logger.error('PornDB %s query failed for scenes: %s', hash_type.upper(), exc)
 
             if scene_data:
                 logger.info('[adult:%s] Hash lookup matched %s -> provider=%s external_id=%s title=%s', mode.value, item.filename, provider.value, scene_data.get('id'), scene_data.get('title'))

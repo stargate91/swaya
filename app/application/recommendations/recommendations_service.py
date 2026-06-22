@@ -50,6 +50,8 @@ class RecommendationsService:
 
     def _infer_organizer_type(self, item: MediaItem) -> str:
         scan_mode = str((item.parsed_info or {}).get("scan_mode") or "").lower()
+        if scan_mode == "scenes":
+            return MediaType.SCENE.value
 
         if item.matches:
             return item.matches[0].media_type.value
@@ -184,24 +186,34 @@ class RecommendationsService:
         parent_statuses = {}
         pref_lang = self._preferred_metadata_language()
 
+        # Pre-generate all previews to resolve collisions in batch
+        previews = []
+        preview_map = {}
         for item in items:
             active_match = next((m for m in item.matches), None)
-            planned_path = item.planned_path
-            action = None
-
-            # Determine resolved target language for this specific item (override or global config default)
             overrides = item.overrides
             target_lang = overrides.custom_language if (overrides and overrides.custom_language) else (formatter.config.default_target_language or pref_lang)
-
             if active_match:
                 loc = LanguageService.get_best_localization(active_match.localizations, target_lang)
                 if loc:
                     try:
                         preview = formatter.format_item(item, active_match, loc)
-                        planned_path = str(preview.target_path).replace("\\", "/")
-                        action = getattr(preview, "action", "rename")
+                        previews.append(preview)
+                        preview_map[item.id] = preview
                     except Exception:
                         pass
+
+        if previews:
+            formatter.resolve_collisions(previews)
+
+        for item in items:
+            preview = preview_map.get(item.id)
+            if preview:
+                planned_path = str(preview.target_path).replace("\\", "/")
+                action = getattr(preview, "action", "rename")
+            else:
+                planned_path = item.planned_path
+                action = None
 
             parent_planned_paths[item.id] = planned_path
 
@@ -217,7 +229,8 @@ class RecommendationsService:
                     "poster_path": loc.poster_path if loc else None,
                     "vote_average": m.rating_tmdb,
                     "is_active": True,
-                    "confidence": m.confidence_score
+                    "confidence": m.confidence_score,
+                    "is_adult": m.is_adult
                 })
 
             itype = self._infer_organizer_type(item)
@@ -276,6 +289,12 @@ class RecommendationsService:
 
             parent_types[item.id] = itype
             parent_statuses[item.id] = item.status.value
+            item_scan_mode = str((item.parsed_info or {}).get("scan_mode") or "").lower()
+            parent_scan_modes = getattr(self, "_parent_scan_modes", None)
+            if parent_scan_modes is None:
+                parent_scan_modes = {}
+                self._parent_scan_modes = parent_scan_modes
+            parent_scan_modes[item.id] = item_scan_mode
 
             item_dto = {
                 "id": item.id,
@@ -290,7 +309,8 @@ class RecommendationsService:
                 "matches": matches_dto,
                 "current_path": item.current_path,
                 "action": action,
-                "target_language": target_lang
+                "target_language": target_lang,
+                "scan_mode": item_scan_mode
             }
 
             if item.status in [ItemStatus.NEW, ItemStatus.UNCERTAIN, ItemStatus.NO_MATCH, ItemStatus.MULTIPLE, ItemStatus.ERROR]:
@@ -309,6 +329,7 @@ class RecommendationsService:
             ~MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED, ItemStatus.IGNORED])
         ).all()
 
+        parent_scan_modes = getattr(self, "_parent_scan_modes", {})
         for ex in extras:
             parent_p_path = parent_planned_paths.get(ex.media_item_id) or ""
             groups["extras"].append({
@@ -324,7 +345,8 @@ class RecommendationsService:
                 "language": ex.language,
                 "path": ex.current_path,
                 "planned_path": str(Path(parent_p_path).parent / ex.filename).replace("\\", "/"),
-                "action": "rename"
+                "action": "rename",
+                "parent_scan_mode": parent_scan_modes.get(ex.media_item_id, "")
             })
 
         return OrganizerGroupsResponse(**groups)

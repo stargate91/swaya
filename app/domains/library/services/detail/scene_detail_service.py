@@ -3,9 +3,10 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from fastapi.responses import JSONResponse
 
-from app.shared_kernel.enums import Provider
+from app.shared_kernel.enums import Provider, MediaType
 from app.domains.users.models import UserOverride
 from app.shared_kernel.ports.scrapers import ScraperGatewayPort
+from app.domains.metadata.models import Studio, MetadataMatch
 from app.domains.library.services.detail._detail_formatter import DetailFormatter
 
 logger = logging.getLogger(__name__)
@@ -54,14 +55,31 @@ class SceneDetailService(DetailFormatter):
         
         studio_data = scene_data.get("studio") or {}
         studio_name = studio_data.get("name")
-        studio_images = studio_data.get("images") or []
-        studio_logo = studio_images[0].get("url") if studio_images else None
+        
+        studio_logo = None
+        if studio_name:
+            studio_db = db.query(Studio).filter(Studio.name == studio_name).first()
+            if studio_db:
+                studio_logo = studio_db.logo_path
+        
+        if not studio_logo:
+            studio_images = studio_data.get("images") or []
+            studio_logo = studio_images[0].get("url") if studio_images else None
         
         parent_data = studio_data.get("parent") or {}
         parent_name = parent_data.get("name")
-        parent_images = parent_data.get("images") or []
-        parent_logo = parent_images[0].get("url") if parent_images else None
         
+        parent_logo = None
+        if parent_name:
+            parent_studio_db = db.query(Studio).filter(Studio.name == parent_name).first()
+            if parent_studio_db:
+                parent_logo = parent_studio_db.logo_path
+                
+        if not parent_logo:
+            parent_images = parent_data.get("images") or []
+            parent_logo = parent_images[0].get("url") if parent_images else None
+        
+        from app.domains.people.models import Person
         cast = []
         for p_entry in scene_data.get("performers") or []:
             perf = p_entry.get("performer") or {}
@@ -76,12 +94,18 @@ class SceneDetailService(DetailFormatter):
             elif gender_str:
                 mapped_gender = 3
             
+            person_db = db.query(Person).filter(Person.name == perf.get("name")).first()
+            if person_db and (person_db.local_profile_path or person_db.profile_path):
+                resolved_img = self._resolve_img(person_db.local_profile_path or person_db.profile_path, "people")
+            else:
+                resolved_img = p_img
+
             cast.append({
                 "id": perf.get("id"),
                 "name": perf.get("name"),
                 "character": None,
                 "job": "Actor",
-                "profile_path": p_img,
+                "profile_path": resolved_img,
                 "popularity": perf.get("rating_porndb") or 0,
                 "rating_porndb": perf.get("rating_porndb"),
                 "scene_count": perf.get("scene_count"),
@@ -94,6 +118,32 @@ class SceneDetailService(DetailFormatter):
             UserOverride.user_id == current_uid,
             UserOverride.custom_title == title
         ).first()
+        
+        # Resolve local paths from DB match if it exists
+        match_db = db.query(MetadataMatch).filter(
+            MetadataMatch.external_id == scene_uuid,
+            MetadataMatch.media_type == MediaType.SCENE
+        ).first()
+        
+        local_poster = None
+        local_backdrop = None
+        if match_db:
+            local_backdrop = match_db.local_backdrop_path
+            loc_db = next((l for l in match_db.localizations if l.locale == "en"), None)
+            if loc_db:
+                local_poster = loc_db.local_poster_path
+
+        poster_resolved = None
+        if local_poster:
+            poster_resolved = self._resolve_img(local_poster, "posters")
+        if not poster_resolved:
+            poster_resolved = poster_url
+
+        backdrop_resolved = None
+        if local_backdrop:
+            backdrop_resolved = self._resolve_img(local_backdrop, "scene_stills")
+        if not backdrop_resolved:
+            backdrop_resolved = poster_url
         
         result = {
             "id": f"stash_{scene_uuid}",
@@ -113,8 +163,8 @@ class SceneDetailService(DetailFormatter):
             "vote_count_tmdb": 0,
             "companies": [{"name": studio_name, "logo_path": self._resolve_img(studio_logo, "logos")}] if studio_name else [],
             "networks": [{"name": parent_name, "logo_path": self._resolve_img(parent_logo, "logos")}] if parent_name else [],
-            "poster_path": poster_url,
-            "backdrop_path": None,
+            "poster_path": poster_resolved,
+            "backdrop_path": backdrop_resolved,
             "original_language": None,
             "type": "scene",
             "cast": cast,

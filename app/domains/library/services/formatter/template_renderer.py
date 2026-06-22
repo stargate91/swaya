@@ -103,9 +103,21 @@ class TemplateRenderer:
             
         return str(n).zfill(width) if self.config.zero_pad else str(n)
 
+    EMOJI_PATTERN = re.compile(
+        "["
+        "\U00010000-\U0010ffff"
+        "\u2600-\u27BF"
+        "\u2300-\u23FF"
+        "\u2B50"
+        "]+",
+        flags=re.UNICODE
+    )
+
     def sanitize(self, text: str, is_file: bool = True) -> str:
         if not text:
             return ""
+        # Strip emojis first
+        text = self.EMOJI_PATTERN.sub("", text)
         if is_file:
             return self.MULTI_SPACE.sub(" ", self.ILLEGAL_CHARS.sub("", text)).strip(". ")
         else:

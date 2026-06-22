@@ -98,6 +98,16 @@ class PornDBMovieResolver:
         if not movie:
             return False
 
+        from app.infrastructure.settings.db_settings_adapter import DbSettingsAdapter
+        settings_adapter = DbSettingsAdapter(self.db)
+        tolerance = int(settings_adapter.get_setting("collision_duration_tolerance_seconds") or 10)
+
+        if item.duration:
+            movie_duration = self._movie_runtime_seconds(movie)
+            if movie_duration and abs(float(item.duration) - float(movie_duration)) > tolerance:
+                logger.info('[movie] Movie hash matched but duration check failed (local: %s, remote: %s, tol: %s)', item.duration, movie_duration, tolerance)
+                return False
+
         self._persist(item, movie)
         self.scraper.log_search(
             task_id=task_id,

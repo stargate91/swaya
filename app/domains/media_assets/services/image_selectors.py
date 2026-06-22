@@ -12,6 +12,7 @@ from app.shared_kernel.constants import (
     LOGO_MIN_LUMINANCE_RATIO,
     BACKDROP_BRIGHTNESS_THRESHOLD,
     BACKDROP_MAX_BRIGHT_PIXELS_RATIO,
+    BACKDROP_4K_WIDTH,
     BACKDROP_ULTRA_HD_WIDTH,
     BACKDROP_DEFAULT_MIN_WIDTH,
     IMAGE_DOWNLOAD_TIMEOUT,
@@ -209,13 +210,13 @@ def pick_backdrop_path(
 
     ranked_backdrops = sorted(neutral_backdrops, key=backdrop_score)
 
-    # 1. Look for a good neutral backdrop >= 2560px
+    # 1. Look for a good neutral backdrop >= BACKDROP_4K_WIDTH (4K)
     fallback_candidate = None
     fallback_tone = None
     for bd in ranked_backdrops:
         file_path = bd.get("file_path")
         width = int(bd.get("width") or 0)
-        if not file_path or width < BACKDROP_ULTRA_HD_WIDTH:
+        if not file_path or width < BACKDROP_4K_WIDTH:
             continue
         tone = probe_backdrop_tone(file_path, image_root, session)
         if tone is None:
@@ -226,11 +227,26 @@ def pick_backdrop_path(
             fallback_candidate = file_path
             fallback_tone = tone
 
-    # 2. Look for a good one >= min_width (1920px)
+    # 2. Look for a good neutral backdrop in [2K, 4K) range
     for bd in ranked_backdrops:
         file_path = bd.get("file_path")
         width = int(bd.get("width") or 0)
-        if not file_path or width < min_width:
+        if not file_path or width < BACKDROP_ULTRA_HD_WIDTH or width >= BACKDROP_4K_WIDTH:
+            continue
+        tone = probe_backdrop_tone(file_path, image_root, session)
+        if tone is None:
+            return file_path
+        if tone[0] <= BACKDROP_MAX_BRIGHT_PIXELS_RATIO:
+            return file_path
+        if fallback_candidate is None or fallback_tone is None or tone[0] < fallback_tone[0]:
+            fallback_candidate = file_path
+            fallback_tone = tone
+
+    # 3. Look for a good one in [min_width, 2K) range
+    for bd in ranked_backdrops:
+        file_path = bd.get("file_path")
+        width = int(bd.get("width") or 0)
+        if not file_path or width < min_width or width >= BACKDROP_ULTRA_HD_WIDTH:
             continue
         tone = probe_backdrop_tone(file_path, image_root, session)
         if tone is None:

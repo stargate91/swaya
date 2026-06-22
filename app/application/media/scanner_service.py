@@ -336,19 +336,23 @@ class ScannerService:
         engine = RenamerEngine(self.db)
         formatter = build_formatter_from_db(self.db)
         
-        for idx, item in enumerate(items):
+        # Pre-plan all previews to resolve collisions in batch
+        previews = []
+        for item in items:
+            active_match = next((m for m in item.matches), None)
+            if not active_match:
+                continue
+            dest_root = formatter.config.library_path if formatter.config.move_to_library and formatter.config.library_path else os.path.dirname(item.current_path)
+            preview = formatter.plan_rename(active_match, dest_root)
+            previews.append(preview)
+
+        if previews:
+            formatter.resolve_collisions(previews)
+
+        for idx, preview in enumerate(previews):
             if self._is_stop_requested():
                 break
                 
-            active_match = next((m for m in item.matches), None)
-            if not active_match:
-                with ScannerService.scan_status_lock:
-                    ScannerService.scan_status["current"] += 1
-                continue
-                
-            dest_root = formatter.config.library_path if formatter.config.move_to_library and formatter.config.library_path else os.path.dirname(item.current_path)
-            preview = formatter.plan_rename(active_match, dest_root)
-            
             def progress_cb(pct):
                 with ScannerService.scan_status_lock:
                     ScannerService.scan_status["current_file_progress"] = pct
@@ -359,7 +363,7 @@ class ScannerService:
                 ScannerService.scan_status["current"] += 1
                 ScannerService.scan_status["current_file_progress"] = 0.0
                 
-            self.task_manager.update_progress(task_id, ((idx + 1) / len(items)) * 100.0)
+            self.task_manager.update_progress(task_id, ((idx + 1) / len(previews)) * 100.0)
             
         with ScannerService.scan_status_lock:
             ScannerService.scan_status["active"] = False

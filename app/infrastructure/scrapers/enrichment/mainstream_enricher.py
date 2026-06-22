@@ -442,6 +442,27 @@ class MainstreamEnricher:
         basename = os.path.basename(urlparse(path).path)
         if not basename:
             return None
+
+        ext = os.path.splitext(basename)[1].lower()
+        if ext not in {'.jpg', '.jpeg', '.png', '.webp', '.gif', '.svg'}:
+            try:
+                import requests
+                resp = requests.head(url, timeout=3, allow_redirects=True)
+                ct = resp.headers.get("Content-Type", "").lower()
+                if "png" in ct:
+                    ext = ".png"
+                elif "webp" in ct:
+                    ext = ".webp"
+                elif "gif" in ct:
+                    ext = ".gif"
+                elif "svg" in ct:
+                    ext = ".svg"
+                else:
+                    ext = ".jpg"
+            except Exception:
+                ext = ".jpg"
+            basename = f"{basename}{ext}"
+
         safe_prefix = re.sub(r"[^A-Za-z0-9_.-]+", "_", prefix).strip("_")
         filename = f"{safe_prefix}_{basename}"
         task_manager.download_worker.enqueue_download(url, subfolder, filename)
@@ -479,6 +500,12 @@ class MainstreamEnricher:
                 if not studio:
                     studio = Studio(name=s_name, logo_path=comp.get("logo_path"))
                     self.db.add(studio)
+
+                if studio.logo_path and not studio.logo_path.startswith("logos/"):
+                    local_logo = self._queue_image(studio.logo_path, "logos", f"studio_{studio.name}")
+                    if local_logo:
+                        studio.logo_path = local_logo
+
                 if studio not in match.studios:
                     match.studios.append(studio)
 

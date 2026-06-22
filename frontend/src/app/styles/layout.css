@@ -95,7 +95,16 @@
   grid-template-columns: 236px minmax(0, 1fr);
   height: 100vh;
   padding-top: var(--layout-window-titlebar-height);
-  transition: grid-template-columns var(--motion-fast);
+  transition:
+    grid-template-columns var(--motion-fast),
+    filter 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  will-change: filter, transform;
+}
+
+.shell.is-transitioning {
+  filter: blur(6px);
+  transform: scale(0.985);
 }
 
 .shell.is-sidebar-collapsed {

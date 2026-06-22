@@ -1,4 +1,5 @@
 import { Minus, Square, X, AlertTriangle, Flame } from 'lucide-react';
+import { flushSync } from 'react-dom';
 import UtilityButton from '../ui/UtilityButton';
 import ProgressBar from '../ui/ProgressBar';
 import Button from '../ui/Button';
@@ -56,6 +57,23 @@ export default function WindowTitlebar() {
     });
   };
 
+  const handleToggleClick = () => {
+    const shell = document.querySelector('.shell');
+    if (shell) {
+      shell.classList.add('is-transitioning');
+    }
+
+    setTimeout(() => {
+      toggleSessionMode();
+
+      setTimeout(() => {
+        if (shell) {
+          shell.classList.remove('is-transitioning');
+        }
+      }, 150);
+    }, 200);
+  };
+
   return (
     <header className="window-titlebar">
       {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
@@ -83,7 +101,7 @@ export default function WindowTitlebar() {
               className={`window-titlebar__button window-titlebar__button--adult-toggle ${sessionMode === 'nsfw' ? 'is-nsfw' : ''}`.trim()}
               tabIndex={-1}
               aria-label="Toggle Adult Mode"
-              onClick={toggleSessionMode}
+              onClick={handleToggleClick}
             >
               <Flame size={18} fill={sessionMode === 'nsfw' ? 'currentColor' : 'none'} />
             </UtilityButton>

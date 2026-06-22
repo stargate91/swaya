@@ -33,14 +33,72 @@ export function useOrganizerFilteredRows({
   activeManualTab,
   dismissedRowIds,
   scanMode,
+  sessionMode,
 }) {
+  const isAdultPath = (path) => {
+    if (!path) return false;
+    const p = path.toLowerCase();
+    return p.includes('adult') || p.includes('porn') || p.includes('xxx') || p.includes('scenes');
+  };
+
+  const matchesSessionMode = useMemo(() => {
+    return (item) => {
+      const itemScanMode = item.scan_mode || '';
+      
+      // 1. Within NSFW mode: movies_tv vs scenes
+      if (scanMode === 'scenes') {
+        if (itemScanMode !== 'scenes') return false;
+      } else if (scanMode === 'movies_tv') {
+        if (itemScanMode !== 'movies_tv' && itemScanMode !== 'porndb_movie') return false;
+      }
+
+      // 2. SFW vs NSFW mode separation
+      const isAdult = item.matches?.some(m => m.is_adult) || 
+                      String(item.type).toLowerCase() === 'scene' || 
+                      itemScanMode === 'porndb_movie' || 
+                      itemScanMode === 'scenes' ||
+                      isAdultPath(item.current_path);
+
+      if (sessionMode === 'nsfw') {
+        return isAdult;
+      } else {
+        return !isAdult;
+      }
+    };
+  }, [sessionMode, scanMode]);
+
+  const matchesSessionModeExtra = useMemo(() => {
+    return (extra) => {
+      const parentScanMode = extra.parent_scan_mode || '';
+
+      // 1. Within NSFW mode: movies_tv vs scenes
+      if (scanMode === 'scenes') {
+        if (parentScanMode !== 'scenes') return false;
+      } else if (scanMode === 'movies_tv') {
+        if (parentScanMode === 'scenes') return false;
+      }
+
+      // 2. SFW vs NSFW mode separation
+      const parentIsAdult = extra.parent_type === 'scene' || 
+                            parentScanMode === 'scenes' || 
+                            parentScanMode === 'porndb_movie' || 
+                            isAdultPath(extra.path);
+
+      if (sessionMode === 'nsfw') {
+        return parentIsAdult;
+      } else {
+        return !parentIsAdult;
+      }
+    };
+  }, [sessionMode, scanMode]);
+
   const reviewOrganizerMedia = useMemo(
     () => [
       ...(organizer.manual || []),
       ...(organizer.movies || []),
       ...(organizer.tv || []),
-    ],
-    [organizer],
+    ].filter(matchesSessionMode),
+    [organizer, matchesSessionMode],
   );
 
   const matchedOrganizerMedia = useMemo(
@@ -48,9 +106,13 @@ export function useOrganizerFilteredRows({
       ...(organizer.movies || []),
       ...(organizer.tv || []),
       ...(organizer.collisions || []),
-    ],
-    [organizer],
+    ].filter(matchesSessionMode),
+    [organizer, matchesSessionMode],
   );
+
+  const filteredExtras = useMemo(() => {
+    return (organizer.extras || []).filter(matchesSessionModeExtra);
+  }, [organizer.extras, matchesSessionModeExtra]);
 
   const tabCounts = useMemo(() => {
     const visibleReview = reviewOrganizerMedia.filter((item) => {
@@ -74,7 +136,7 @@ export function useOrganizerFilteredRows({
     const episodesCount = visibleMatched.filter((item) => isEpisodeMediaType(item.type)).length;
     const scenesCount = visibleMatched.filter((item) => isSceneType(item.type)).length;
 
-    const extrasCount = (organizer.extras || []).filter((item) => {
+    const extrasCount = filteredExtras.filter((item) => {
       const id = `extra-${item.id}`;
       const parentId = `item-${item.parent_id || item.parent_item_id}`;
       return isExtraForMode(item, scanMode) && !dismissedRowIds.has(id) && !dismissedRowIds.has(parentId);
@@ -90,7 +152,7 @@ export function useOrganizerFilteredRows({
       scenesCount,
       extrasCount,
     };
-  }, [organizer, matchedOrganizerMedia, reviewOrganizerMedia, dismissedRowIds, scanMode]);
+  }, [organizer, matchedOrganizerMedia, reviewOrganizerMedia, dismissedRowIds, scanMode, filteredExtras]);
 
   const tabFilteredRows = useMemo(() => {
     let rows = [];
@@ -118,7 +180,7 @@ export function useOrganizerFilteredRows({
         .filter((item) => isSceneType(item.type) && MATCHED_STATUSES.has(normalizeItemStatus(item.status)))
         .map((item) => mapOrganizerItemRow(item, t));
     } else if (activeMainTab === 'extras') {
-      rows = (organizer.extras || [])
+      rows = filteredExtras
         .filter((item) => isExtraForMode(item, scanMode) && item.category === EXTRA_CATEGORY_BY_TAB[activeExtrasTab])
         .map((item) => mapExtraRow(item, t));
     }

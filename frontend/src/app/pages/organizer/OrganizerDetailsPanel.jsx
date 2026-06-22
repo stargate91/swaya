@@ -3,6 +3,7 @@ import Button from '../../ui/Button';
 import Tooltip from '../../ui/Tooltip';
 import MediaCard from '../../ui/MediaCard';
 import PosterCard from '../../ui/PosterCard';
+import BackdropCard from '../../ui/BackdropCard';
 import { ChevronLeft, ChevronRight, FileJson, Info } from 'lucide-react';
 import { API_BASE } from '../../lib/backend';
 import { resolveMediaImageUrl } from '@/lib/imageUrls';
@@ -162,7 +163,24 @@ export default function OrganizerDetailsPanel({
               </div>
               <div className="organizer-details__content">
                 {shouldShowDetailsPoster ? (
-                  activeImages.length > 1 ? (
+                  activeRow?.rawType === 'scene' ? (
+                    <BackdropCard
+                      className="organizer-details__backdrop-card"
+                      imageUrl={activeImage ? resolveOrganizerImageUrl(activeImage.path) : undefined}
+                      onClick={activeImages.length > 1 ? onAdvanceImage : undefined}
+                    >
+                      {activeImages.length > 1 ? (
+                        <div className="organizer-details__poster-dots" aria-hidden="true">
+                          {activeImages.map((image, index) => (
+                            <span
+                              key={`${image.path}-${index}`}
+                              className={`organizer-details__poster-dot${index === activeImageIndex ? ' is-active' : ''}`}
+                            />
+                          ))}
+                        </div>
+                      ) : null}
+                    </BackdropCard>
+                  ) : activeImages.length > 1 ? (
                     <PosterCard
                       className="organizer-details__poster-card has-image"
                       imageUrl={resolveOrganizerImageUrl(activeImage?.path)}

@@ -278,10 +278,10 @@ class ScanCollector:
                         moved_item.hash_sha256 = res.get("hash_sha256")
                     else:
                         if self.mode == ScanMode.SCENES:
-                            moved_item.hash_md5 = calculate_full_md5(str(p))
+                            moved_item.hash_md5 = None
                             moved_item.hash_oshash = calculate_oshash(str(p))
-                            moved_item.hash_phash = None
-                            moved_item.hash_sha256 = calculate_full_sha256(str(p))
+                            moved_item.hash_phash = calculate_phash(str(p))
+                            moved_item.hash_sha256 = None
                         else:
                             moved_item.hash_md5 = file_hash
                             moved_item.hash_oshash = calculate_oshash(str(p))
@@ -302,10 +302,10 @@ class ScanCollector:
                             existing.hash_sha256 = res.get("hash_sha256")
                         else:
                             if self.mode == ScanMode.SCENES:
-                                existing.hash_md5 = calculate_full_md5(str(p))
+                                existing.hash_md5 = None
                                 existing.hash_oshash = calculate_oshash(str(p))
-                                existing.hash_phash = None
-                                existing.hash_sha256 = calculate_full_sha256(str(p))
+                                existing.hash_phash = calculate_phash(str(p))
+                                existing.hash_sha256 = None
                             else:
                                 existing.hash_md5 = file_hash
                                 existing.hash_oshash = calculate_oshash(str(p))
@@ -330,10 +330,10 @@ class ScanCollector:
                             item.hash_sha256 = res.get("hash_sha256")
                         else:
                             if self.mode == ScanMode.SCENES:
-                                item.hash_md5 = calculate_full_md5(str(p))
+                                item.hash_md5 = None
                                 item.hash_oshash = calculate_oshash(str(p))
-                                item.hash_phash = None
-                                item.hash_sha256 = calculate_full_sha256(str(p))
+                                item.hash_phash = calculate_phash(str(p))
+                                item.hash_sha256 = None
                             else:
                                 item.hash_md5 = file_hash
                                 item.hash_oshash = calculate_oshash(str(p))
@@ -488,9 +488,13 @@ class ScanCollector:
         # 2. Compute Hashes
         result["hash_oshash"] = calculate_oshash(filepath_str)
         if self.mode == ScanMode.SCENES:
-            result["hash_md5"] = calculate_full_md5(filepath_str)
-            result["hash_phash"] = None
-            result["hash_sha256"] = calculate_full_sha256(filepath_str)
+            result["hash_md5"] = None
+            # Calculate phash using the probed duration
+            duration = None
+            if result.get("probe_info"):
+                duration = result["probe_info"].get("duration")
+            result["hash_phash"] = calculate_phash(filepath_str, duration)
+            result["hash_sha256"] = None
         else:
             result["hash_md5"] = calculate_fast_hash(filepath_str)
             result["hash_phash"] = None

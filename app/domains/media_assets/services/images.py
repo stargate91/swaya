@@ -178,13 +178,34 @@ class ImageProcessingService:
         except Exception:
             pass
 
-        # Verify image integrity via PIL (unless SVG)
+        # Verify image integrity via PIL (unless SVG) and cap at 4K for scene_stills/backdrops
         if not is_svg:
             try:
+                need_save = False
                 with Image.open(temp_path) as img:
                     img.verify()
+                
+                # Open again to process/resize if needed
+                with Image.open(temp_path) as img:
+                    img_format = img.format or "JPEG"
+                    if "scene_stills" in target_path.parts or "backdrops" in target_path.parts:
+                        width, height = img.size
+                        if width > 3840 or height > 3840:
+                            if width >= height:
+                                new_width = 3840
+                                new_height = int(height * (3840.0 / float(width)))
+                            else:
+                                new_height = 3840
+                                new_width = int(width * (3840.0 / float(height)))
+                            img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                            need_save = True
+
+                    if need_save:
+                        if img_format == "JPEG" and img.mode in ("RGBA", "LA", "P"):
+                            img = img.convert("RGB")
+                        img.save(temp_path, img_format)
             except Exception as e:
-                logger.error(f"Image integrity check failed: {e}")
+                logger.error(f"Image verification/processing failed: {e}")
                 return None
 
         if target_path.exists():

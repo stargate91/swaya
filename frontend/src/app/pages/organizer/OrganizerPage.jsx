@@ -191,7 +191,7 @@ export default function OrganizerPage() {
     restoreDismissedRows,
     dismissedCount,
     dismissedRowIds,
-  } = useOrganizerPageState({ organizer, t, scanMode });
+  } = useOrganizerPageState({ organizer, t, scanMode, sessionMode });
 
   const {
     handleBrowseAndScan,

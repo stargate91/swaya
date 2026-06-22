@@ -9,7 +9,7 @@ import { useOrganizerFocus } from './hooks/useOrganizerFocus';
 
 const isPornDbMovieMode = (scanMode) => scanMode === 'porndb_movie';
 
-export function useOrganizerPageState({ organizer, t, scanMode }) {
+export function useOrganizerPageState({ organizer, t, scanMode, sessionMode }) {
   const {
     activeMainTab,
     setActiveMainTab,
@@ -37,6 +37,7 @@ export function useOrganizerPageState({ organizer, t, scanMode }) {
     activeManualTab,
     dismissedRowIds,
     scanMode,
+    sessionMode,
   });
   useEffect(() => {
     const allowedMainTabs = scanMode === 'scenes'

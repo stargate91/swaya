@@ -33,8 +33,9 @@ export function useOrganizerDetailsState({ sortedRows = [], paginatedRows = [] }
   const activeImages = activeRow?.images || [];
   const activeImage = activeImages[activeImageIndex] || activeImages[0] || null;
 
+  const isScene = activeRow?.rawType === 'scene';
   const shouldShowDetailsPoster = (activeRow?.rawStatus === 'matched' || activeRow?.rawStatus === 'uncertain' || activeRow?.rawStatus === 'multiple') &&
-    isMovieOrEpisodeMediaType(activeRow?.rawType) &&
+    (isMovieOrEpisodeMediaType(activeRow?.rawType) || isScene) &&
     activeImages.length > 0;
 
   const shouldShowDetailsCarousel = isEpisodeMediaType(activeRow?.rawType) && activeImages.length > 1;

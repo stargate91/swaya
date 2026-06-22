@@ -42,6 +42,7 @@ class OrganizerMatch(BaseModel):
     vote_average: Optional[float] = None
     is_active: bool
     confidence: Optional[float] = None
+    is_adult: Optional[bool] = None
 
 class OrganizerItem(BaseModel):
     id: int
@@ -57,6 +58,7 @@ class OrganizerItem(BaseModel):
     current_path: Optional[str] = None
     action: Optional[str] = None
     target_language: Optional[str] = None
+    scan_mode: Optional[str] = None
 
 class OrganizerExtra(BaseModel):
     id: int
@@ -72,6 +74,7 @@ class OrganizerExtra(BaseModel):
     path: str
     planned_path: str
     action: str
+    parent_scan_mode: Optional[str] = None
 
 class OrganizerGroupsResponse(BaseModel):
     manual: List[OrganizerItem]

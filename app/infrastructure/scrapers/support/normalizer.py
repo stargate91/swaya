@@ -214,7 +214,7 @@ class ScraperNormalizer:
             
             # Images
             images = scene.get("images") or []
-            poster_url = (
+            poster_url_temp = (
                 image_variant(scene.get("posters"))
                 or scene.get("poster_image")
                 or scene.get("poster")
@@ -227,8 +227,9 @@ class ScraperNormalizer:
                 or scene.get("back_image")
                 or scene.get("image")
                 or first_image_url(images)
-                or poster_url
+                or poster_url_temp
             )
+            poster_url = backdrop_url
             
             studio_data = scene.get("studio") or scene.get("site")
             performers_raw = [
@@ -245,8 +246,9 @@ class ScraperNormalizer:
             overview = scene.get("description") or scene.get("details")
             release_date = safe_parse_date(scene.get("date"))
             rating_val = scene.get("rating_porndb") if provider == "porndb" else None
-            poster_url = image_variant(scene.get("posters")) or scene.get("poster_image") or scene.get("poster") or scene.get("image")
-            backdrop_url = image_variant(scene.get("background")) or image_variant(scene.get("background_back")) or scene.get("back_image") or scene.get("image") or poster_url
+            poster_url_temp = image_variant(scene.get("posters")) or scene.get("poster_image") or scene.get("poster") or scene.get("image")
+            backdrop_url = image_variant(scene.get("background")) or image_variant(scene.get("background_back")) or scene.get("back_image") or scene.get("image") or poster_url_temp
+            poster_url = backdrop_url
             studio_data = scene.get("studio") or scene.get("site")
             performers_raw = scene.get("performers") or []
             tags_raw = scene.get("tags") or []
