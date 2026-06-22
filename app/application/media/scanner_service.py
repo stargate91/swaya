@@ -211,7 +211,13 @@ class ScannerService:
                         ScannerService.scan_status["current"] = int(pct * 100)
                         ScannerService.scan_status["total"] = 100
                     self.task_manager.update_progress(task_id, pct * 0.5)
-                to_enrich, _ = await asyncio.to_thread(scanner.scan_library, lib.id, mode=scan_mode, progress_callback=progress_cb)
+                to_enrich, _ = await asyncio.to_thread(
+                    scanner.scan_library,
+                    lib.id,
+                    mode=scan_mode,
+                    progress_callback=progress_cb,
+                    provider=provider,
+                )
                 logger.info("[scan:%s] Library %s produced %s items to enrich", scan_mode.value, lib.root_path, len(to_enrich))
                 total_items_to_enrich.extend(to_enrich)
 

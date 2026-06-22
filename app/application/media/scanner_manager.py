@@ -47,6 +47,7 @@ class ScannerManager:
         library_id: int,
         mode: ScanMode = ScanMode.MOVIES_TV,
         progress_callback: Optional[callable] = None,
+        provider: Optional[str] = None,
     ) -> Tuple[List[MediaItem], Dict[str, Any]]:
         """
         Runs Phase 1 scanning on a specific Library.
@@ -66,6 +67,8 @@ class ScannerManager:
 
         logger.info(f"Scan settings ({mode.value}) - min_size_mb: {min_size_mb}, min_duration_mins: {min_duration_mins}")
 
+        collector_provider = provider if mode == ScanMode.SCENES else None
+
         collector_phase = pipeline.build_collector_phase(
             self.db,
             library,
@@ -75,6 +78,7 @@ class ScannerManager:
             min_size_mb=min_size_mb,
             min_duration_minutes=min_duration_mins,
             progress_callback=progress_callback,
+            provider=collector_provider,
         )
         
         try:

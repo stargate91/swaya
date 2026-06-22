@@ -107,6 +107,16 @@ export default function ScenesTab({
             disabled={isScanActive}
             onChange={handleChange('adult_min_video_duration_minutes')}
           />
+          <Input
+            label={t('settingsPage.sections.scenes.fansdbMinVideoDurationMinutes')}
+            hint={t('settingsPage.sections.scenes.fansdbMinVideoDurationMinutesHint')}
+            type="number"
+            min="0"
+            step="0.05"
+            value={form.fansdb_adult_min_video_duration_minutes}
+            disabled={isScanActive}
+            onChange={handleChange('fansdb_adult_min_video_duration_minutes')}
+          />
         </Stack>
       </Card>
 

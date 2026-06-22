@@ -16,7 +16,7 @@ const isPornDbMovieMode = (scanMode) => scanMode === 'porndb_movie';
 
 const isExtraForMode = (item, scanMode) => {
   const parentType = String(item.parent_type || '').toLowerCase();
-  if (scanMode === 'scenes') return parentType === 'scene' && item.category !== 'video';
+  if (scanMode === 'scenes') return parentType === 'scene';
   if (isPornDbMovieMode(scanMode)) return parentType === 'movie';
   return parentType !== 'scene';
 };

@@ -21,7 +21,7 @@ const isModeType = (item, scanMode) => {
 };
 
 const isExtraForMode = (item, scanMode) => {
-  if (scanMode === 'scenes' && item.category === 'video') return false;
+  if (scanMode === 'scenes') return isModeType({ type: item.parent_type }, scanMode);
   return isModeType({ type: item.parent_type }, scanMode);
 };
 

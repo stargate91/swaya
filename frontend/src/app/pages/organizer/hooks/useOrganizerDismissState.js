@@ -39,11 +39,11 @@ export function useOrganizerDismissState({ organizer, scopeKey }) {
   }, [organizer, scopeKey]);
 
   const dismissRows = (rowIds) => {
-    const parentRowIds = rowIds.filter((id) => id.startsWith('item-'));
-    if (parentRowIds.length === 0) return;
+    const validRowIds = rowIds.filter((id) => id.startsWith('item-') || id.startsWith('extra-'));
+    if (validRowIds.length === 0) return;
     setDismissedByScope((current) => {
       const next = new Set(current[scopeKey] || EMPTY_SET);
-      parentRowIds.forEach((id) => next.add(id));
+      validRowIds.forEach((id) => next.add(id));
       return {
         ...current,
         [scopeKey]: next,

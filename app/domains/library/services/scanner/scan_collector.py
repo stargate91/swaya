@@ -8,7 +8,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from concurrent.futures import ThreadPoolExecutor
 
-from app.shared_kernel.enums import ItemStatus, ExtraCategory, ExtraSubtype, ScanMode
+from app.shared_kernel.enums import ItemStatus, ExtraCategory, ExtraSubtype, ScanMode, Provider
 from app.domains.library.models import Library, MediaItem, ExtraFile
 from .collector import Collector
 from .categorizer import Categorizer
@@ -37,6 +37,11 @@ FORCED_EXTRA_VIDEO_SUBTYPES = {
     ExtraSubtype.SHORT,
     ExtraSubtype.PROMO,
     ExtraSubtype.CLIP,
+}
+
+SCENE_FORCE_EXTRA_VIDEO_SUBTYPES = {
+    ExtraSubtype.SAMPLE,
+    ExtraSubtype.TRAILER,
 }
 
 def sanitize_parsed_info(data):
@@ -70,7 +75,8 @@ class ScanCollector:
         analyzer: Optional[Analyzer] = None,
         mode: ScanMode = ScanMode.MOVIES_TV,
         min_video_duration_minutes: float = 10,
-        progress_callback: Optional[callable] = None
+        progress_callback: Optional[callable] = None,
+        provider: Optional[str] = None
     ):
         self.db = db
         self.library = library
@@ -82,14 +88,39 @@ class ScanCollector:
         self.mode = mode
         self.min_video_duration_minutes = min_video_duration_minutes
         self.progress_callback = progress_callback
+        self.provider = str(provider or "").strip().lower()
+
+    def _duration_limit_seconds(self) -> float:
+        provider_duration_overrides = {
+            Provider.FANSDB.value: "fansdb_adult_min_video_duration_minutes",
+        }
+        default_minutes = max(0.0, float(self.min_video_duration_minutes or 0))
+
+        if not self.provider or self.mode != ScanMode.SCENES:
+            return default_minutes * 60
+
+        setting_key = provider_duration_overrides.get(self.provider)
+        if not setting_key:
+            return default_minutes * 60
+
+        from app.infrastructure.settings.db_settings_adapter import DbSettingsAdapter
+
+        settings = DbSettingsAdapter(self.db)
+        try:
+            override_minutes = float(settings.get_setting(setting_key) or default_minutes)
+        except (TypeError, ValueError):
+            override_minutes = default_minutes
+        return max(0.0, override_minutes) * 60
 
     def _should_force_video_to_extra(self, path: Path) -> bool:
         category, subtype = self.categorizer.categorize(path, self.db)
-        if category == ExtraCategory.VIDEO and subtype in FORCED_EXTRA_VIDEO_SUBTYPES:
+        forced_subtypes = SCENE_FORCE_EXTRA_VIDEO_SUBTYPES if self.mode == ScanMode.SCENES else FORCED_EXTRA_VIDEO_SUBTYPES
+        if category == ExtraCategory.VIDEO and subtype in forced_subtypes:
             return True
 
         joined_parts = " ".join(part.lower() for part in path.parts)
-        if re.search(r"\b(sample|samples|extra|extras|trailer|trailers|bonus|featurette|promo|clip)\b", joined_parts):
+        force_extra_pattern = r"\b(sample|samples|extra|extras|trailer|trailers)\b" if self.mode == ScanMode.SCENES else r"\b(sample|samples|extra|extras|trailer|trailers|bonus|featurette|promo|clip)\b"
+        if re.search(force_extra_pattern, joined_parts):
             return True
 
         return False
@@ -189,7 +220,7 @@ class ScanCollector:
         # 4. Filter into media paths vs extra paths based on duration
         media_paths = []
         extra_paths = list(potential_extras)
-        limit_seconds = self.min_video_duration_minutes * 60
+        limit_seconds = self._duration_limit_seconds()
 
         for p in potential_media:
             p_str = str(p)

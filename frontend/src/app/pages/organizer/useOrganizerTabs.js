@@ -12,7 +12,7 @@ const getMainTabsForMode = (scanMode) => {
 
 const isExtraForMode = (item, scanMode) => {
   const parentType = String(item.parent_type || '').toLowerCase();
-  if (scanMode === 'scenes') return parentType === 'scene' && item.category !== 'video';
+  if (scanMode === 'scenes') return parentType === 'scene';
   if (isPornDbMovieMode(scanMode)) return parentType === 'movie';
   return parentType !== 'scene';
 };
@@ -55,7 +55,6 @@ export function useOrganizerTabs({ organizerExtras, t, tabCounts, dismissedRowId
   }, [t, tabCounts, scanMode]);
 
   const computedExtrasTabs = useMemo(() => EXTRAS_TABS
-    .filter((tab) => scanMode !== 'scenes' || tab.value !== 'bonus')
     .map((tab) => ({
       ...tab,
       label: t(tab.labelKey),

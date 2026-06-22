@@ -42,7 +42,8 @@ export const SETTINGS_BASE_DEFAULTS = {
   min_video_size_mb: '50',
   min_video_duration_minutes: '12',
   adult_min_video_size_mb: '1',
-  adult_min_video_duration_minutes: '0.1',
+  adult_min_video_duration_minutes: '1.0',
+  fansdb_adult_min_video_duration_minutes: '0.14',
   folder_create_collection_dir: true,
   folder_collection_mode: FOLDER_COLLECTION_MODES.THRESHOLD,
   folder_collection_threshold: '3',
@@ -205,6 +206,10 @@ export function getInitialFormValues(settingsData = null, t = null) {
     adult_min_video_duration_minutes: getStringValue(
       settingsData.adult_min_video_duration_minutes,
       defaults.adult_min_video_duration_minutes
+    ),
+    fansdb_adult_min_video_duration_minutes: getStringValue(
+      settingsData.fansdb_adult_min_video_duration_minutes,
+      defaults.fansdb_adult_min_video_duration_minutes
     ),
     min_video_duration_minutes: getStringValue(
       settingsData.min_video_duration_minutes,

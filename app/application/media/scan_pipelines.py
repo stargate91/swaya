@@ -38,6 +38,7 @@ class BaseScanPipeline:
         min_size_mb: float,
         min_duration_minutes: float,
         progress_callback: Optional[Callable],
+        provider: Optional[str] = None,
     ) -> ScanCollector:
         collector = Collector(min_size_mb)
         return ScanCollector(
@@ -50,6 +51,7 @@ class BaseScanPipeline:
             mode=self.mode,
             min_video_duration_minutes=min_duration_minutes,
             progress_callback=progress_callback,
+            provider=provider,
         )
 
 
@@ -75,7 +77,7 @@ class ScenesScanPipeline(BaseScanPipeline):
             size_key='adult_min_video_size_mb',
             duration_key='adult_min_video_duration_minutes',
             default_size_mb=1.0,
-            default_duration_minutes=0.1,
+            default_duration_minutes=1.0,
         )
 
 
