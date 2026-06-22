@@ -1,0 +1,36 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="swayaMarkBg" x1="36" y1="24" x2="220" y2="232" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0E1628"/>
+      <stop offset="1" stop-color="#182742"/>
+    </linearGradient>
+    <linearGradient id="swayaMarkAccent" x1="83" y1="53" x2="176" y2="202" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#77C4FF"/>
+      <stop offset="0.52" stop-color="#4FA8FF"/>
+      <stop offset="1" stop-color="#2383F6"/>
+    </linearGradient>
+    <filter id="swayaMarkGlow" x="33" y="28" width="188" height="200" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+      <feGaussianBlur stdDeviation="10" result="effect1_foregroundBlur_1_1"/>
+    </filter>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Sora:wght@800&amp;display=swap');
+      .swaya-mark__glyph {
+        font-family: 'Sora', sans-serif;
+        font-size: 154px;
+        font-style: normal;
+        font-weight: 800;
+        letter-spacing: -0.08em;
+      }
+    </style>
+  </defs>
+
+  <rect x="12" y="12" width="232" height="232" rx="60" fill="url(#swayaMarkBg)"/>
+  <rect x="12.75" y="12.75" width="230.5" height="230.5" rx="59.25" stroke="#314764" stroke-opacity="0.72" stroke-width="1.5"/>
+  <path d="M45 58C45 42.536 57.536 30 73 30H183C198.464 30 211 42.536 211 58V67.5C211 69.9853 208.985 72 206.5 72H186.6C182.02 72 178.138 68.6308 176.765 64.2611C175.536 60.3491 171.908 57.5 167.5 57.5H95.5C89.1487 57.5 84 62.6487 84 69C84 74.8491 88.3876 79.7674 94.1923 80.4315L157.698 87.6958C183.274 90.6208 202.5 112.260 202.5 138.003C202.5 166.097 179.722 188.875 151.628 188.875H74C58.536 188.875 46 176.339 46 160.875V149.625C46 147.139 48.0147 145.125 50.5 145.125H70.9158C75.2112 145.125 78.9217 148.133 80.0263 152.284C81.051 156.135 84.5346 158.813 88.5198 158.813H148.728C155.763 158.813 161.466 153.109 161.466 146.075C161.466 139.575 156.595 134.089 150.139 133.319L86.8062 125.766C62.3104 122.845 44 102.074 44 77.4042V58.5L45 58Z" fill="url(#swayaMarkAccent)" fill-opacity="0.18"/>
+  <g filter="url(#swayaMarkGlow)">
+    <text x="128" y="181" text-anchor="middle" class="swaya-mark__glyph" fill="url(#swayaMarkAccent)">S</text>
+  </g>
+  <text x="128" y="181" text-anchor="middle" class="swaya-mark__glyph" fill="url(#swayaMarkAccent)">S</text>
+</svg>

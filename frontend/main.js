@@ -310,10 +310,12 @@ ipcMain.on('app-close-response', (_event, payload) => {
 
 
 function getWindowIconPath() {
-  return path.join(
-    __dirname,
-    isDev ? 'public/favicon/96x96.png' : 'build/favicon/96x96.png'
-  );
+  const isWindows = process.platform === 'win32';
+  const relativePath = isWindows
+    ? (isDev ? 'public/favicon/icon.ico' : 'build/favicon/icon.ico')
+    : (isDev ? 'public/favicon/96x96.png' : 'build/favicon/96x96.png');
+
+  return path.join(__dirname, relativePath);
 }
 
 function showMainWindow() {
