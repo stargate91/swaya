@@ -124,7 +124,7 @@ class UserOverride(Base):
     last_watched_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, index=True)
     watch_count: Mapped[int] = mapped_column(Integer, default=0, index=True)
     resume_position: Mapped[int] = mapped_column(Integer, default=0)
-    is_tracked: Mapped[bool] = mapped_column(Boolean, default=False, index=True) # For watchlist / virtual tracking SFW or NSFW
+    is_tracked: Mapped[bool] = mapped_column(Boolean, default=False, index=True) # For watchlist / item tracking SFW or NSFW
     
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="overrides")
@@ -159,7 +159,7 @@ class CustomList(Base):
 
 class CustomListItem(Base):
     """
-    Items inside a custom list. Can link to a physical file, virtual match, performer, studio, or collection.
+    Items inside a custom list. Can link to a physical file, external match, performer, studio, or collection.
     """
     __tablename__ = "custom_list_items"
     

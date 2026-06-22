@@ -1,6 +1,6 @@
 # Swaya Backend
 
-Swaya is a high-performance, domain-driven media identification, metadata enrichment, and library organization backend. It serves as the refined, next-generation backend engine for the RENDA application, offering clean database schemas, unified variable structures, and optimized asynchronous processing.
+Swaya is a high-performance, domain-driven media identification, metadata enrichment, and library organization backend. It serves as the refined, next-generation backend engine for the Swaya application, offering clean database schemas, unified variable structures, and optimized asynchronous processing.
 
 ## Key Enhancements over Legacy Backend
 

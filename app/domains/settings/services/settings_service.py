@@ -28,49 +28,8 @@ class SettingsService:
             user_id = get_current_user_id()
         self.user_id = user_id
 
-    def _migrate_legacy_settings(self) -> None:
-        legacy_key_map = {
-            "theporndb_api_key": "porndb_api_key",
-            "theporndb_endpoint": "porndb_endpoint",
-            "folder_show_template": "folder_tv_template",
-        }
-        did_change = False
-
-        for legacy_key, canonical_key in legacy_key_map.items():
-            legacy_setting = self.db.query(UserSetting).filter(UserSetting.user_id == self.user_id, UserSetting.key == legacy_key).first()
-            if not legacy_setting:
-                continue
-
-            canonical_setting = self.db.query(UserSetting).filter(UserSetting.user_id == self.user_id, UserSetting.key == canonical_key).first()
-            if canonical_setting:
-                if not canonical_setting.value and legacy_setting.value:
-                    canonical_setting.value = legacy_setting.value
-                self.db.delete(legacy_setting)
-            elif legacy_key == "folder_show_template" and not legacy_setting.value:
-                self.db.delete(legacy_setting)
-            else:
-                legacy_setting.key = canonical_key
-            did_change = True
-
-        template_keys = (
-            "naming_episode_template",
-            "folder_tv_template",
-            "folder_episode_template",
-        )
-        template_settings = self.db.query(UserSetting).filter(
-            UserSetting.user_id == self.user_id,
-            UserSetting.key.in_(template_keys),
-        ).all()
-        for setting in template_settings:
-            if isinstance(setting.value, str) and "{series_title}" in setting.value:
-                setting.value = setting.value.replace("{series_title}", "{tv_title}")
-                did_change = True
-
-        if did_change:
-            self.db.commit()
 
     def get_settings(self) -> Dict[str, Any]:
-        self._migrate_legacy_settings()
 
         # Auto-detect VLC path
         vlc_setting = self.db.query(UserSetting).filter(UserSetting.user_id == self.user_id, UserSetting.key == "vlc_path").first()
@@ -114,7 +73,6 @@ class SettingsService:
         return {s.key: s.value for s in settings}
 
     def update_settings(self, settings: Dict[str, Any]) -> Dict[str, Any]:
-        self._migrate_legacy_settings()
 
         for key, value in settings.items():
             setting = self.db.query(UserSetting).filter(UserSetting.user_id == self.user_id, UserSetting.key == key).first()

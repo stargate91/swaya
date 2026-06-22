@@ -23,10 +23,7 @@ def get_metadata_episodes(tmdb_id: int, season_number: int, db: Session = Depend
 
 @library_router.post("/metadata/resolve")
 def resolve_metadata_item(payload: MetadataResolveRequest, db: Session = Depends(get_db)):
-    res = MetadataService(db, scraper_gateway).resolve_item(payload)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return MetadataService(db, scraper_gateway).resolve_item(payload)
 
 @library_router.post("/metadata/bulk-resolve")
 def bulk_resolve_metadata(payload: BulkResolveRequest, db: Session = Depends(get_db)):
@@ -34,10 +31,7 @@ def bulk_resolve_metadata(payload: BulkResolveRequest, db: Session = Depends(get
 
 @library_router.get("/metadata/item/{item_id}/full-metadata")
 def get_full_metadata(item_id: int, db: Session = Depends(get_db)):
-    res = MetadataService(db, scraper_gateway).get_full_metadata(item_id)
-    if "error" in res:
-        raise HTTPException(status_code=404, detail=res["error"])
-    return res
+    return MetadataService(db, scraper_gateway).get_full_metadata(item_id)
 
 @library_router.get("/metadata/sync-language/status")
 def get_sync_language_status(db: Session = Depends(get_db)):

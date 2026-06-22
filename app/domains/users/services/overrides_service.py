@@ -287,7 +287,7 @@ class OverridesService:
         self.db.commit()
         return {"status": "success", "count": count}
 
-    def track_virtual(self, item_id: str, is_tracked: bool) -> Dict[str, Any]:
+    def track_item(self, item_id: str, is_tracked: bool) -> Dict[str, Any]:
         override = self._get_or_create_override(item_id)
         if not override:
             raise NotFoundException("Target item not found")

@@ -342,7 +342,7 @@ export default function SeasonsPanel() {
               key={episode.id}
               className={`episode-card ${isExpanded ? 'is-expanded' : ''} ${
                 episode.is_watched ? 'is-watched' : ''
-              } ${!episode.path || episode.is_missing ? 'is-virtual' : ''}`}
+              } ${!episode.path || episode.is_missing ? 'is-unowned' : ''}`}
               onClick={() => toggleEpisodeOverview(episode.id)}
             >
               {/* Left Side: Still Image */}

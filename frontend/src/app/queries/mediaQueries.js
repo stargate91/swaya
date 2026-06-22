@@ -462,28 +462,28 @@ export const useUploadLogoMutation = () => {
 };
 
 
-export const useToggleVirtualTrackedMutation = () => {
+export const useToggleTrackedMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ tmdbId, mediaType, isTracked }) => (
       isTracked
-        ? api.media.untrackVirtual(tmdbId, mediaType)
-        : api.media.trackVirtual(tmdbId, mediaType)
+        ? api.media.untrackItem(tmdbId, mediaType)
+        : api.media.trackItem(tmdbId, mediaType)
     ),
     onSuccess: (data, variables) => {
       const rawId = String(variables.tmdbId).replace('stash_', '').replace('tmdb_', '').replace('tv_', '');
       const cleanId = rawId;
       const tvId = `tv_${rawId}`;
-      const virtualId = `tmdb_${rawId}`;
+      const trackedId = `tmdb_${rawId}`;
       const stashId = `stash_${rawId}`;
       queryClient.invalidateQueries({ queryKey: ['library'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
       queryClient.invalidateQueries({ queryKey: ['full-metadata', cleanId] });
       queryClient.invalidateQueries({ queryKey: ['full-metadata', tvId] });
-      queryClient.invalidateQueries({ queryKey: ['full-metadata', virtualId] });
+      queryClient.invalidateQueries({ queryKey: ['full-metadata', trackedId] });
       queryClient.invalidateQueries({ queryKey: ['full-metadata', stashId] });
       queryClient.invalidateQueries({ queryKey: ['library-item-detail', cleanId] });
-      queryClient.invalidateQueries({ queryKey: ['library-item-detail', virtualId] });
+      queryClient.invalidateQueries({ queryKey: ['library-item-detail', trackedId] });
       queryClient.invalidateQueries({ queryKey: ['library-item-detail', stashId] });
       queryClient.invalidateQueries({ queryKey: ['library-tv-detail', cleanId] });
       queryClient.invalidateQueries({ queryKey: ['library-tv-detail', tvId] });

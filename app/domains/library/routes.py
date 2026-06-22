@@ -44,7 +44,7 @@ adult_router = APIRouter(prefix="/api/v1/adult/media", tags=["Adult Media"])
 # Common Media Router
 router = APIRouter(prefix="/api/v1/media", tags=["General Media"])
 
-# Legacy Library Endpoints for RENDA Frontend
+# Legacy Library Endpoints for Swaya Frontend
 library_router = APIRouter(prefix="/api/v1", tags=["Library"])
 
 

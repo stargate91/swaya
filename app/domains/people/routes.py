@@ -39,24 +39,6 @@ def list_adult_people(db: Session = Depends(get_db), limit: int = 50):
 # --- General Router Endpoints ---
 
 
-async def run_people_enrich_coroutine(task_id: int, match_ids: List[int]):
-    import logging
-    from app.shared_kernel.database import SessionLocal
-    from app.domains.people.services.people_enricher import PeopleEnricher
-
-    logger = logging.getLogger(__name__)
-    db = SessionLocal()
-    try:
-        enricher = PeopleEnricher(db, scraper_gateway, session_factory=SessionLocal)
-        count = await asyncio.to_thread(enricher.enrich_people_for_matches, task_id, match_ids)
-        logger.info(f"Enriched {count} people for matches {match_ids}")
-    except Exception as e:
-        logger.error(f"People enrichment task failed: {e}", exc_info=True)
-        raise
-    finally:
-        db.close()
-
-
 @router.post("/enrich")
 def enrich_people(match_ids: List[int], db: Session = Depends(get_db)):
     """

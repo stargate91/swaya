@@ -53,10 +53,11 @@ def start_rename(request: Optional[RenameRequest] = None, db: Session = Depends(
     item_ids = request.item_ids if request else None
     return ScannerService(db).start_rename(item_ids)
 
+from app.domains.history.schemas import HistoryResponse
+
 @router.get("/history", response_model=HistoryResponse)
 def get_history(page: int = 1, limit: int = 20, db: Session = Depends(get_db)):
     from app.domains.history.services.history_service import HistoryService
-    from app.domains.history.schemas import HistoryResponse
     return HistoryService(db).get_history(page, limit)
 
 @router.post("/rename/undo/{batch_id}")

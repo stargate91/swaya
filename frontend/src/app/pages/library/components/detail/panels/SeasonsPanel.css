@@ -266,15 +266,15 @@
   border-color: var(--media-detail-panel-card-border-hover, var(--color-border-heavy));
 }
 
-.episode-card.is-virtual {
+.episode-card.is-unowned {
   border-color: color-mix(in srgb, var(--color-accent-yellow) 12%, var(--media-detail-panel-card-border, var(--color-border-default)));
 }
 
-.episode-card.is-virtual:hover {
+.episode-card.is-unowned:hover {
   border-color: color-mix(in srgb, var(--color-accent-yellow) 22%, var(--media-detail-panel-card-border-hover, var(--color-border-heavy)));
 }
 
-.episode-card.is-virtual.is-expanded {
+.episode-card.is-unowned.is-expanded {
   border-color: color-mix(in srgb, var(--color-accent-yellow) 28%, var(--color-border-heavy));
 }
 

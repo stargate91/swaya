@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useLibraryItemDetailQuery, useLibraryTvDetailQuery } from '@/queries/metadataQueries';
 import {
   useUpdateMediaStatusMutation, usePlayMediaMutation,
-  useBulkUpdateWatchedMutation, useOverrideBackdropMutation, useToggleVirtualTrackedMutation,
+  useBulkUpdateWatchedMutation, useOverrideBackdropMutation, useToggleTrackedMutation,
   useAddPeakMutation, useDeletePeakMutation
 } from '@/queries/mediaQueries';
 import { useSettingsQuery } from '@/queries/settingsQueries';
@@ -33,12 +33,12 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
 
   const overviewRef = useRef(null);
   const fullPeoplePrefetchRef = useRef(new Set());
-  const virtualSeasonPrefetchRef = useRef(new Set());
+  const unownedSeasonPrefetchRef = useRef(new Set());
   const queryClient = useQueryClient();
 
   const updateStatusMutation = useUpdateMediaStatusMutation();
   const overrideBackdropMutation = useOverrideBackdropMutation();
-  const toggleVirtualTrackedMutation = useToggleVirtualTrackedMutation();
+  const toggleTrackedMutation = useToggleTrackedMutation();
   const addPeakMutation = useAddPeakMutation();
   const deletePeakMutation = useDeletePeakMutation();
   const playMutation = usePlayMediaMutation();
@@ -145,14 +145,14 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
     const run = async () => {
       for (const seasonNumber of pendingSeasonNumbers) {
         const prefetchKey = `${cleanId}:${seasonNumber}`;
-        if (virtualSeasonPrefetchRef.current.has(prefetchKey)) continue;
-        virtualSeasonPrefetchRef.current.add(prefetchKey);
+        if (unownedSeasonPrefetchRef.current.has(prefetchKey)) continue;
+        unownedSeasonPrefetchRef.current.add(prefetchKey);
         try {
           const seasonPayload = await api.library.getTvSeasonDetail(cleanId, seasonNumber);
           if (cancelled) return;
           queryClient.setQueryData(['library-tv-detail', cleanId], (current) => mergeSeasonIntoDetail(current, seasonPayload));
         } catch {
-          virtualSeasonPrefetchRef.current.delete(prefetchKey);
+          unownedSeasonPrefetchRef.current.delete(prefetchKey);
         }
       }
     };
@@ -359,11 +359,11 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
 
   const isOwned = item && item.in_library !== false;
   const isTracked = Boolean(item?.is_tracked);
-  const virtualTmdbId = !isOwned
+  const trackedExternalId = !isOwned
     ? (isScene ? (item?.external_ids?.stash_id || cleanId) : Number(item?.tv_tmdb_id || item?.tmdb_id || cleanId || 0))
     : 0;
-  const virtualMediaType = isScene ? 'scene' : (isMovie ? 'movie' : 'tv');
-  const canToggleTracked = !isOwned && (isScene ? !!virtualTmdbId : (Number.isFinite(virtualTmdbId) && virtualTmdbId > 0));
+  const trackedMediaType = isScene ? 'scene' : (isMovie ? 'movie' : 'tv');
+  const canToggleTracked = !isOwned && (isScene ? !!trackedExternalId : (Number.isFinite(trackedExternalId) && trackedExternalId > 0));
 
   const getIsTvWatched = () => {
     if (!item?.seasons) return false;
@@ -464,12 +464,12 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
   };
 
   const handleToggleTracked = () => {
-    if (!canToggleTracked || toggleVirtualTrackedMutation.isPending) {
+    if (!canToggleTracked || toggleTrackedMutation.isPending) {
       return;
     }
-    toggleVirtualTrackedMutation.mutate({
-      tmdbId: virtualTmdbId,
-      mediaType: virtualMediaType,
+    toggleTrackedMutation.mutate({
+      tmdbId: trackedExternalId,
+      mediaType: trackedMediaType,
       isTracked,
     });
   };
@@ -595,7 +595,7 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
     mutations: {
       updateStatusMutation,
       overrideBackdropMutation,
-      toggleVirtualTrackedMutation,
+      toggleTrackedMutation,
       playMutation,
       bulkUpdateWatchedMutation,
       addPeakMutation,

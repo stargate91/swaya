@@ -26,7 +26,7 @@ class MovieDetailService(DetailFormatter):
         from app.domains.library.schemas import MovieDetailResponse
         db = self.db
         
-        # Virtual TMDB Movie Detail
+        # Tracked / External TMDB Movie Detail
         if isinstance(item_id, str) and item_id.startswith("tmdb_"):
             try:
                 tmdb_id = int(item_id.split("_")[1])

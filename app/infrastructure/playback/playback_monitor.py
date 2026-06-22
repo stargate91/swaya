@@ -21,7 +21,7 @@ def monitor_playback(item_id: int, player_type: str, proc: subprocess.Popen, por
                 if player_type == "vlc":
                     r = requests.get(
                         f"http://127.0.0.1:{port}/requests/status.json", 
-                        auth=("", "renda"), 
+                        auth=("", "swaya"), 
                         timeout=PLAYBACK_CHECK_TIMEOUT
                     )
                     if r.status_code == 200:

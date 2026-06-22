@@ -151,26 +151,17 @@ def get_all_tags(target_type: Optional[str] = None, is_adult: bool = False, db: 
 
 @catalog_router.post("/tags", response_model=TagResponse)
 def create_tag(payload: dict, db: Session = Depends(get_db)):
-    res = TagsService(db).create_tag(payload)
-    if isinstance(res, dict) and "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return TagsService(db).create_tag(payload)
 
 
 @catalog_router.put("/tags/{tag_id}", response_model=TagResponse)
 def update_tag(tag_id: int, payload: dict, db: Session = Depends(get_db)):
-    res = TagsService(db).update_tag(tag_id, payload)
-    if isinstance(res, dict) and "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return TagsService(db).update_tag(tag_id, payload)
 
 
 @catalog_router.delete("/tags/{tag_id}")
 def delete_tag(tag_id: int, db: Session = Depends(get_db)):
-    res = TagsService(db).delete_tag(tag_id)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return TagsService(db).delete_tag(tag_id)
 
 
 @catalog_router.get("/lists", response_model=List[CustomListResponse])
@@ -185,50 +176,32 @@ def get_item_membership(item_id: str, db: Session = Depends(get_db)):
 
 @catalog_router.get("/lists/{list_id}", response_model=CustomListDetailResponse)
 def get_list_details(list_id: int, db: Session = Depends(get_db)):
-    res = ListsService(db).get_list_details(list_id)
-    if isinstance(res, dict) and "error" in res:
-        raise HTTPException(status_code=404, detail=res["error"])
-    return res
+    return ListsService(db).get_list_details(list_id)
 
 
 @catalog_router.post("/lists", response_model=CustomListResponse)
 def create_list(payload: dict, db: Session = Depends(get_db)):
-    res = ListsService(db).create_list(payload)
-    if isinstance(res, dict) and "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return ListsService(db).create_list(payload)
 
 
 @catalog_router.put("/lists/{list_id}", response_model=CustomListDetailResponse)
 def update_list(list_id: int, payload: dict, db: Session = Depends(get_db)):
-    res = ListsService(db).update_list(list_id, payload)
-    if isinstance(res, dict) and "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return ListsService(db).update_list(list_id, payload)
 
 
 @catalog_router.delete("/lists/{list_id}")
 def delete_list(list_id: int, db: Session = Depends(get_db)):
-    res = ListsService(db).delete_list(list_id)
-    if isinstance(res, dict) and "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return ListsService(db).delete_list(list_id)
 
 
 @catalog_router.post("/lists/{list_id}/items", response_model=CustomListItemResponse)
 def add_item_to_list(list_id: int, payload: dict, db: Session = Depends(get_db)):
-    res = ListsService(db).add_item_to_list(list_id, payload)
-    if isinstance(res, dict) and "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return ListsService(db).add_item_to_list(list_id, payload)
 
 
 @catalog_router.delete("/lists/{list_id}/items/{item_id}")
 def remove_item_from_list(list_id: int, item_id: int, db: Session = Depends(get_db)):
-    res = ListsService(db).remove_item_from_list(list_id, item_id)
-    if isinstance(res, dict) and "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return ListsService(db).remove_item_from_list(list_id, item_id)
 
 
 
@@ -254,68 +227,44 @@ from app.infrastructure.media.db_media_resolver import DbMediaResolver
 
 @catalog_router.post("/media/update")
 def update_item_overrides(payload: ItemOverridesUpdate, db: Session = Depends(get_db)):
-    res = OverridesService(db, DbMediaResolver(db)).update_item_overrides(payload)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return OverridesService(db, DbMediaResolver(db)).update_item_overrides(payload)
 
 @catalog_router.post("/item/{item_id}/status")
 def update_item_status(item_id: int, payload: ItemStatusUpdate, db: Session = Depends(get_db)):
-    res = OverridesService(db, DbMediaResolver(db)).update_item_status(item_id, payload.status)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return OverridesService(db, DbMediaResolver(db)).update_item_status(item_id, payload.status)
 
 @catalog_router.post("/item/{item_id}/poster")
 def update_item_poster(item_id: str, payload: ImageOverrideUpdate, db: Session = Depends(get_db)):
     path = payload.path or payload.url or payload.poster_path
     if not path:
         raise HTTPException(status_code=400, detail="Image path/url is required")
-    res = OverridesService(db, DbMediaResolver(db)).update_item_image(item_id, "poster", path)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return OverridesService(db, DbMediaResolver(db)).update_item_image(item_id, "poster", path)
 
 @catalog_router.post("/item/{item_id}/backdrop")
 def update_item_backdrop(item_id: str, payload: ImageOverrideUpdate, db: Session = Depends(get_db)):
     path = payload.path or payload.url or payload.backdrop_path
     if not path:
         raise HTTPException(status_code=400, detail="Image path/url is required")
-    res = OverridesService(db, DbMediaResolver(db)).update_item_image(item_id, "backdrop", path)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return OverridesService(db, DbMediaResolver(db)).update_item_image(item_id, "backdrop", path)
 
 @catalog_router.post("/item/{item_id}/logo")
 def update_item_logo(item_id: str, payload: ImageOverrideUpdate, db: Session = Depends(get_db)):
     path = payload.path or payload.url or payload.logo_path
     if not path:
         raise HTTPException(status_code=400, detail="Image path/url is required")
-    res = OverridesService(db, DbMediaResolver(db)).update_item_image(item_id, "logo", path)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return OverridesService(db, DbMediaResolver(db)).update_item_image(item_id, "logo", path)
 
 @catalog_router.post("/item/{item_id}/upload-poster")
 def upload_item_poster(item_id: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    res = OverridesService(db, DbMediaResolver(db)).handle_image_upload(item_id, "poster", file.filename, file.file)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return OverridesService(db, DbMediaResolver(db)).handle_image_upload(item_id, "poster", file.filename, file.file)
 
 @catalog_router.post("/item/{item_id}/upload-backdrop")
 def upload_item_backdrop(item_id: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    res = OverridesService(db, DbMediaResolver(db)).handle_image_upload(item_id, "backdrop", file.filename, file.file)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return OverridesService(db, DbMediaResolver(db)).handle_image_upload(item_id, "backdrop", file.filename, file.file)
 
 @catalog_router.post("/item/{item_id}/upload-logo")
 def upload_item_logo(item_id: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
-    res = OverridesService(db, DbMediaResolver(db)).handle_image_upload(item_id, "logo", file.filename, file.file)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return OverridesService(db, DbMediaResolver(db)).handle_image_upload(item_id, "logo", file.filename, file.file)
 
 @catalog_router.post("/media/bulk-update")
 def bulk_update(payload: BulkOverridesUpdate, db: Session = Depends(get_db)):
@@ -331,14 +280,8 @@ def bulk_watched(payload: BulkWatchedUpdate, db: Session = Depends(get_db)):
 
 @catalog_router.post("/library/item/{item_id}/track")
 def track_item(item_id: str, db: Session = Depends(get_db)):
-    res = OverridesService(db, DbMediaResolver(db)).track_virtual(item_id, True)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return OverridesService(db, DbMediaResolver(db)).track_item(item_id, True)
 
 @catalog_router.post("/library/item/{item_id}/untrack")
 def untrack_item(item_id: str, db: Session = Depends(get_db)):
-    res = OverridesService(db, DbMediaResolver(db)).track_virtual(item_id, False)
-    if "error" in res:
-        raise HTTPException(status_code=400, detail=res["error"])
-    return res
+    return OverridesService(db, DbMediaResolver(db)).track_item(item_id, False)

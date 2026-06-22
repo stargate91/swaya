@@ -257,9 +257,8 @@ class ListsService:
         search: str = "",
         favorite_only: bool = False,
     ) -> CatalogResponse:
-        # Quick simplified catalog query returning matching physical and virtual elements
+        # Quick simplified catalog query returning matching physical and tracked elements
         items_list = []
-
         if tab == "people":
             query = self.db.query(Person)
             if search:
@@ -328,7 +327,7 @@ class ListsService:
         for raw_id in ids:
             # Resolve id
             if str(raw_id).startswith("tmdb_"):
-                # Virtual ID
+                # External / Tracked ID
                 tmdb_id = str(raw_id).split("_")[1]
                 match = self.db.query(MetadataMatch).filter(MetadataMatch.provider == Provider.TMDB, MetadataMatch.external_id == tmdb_id).first()
                 if match:

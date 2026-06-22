@@ -26,7 +26,7 @@ export default function MediaActions() {
   const {
     updateStatusMutation,
     bulkUpdateWatchedMutation,
-    toggleVirtualTrackedMutation,
+    toggleTrackedMutation,
     playMutation,
     addPeakMutation
   } = mutations;
@@ -73,7 +73,7 @@ export default function MediaActions() {
         <Button
           variant="ghost"
           onClick={handleToggleTracked}
-          disabled={toggleVirtualTrackedMutation.isPending}
+          disabled={toggleTrackedMutation.isPending}
         >
           {isTracked ? <Check size={16} /> : <BellPlus size={16} />}
           {isTracked ? 'Tracked' : 'Track'}

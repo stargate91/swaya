@@ -89,7 +89,7 @@ def launch_media_file(file_path: str, db, settings_port, start_seconds: int = 0)
             args = [player_path, normalized_path]
             if start_seconds > 10:
                 args.append(f"--start-time={start_seconds}")
-            args.extend(["--no-one-instance", "--extraintf=http", "--http-password=renda", f"--http-port={port}", "--http-host=127.0.0.1"])
+            args.extend(["--no-one-instance", "--extraintf=http", "--http-password=swaya", f"--http-port={port}", "--http-host=127.0.0.1"])
             proc = subprocess.Popen(args)
         elif player_type == "mpc":
             args = [player_path, normalized_path]

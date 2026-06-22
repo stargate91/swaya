@@ -364,7 +364,7 @@
     "backdropFilterRunning": "Checking title backdrops ({{checked}}/{{total}}). You can keep browsing.",
     "backdropFilterFinishing": "Finalizing backdrop availability. You can keep browsing.",
     "keywords": "Keywords",
-    "virtual": "Virtual",
+    "tracked": "Tracked",
     "choosePoster": "Choose Poster",
     "chooseLogo": "Choose Logo",
     "changeProfile": "Change Profile Picture",

@@ -4014,3 +4014,259 @@
 {
   "url": "http://localhost:5173/?backend_port=8000#/organizer"
 }
+[2026-06-22T09:15:19.960Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/shell/AppClosePrompt.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.970Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/organizer/OrganizerDetailsPanel.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.970Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/shell/WindowTitlebar.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.971Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/organizer/OrganizerPage.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.971Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/shell/AppShell.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.972Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/onboarding/OnboardingWizard.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.972Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/organizer/providers/OrganizerModalProvider.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.972Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/library/LibraryPage.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.973Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/library/modals/BulkImportResolveModalContent.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.973Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/dashboard/DashboardPage.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.973Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/library/modals/CreateTagModalContent.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.974Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/settings/components/GeneralProfileSection.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.976Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/settings/components/AdvancedTab.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.976Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/organizer/components/OrganizerBulkOverrideModalContent.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.977Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/organizer/components/OrganizerOverrideModalContent.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.978Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/library/components/LibraryGrid.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.978Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/library/modals/AddPeopleModalContent.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.978Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/library/components/entityDetail/TMDBImageGrid.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.978Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/library/modals/UniversalImagePickerModal.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.979Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/organizer/OrganizerMatchModalContent.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.979Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/settings/components/JavTab.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.980Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/settings/SettingsPage.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.981Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/settings/components/FolderStructureTab.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.982Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/settings/components/ScenesTab.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.982Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/settings/components/FileNamingTab.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.983Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/settings/components/CollectionsTab.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.983Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/settings/components/ExtrasRulesSection.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:19.983Z] [ERROR] Renderer console message
+{
+  "level": "error",
+  "message": "[vite] Failed to reload /src/app/pages/settings/components/PresetsTab.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above)",
+  "line": 88,
+  "sourceId": "http://localhost:5173/src/main.jsx"
+}
+[2026-06-22T09:15:20.158Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T09:15:20.159Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": false,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 8
+}
+[2026-06-22T09:15:20.364Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T09:15:20.697Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T09:15:20.706Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T09:15:20.707Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T09:21:28.855Z] [INFO] Renderer started loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T09:21:28.857Z] [INFO] Renderer started navigation
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "isInPlace": false,
+  "isMainFrame": true,
+  "frameProcessId": 4,
+  "frameRoutingId": 11
+}
+[2026-06-22T09:21:28.873Z] [INFO] Renderer navigated
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer",
+  "httpResponseCode": 200,
+  "httpStatusText": "OK"
+}
+[2026-06-22T09:21:29.081Z] [INFO] Renderer DOM ready
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T09:21:29.082Z] [INFO] Renderer finished load
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
+[2026-06-22T09:21:29.082Z] [INFO] Renderer stopped loading
+{
+  "url": "http://localhost:5173/?backend_port=8000#/organizer"
+}
