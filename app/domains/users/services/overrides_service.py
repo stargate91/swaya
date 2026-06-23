@@ -113,6 +113,7 @@ class OverridesService:
                     for m in item.matches:
                         if m.id != episode_match.id:
                             m.is_active = False
+                            m.media_item_id = None
                             
                     # Enrich the new match
                     from app.infrastructure.scrapers.enrichment.mainstream_enricher import MainstreamEnricher

@@ -68,7 +68,8 @@ class MainstreamEnricher:
     ):
         """Fetches and stores complete metadata for the active match."""
         active_match = self.db.query(MetadataMatch).filter(
-            MetadataMatch.media_item_id == item.id
+            MetadataMatch.media_item_id == item.id,
+            MetadataMatch.is_active == True
         ).first()
 
         if not active_match:

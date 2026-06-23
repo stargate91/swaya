@@ -339,48 +339,69 @@ class ContextBuilder:
                 
         if custom_episode is not None and str(custom_episode).strip() != "":
             episode_number = self._format_number(custom_episode)
-            # Try to lookup correct episode title in the database
-            if tv_match:
-                session = object_session(tv_match)
-                if session:
-                    from app.domains.metadata.models import MetadataMatch
-                    try:
-                        target_season_num = int(custom_season) if custom_season is not None and str(custom_season).isdigit() else None
-                        target_ep_num = int(custom_episode) if str(custom_episode).isdigit() else None
-                        
-                        if target_ep_num is not None:
-                            seasons_ids_query = session.query(MetadataMatch.id).filter(
-                                MetadataMatch.parent_id == tv_match.id,
-                                MetadataMatch.media_type == MediaType.SEASON
-                            )
-                            if target_season_num is not None:
-                                seasons_ids_query = seasons_ids_query.filter(MetadataMatch.season_number == target_season_num)
-                            season_ids = [r[0] for r in seasons_ids_query.all()]
+            
+            # Check if active match is already this episode
+            match_ep = getattr(match, "episode_number", None) if match else None
+            match_se = getattr(match, "season_number", None) if match else None
+            is_same_episode = False
+            if match and getattr(match, "media_type", None) == MediaType.EPISODE:
+                try:
+                    se_matches = (custom_season is None or str(custom_season).strip() == "" or int(match_se) == int(custom_season))
+                    ep_matches = (int(match_ep) == int(custom_episode))
+                    if se_matches and ep_matches:
+                        is_same_episode = True
+                except (ValueError, TypeError):
+                    is_same_episode = (str(match_se) == str(custom_season) and str(match_ep) == str(custom_episode))
+            
+            if is_same_episode and loc:
+                episode_title = getattr(loc, "title", "") or ""
+            else:
+                # Try to lookup correct episode title in the database
+                if tv_match:
+                    session = object_session(tv_match)
+                    if session:
+                        from app.domains.metadata.models import MetadataMatch
+                        try:
+                            target_season_num = int(custom_season) if custom_season is not None and str(custom_season).isdigit() else (getattr(season_match, "season_number", None) or getattr(match, "season_number", None))
+                            target_ep_num = int(custom_episode) if str(custom_episode).isdigit() else None
                             
-                            if season_ids:
-                                ep_matches = session.query(MetadataMatch).filter(
-                                    MetadataMatch.parent_id.in_(season_ids),
-                                    MetadataMatch.media_type == MediaType.EPISODE
-                                ).all()
-                                target_ep_match = None
-                                for ep_m in ep_matches:
-                                    ep_num_val = getattr(ep_m, "episode_number", None)
-                                    if ep_num_val == target_ep_num or ep_num_val == str(target_ep_num) or (isinstance(ep_num_val, list) and target_ep_num in ep_num_val):
-                                        target_ep_match = ep_m
-                                        break
+                            if target_ep_num is not None:
+                                seasons_ids_query = session.query(MetadataMatch.id).filter(
+                                    MetadataMatch.parent_id == tv_match.id,
+                                    MetadataMatch.media_type == MediaType.SEASON
+                                )
+                                if target_season_num is not None:
+                                    seasons_ids_query = seasons_ids_query.filter(MetadataMatch.season_number == target_season_num)
+                                season_ids = [r[0] for r in seasons_ids_query.all()]
                                 
-                                if target_ep_match:
-                                    target_loc = None
-                                    for l in getattr(target_ep_match, "localizations", []):
-                                        if l.locale == locale:
-                                            target_loc = l
+                                if season_ids:
+                                    ep_matches = session.query(MetadataMatch).filter(
+                                        MetadataMatch.parent_id.in_(season_ids),
+                                        MetadataMatch.media_type == MediaType.EPISODE
+                                    ).all()
+                                    target_ep_match = None
+                                    for ep_m in ep_matches:
+                                        ep_num_val = getattr(ep_m, "episode_number", None)
+                                        if ep_num_val == target_ep_num or ep_num_val == str(target_ep_num) or (isinstance(ep_num_val, list) and target_ep_num in ep_num_val):
+                                            target_ep_match = ep_m
                                             break
-                                    if not target_loc and getattr(target_ep_match, "localizations", None):
-                                        target_loc = target_ep_match.localizations[0]
-                                    if target_loc:
-                                        episode_title = target_loc.title
-                    except Exception as e:
-                        logger.error(f"Error resolving override episode title: {e}")
+                                    
+                                    if target_ep_match:
+                                        target_loc = None
+                                        for l in getattr(target_ep_match, "localizations", []):
+                                            if l.locale == locale:
+                                                target_loc = l
+                                                break
+                                        if not target_loc and getattr(target_ep_match, "localizations", None):
+                                            target_loc = target_ep_match.localizations[0]
+                                        if target_loc:
+                                            episode_title = target_loc.title
+                            if not episode_title and loc:
+                                episode_title = getattr(loc, "title", "") or ""
+                        except Exception as e:
+                            logger.error(f"Error resolving override episode title: {e}")
+                            if loc:
+                                episode_title = getattr(loc, "title", "") or ""
         elif match and match.media_type == MediaType.EPISODE:
             episode_number = self._format_number(getattr(match, "episode_number", None))
             if loc:
