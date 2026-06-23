@@ -1,0 +1,9 @@
+organizer_service: visible_parent_ids={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25}
+organizer_service: checking extra id=1, name=Wild Things (1998) 1080p.nfo, parent_id=23
+organizer_service: checking extra id=2, name=Wild Things (1998) 1080p-Sample.mkv, parent_id=23
+organizer_service: checking extra id=5, name=Youth in Revolt (2009) 1080p.nfo, parent_id=25
+organizer_service: checking extra id=6, name=Youth in Revolt (2009) 1080p-Sample.mkv, parent_id=25
+organizer_service: checking extra id=9, name=You Only Live Twice (1967) 1080p.mkv, parent_id=1
+organizer_service: checking extra id=10, name=21eroticanal_veronica_leal_2021-01-01_sweet_awakening_1080p.mp4, parent_id=28
+organizer_service: extra 10 parent 28 NOT in visible_parent_ids
+organizer_service: checking extra id=11, name=Zack and Miri Make a Porno (2008) 1080p.mkv, parent_id=9

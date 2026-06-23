@@ -38,8 +38,12 @@ class OrganizerService:
         if scan_mode == "scenes":
             return MediaType.SCENE.value
 
-        if item.matches:
-            return item.matches[0].media_type.value
+        if item.parsed_info and item.parsed_info.get("type"):
+            return str(item.parsed_info.get("type")).lower()
+
+        active_match = next((m for m in item.matches if m.is_active), None) or next((m for m in item.matches), None)
+        if active_match:
+            return active_match.media_type.value
 
         gtype = None
         if item.parsed_info:
@@ -70,16 +74,21 @@ class OrganizerService:
             return normalized_item in {"", "movies_tv", "porndb_movie"}
         return normalized_item == normalized_filter
 
-    @staticmethod
-    def _is_adult_path(path: str) -> bool:
-        normalized_path = str(path or "").lower()
-        return any(token in normalized_path for token in ("adult", "porn", "xxx", "scenes"))
-
     @classmethod
-    def _matches_session_mode_filter(cls, item_scan_mode: str, current_path: str, session_mode: Optional[str]) -> bool:
+    def _matches_session_mode_filter(cls, item: MediaItem, session_mode: Optional[str]) -> bool:
         normalized_session = str(session_mode or "sfw").strip().lower()
-        normalized_item = str(item_scan_mode or "").strip().lower()
-        is_adult = normalized_item in {"scenes", "porndb_movie"} or cls._is_adult_path(current_path)
+        item_scan_mode = (item.parsed_info or {}).get("scan_mode") or ""
+        normalized_item = str(item_scan_mode).strip().lower()
+        
+        if normalized_item in {"scenes", "porndb_movie"}:
+            is_adult = True
+        else:
+            active_match = next((m for m in item.matches if m.is_active), None) or next((m for m in item.matches), None)
+            if active_match:
+                is_adult = active_match.is_adult
+            else:
+                is_adult = False
+            
         return is_adult if normalized_session == "nsfw" else not is_adult
 
     def get_organizer_groups(self, scan_mode: Optional[str] = None, session_mode: Optional[str] = None) -> OrganizerGroupsResponse:
@@ -95,8 +104,7 @@ class OrganizerService:
             item for item in all_items
             if self._matches_scan_mode_filter((item.parsed_info or {}).get('scan_mode') or '', scan_mode)
             and self._matches_session_mode_filter(
-                (item.parsed_info or {}).get('scan_mode') or '',
-                item.current_path or '',
+                item,
                 session_mode,
             )
         ]
@@ -108,23 +116,26 @@ class OrganizerService:
         parent_planned_paths = {}
         parent_types = {}
         parent_statuses = {}
+        parent_is_adults = {}
         pref_lang = self._preferred_metadata_language()
 
         previews = []
         preview_map = {}
         for item in items:
             active_match = next((m for m in item.matches if m.is_active), None) or next((m for m in item.matches), None)
+            if active_match and not active_match.is_active:
+                active_match = None
             overrides = item.overrides
             target_lang = overrides.custom_language if (overrides and overrides.custom_language) else (formatter.config.default_target_language or pref_lang)
+            loc = None
             if active_match:
                 loc = LanguageService.get_best_localization(active_match.localizations, target_lang)
-                if loc:
-                    try:
-                        preview = formatter.format_item(item, active_match, loc)
-                        previews.append(preview)
-                        preview_map[item.id] = preview
-                    except Exception:
-                        pass
+            try:
+                preview = formatter.format_item(item, active_match, loc)
+                previews.append(preview)
+                preview_map[item.id] = preview
+            except Exception:
+                pass
 
         if previews:
             formatter.resolve_collisions(previews)
@@ -219,6 +230,13 @@ class OrganizerService:
                 parent_scan_modes = {}
                 self._parent_scan_modes = parent_scan_modes
             parent_scan_modes[item.id] = item_scan_mode
+            
+            if item_scan_mode in {"scenes", "porndb_movie"}:
+                item_is_adult = True
+            else:
+                active_match = next((m for m in item.matches if m.is_active), None) or next((m for m in item.matches), None)
+                item_is_adult = active_match.is_adult if active_match else False
+            parent_is_adults[item.id] = item_is_adult
 
             parsed = item.parsed_info or {}
             fn_data = parsed.get("fn") or {}
@@ -263,17 +281,34 @@ class OrganizerService:
                 else:
                     groups["tv"].append(item_dto)
 
-        visible_parent_ids = set(parent_planned_paths.keys())
         extras = self.db.query(ExtraFile).join(
             MediaItem, ExtraFile.media_item_id == MediaItem.id
         ).filter(
-            ~MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED, ItemStatus.IGNORED])
+            ~MediaItem.status.in_([ItemStatus.IGNORED])
         ).all()
 
         parent_scan_modes = getattr(self, "_parent_scan_modes", {})
+        extra_parent_ids = {ex.media_item_id for ex in extras}
+        missing_parent_ids = extra_parent_ids - set(parent_planned_paths.keys())
+        if missing_parent_ids:
+            missing_parents = self.db.query(MediaItem).options(
+                joinedload(MediaItem.matches).joinedload(MetadataMatch.localizations),
+                joinedload(MediaItem.overrides)
+            ).filter(MediaItem.id.in_(missing_parent_ids)).all()
+            for parent in missing_parents:
+                parent_planned_paths[parent.id] = parent.planned_path or parent.current_path
+                parent_types[parent.id] = self._infer_organizer_type(parent)
+                parent_statuses[parent.id] = parent.status.value
+                p_scan_mode = str((parent.parsed_info or {}).get("scan_mode") or "").lower()
+                parent_scan_modes[parent.id] = p_scan_mode
+                if p_scan_mode in {"scenes", "porndb_movie"}:
+                    p_is_adult = True
+                else:
+                    active_match = next((m for m in parent.matches if m.is_active), None) or next((m for m in parent.matches), None)
+                    p_is_adult = active_match.is_adult if active_match else False
+                parent_is_adults[parent.id] = p_is_adult
+
         for ex in extras:
-            if ex.media_item_id not in visible_parent_ids:
-                continue
             parent_p_path = parent_planned_paths.get(ex.media_item_id) or ""
             groups["extras"].append({
                 "id": ex.id,
@@ -289,26 +324,23 @@ class OrganizerService:
                 "path": ex.current_path,
                 "planned_path": str(Path(parent_p_path).parent / ex.filename).replace("\\", "/"),
                 "action": "rename",
-                "parent_scan_mode": parent_scan_modes.get(ex.media_item_id, "")
+                "parent_scan_mode": parent_scan_modes.get(ex.media_item_id, ""),
+                "parent_is_adult": parent_is_adults.get(ex.media_item_id, False)
             })
 
         return OrganizerGroupsResponse(**groups)
 
     def get_organizer_item_count(self, scan_mode: Optional[str] = None, session_mode: Optional[str] = None) -> int:
-        items = self.db.query(MediaItem.parsed_info, MediaItem.relative_path, Library.root_path).join(
-            Library, MediaItem.library_id == Library.id
+        items = self.db.query(MediaItem).options(
+            joinedload(MediaItem.matches)
         ).filter(
             ~MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED, ItemStatus.IGNORED])
         ).all()
         return sum(
             1
-            for parsed_info, relative_path, root_path in items
-            if self._matches_scan_mode_filter((parsed_info or {}).get("scan_mode") or "", scan_mode)
-            and self._matches_session_mode_filter(
-                (parsed_info or {}).get("scan_mode") or "",
-                str(Path(root_path) / str(relative_path or "")),
-                session_mode,
-            )
+            for item in items
+            if self._matches_scan_mode_filter((item.parsed_info or {}).get("scan_mode") or "", scan_mode)
+            and self._matches_session_mode_filter(item, session_mode)
         )
 
     def delete_organizer_items(self, item_ids: List[int], extra_ids: List[int], mode: str) -> ActionResponse:

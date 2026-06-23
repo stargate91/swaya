@@ -110,6 +110,7 @@ export const mapExtraRow = (item, t) => ({
   parentStatus: item.parent_status || null,
   parentType: String(item.parent_type || '').toLowerCase(),
   parent_id: item.parent_id || item.parent_item_id,
+  parent_is_adult: item.parent_is_adult,
   images: [],
   rawPayload: item,
 });

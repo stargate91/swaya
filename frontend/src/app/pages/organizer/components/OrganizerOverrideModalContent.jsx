@@ -9,6 +9,8 @@ import OverrideMovieFields from './OverrideMovieFields';
 import OverrideEpisodeFields from './OverrideEpisodeFields';
 import OverrideExtraFields from './OverrideExtraFields';
 
+import { useLibraryModeStore } from '@/stores/useLibraryModeStore';
+
 import {
   SUBCATEGORIES_BY_CATEGORY,
   LANGUAGE_OPTIONS,
@@ -21,6 +23,7 @@ import {
 export default function OrganizerOverrideModalContent({ row, onClose, toast }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+  const sessionMode = useLibraryModeStore((state) => state.sessionMode);
 
   const translatedLanguageOptions = useMemo(() =>
     LANGUAGE_OPTIONS.map((opt) => ({
@@ -85,7 +88,39 @@ export default function OrganizerOverrideModalContent({ row, onClose, toast }) {
   const organizer = queryClient.getQueryData(['organizer']) || {};
   const movies = organizer.movies || [];
   const tv = organizer.tv || [];
-  const parentCandidates = [...movies, ...tv].map((item) => ({
+
+  const isParentCandidateAdult = (item) => {
+    const itemScanMode = item.scan_mode || '';
+    return item.matches?.some((m) => m.is_adult)
+      || String(item.type).toLowerCase() === 'scene'
+      || itemScanMode === 'porndb_movie'
+      || itemScanMode === 'scenes';
+  };
+
+  const isExtraAdult = sessionMode === 'nsfw';
+
+  const isExtraScene = row.rawType === 'extra'
+    ? (row.parentType === 'scene' || (row.rawPayload?.parent_scan_mode === 'scenes'))
+    : (String(row.type || row.rawType).toLowerCase() === 'scene' || row.scan_mode === 'scenes' || row.rawPayload?.scan_mode === 'scenes');
+
+  const filteredMoviesAndTv = [...movies, ...tv].filter((item) => {
+    // 0. Cannot select itself as parent
+    if (item.id === row.itemId) return false;
+
+    const isParentAdult = isParentCandidateAdult(item);
+    // 1. Must match SFW/NSFW
+    if (isExtraAdult !== isParentAdult) return false;
+
+    // 2. Within NSFW, scenes must go to scenes, and adult movies/tv to adult movies/tv
+    if (isExtraAdult) {
+      const isParentScene = String(item.type).toLowerCase() === 'scene' || item.scan_mode === 'scenes';
+      if (isExtraScene !== isParentScene) return false;
+    }
+
+    return true;
+  });
+
+  const parentCandidates = filteredMoviesAndTv.map((item) => ({
     value: item.id,
     label: item.filename || item.current_path || `ID: ${item.id}`,
   }));
@@ -139,6 +174,11 @@ export default function OrganizerOverrideModalContent({ row, onClose, toast }) {
         toast(t('organizer.toasts.overrideSeasonEpisodeRequired'), 'danger');
         return;
       }
+    }
+
+    if ((mainType === 'bonus' || (isExtra && mainType !== 'movie' && mainType !== 'episode')) && String(parentId) === String(row.itemId)) {
+      toast(t('organizer.toasts.selfParentError') || 'An item cannot be its own parent.', 'danger');
+      return;
     }
 
     const payload = {
@@ -280,7 +320,7 @@ export default function OrganizerOverrideModalContent({ row, onClose, toast }) {
             <p className="organizer-override-field__label-text organizer-override-field__label-text--support organizer-override-field__label-text--spaced">
               {t('organizer.overrideModal.matchAction.description') || 'Choose what to do with the current tv match since season or episode changed:'}
             </p>
-            
+
             <SelectableCard
               as="div"
               className="match-action-option"

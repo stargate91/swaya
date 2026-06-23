@@ -35,20 +35,24 @@ export function useOrganizerFilteredRows({
   scanMode,
   sessionMode,
 }) {
-  const isAdultPath = (path) => {
-    if (!path) return false;
-    const p = path.toLowerCase();
-    return p.includes('adult') || p.includes('porn') || p.includes('xxx') || p.includes('scenes');
-  };
-
   const matchesSessionMode = useMemo(() => {
     return (item) => {
       const itemScanMode = item.scan_mode || '';
-      const isAdult = item.matches?.some((m) => m.is_adult)
-        || String(item.type).toLowerCase() === 'scene'
+      const isAdultScanModeOrType = (
+        String(item.type).toLowerCase() === 'scene'
         || itemScanMode === 'porndb_movie'
         || itemScanMode === 'scenes'
-        || isAdultPath(item.current_path);
+      );
+      
+      let isAdult = false;
+      if (isAdultScanModeOrType) {
+        isAdult = true;
+      } else {
+        const activeMatch = item.matches?.find((m) => m.is_active) || item.matches?.[0];
+        if (activeMatch) {
+          isAdult = activeMatch.is_adult;
+        }
+      }
 
       return sessionMode === 'nsfw' ? isAdult : !isAdult;
     };
@@ -56,11 +60,15 @@ export function useOrganizerFilteredRows({
 
   const matchesSessionModeExtra = useMemo(() => {
     return (extra) => {
-      const parentScanMode = extra.parent_scan_mode || '';
-      const parentIsAdult = extra.parent_type === 'scene'
-        || parentScanMode === 'scenes'
-        || parentScanMode === 'porndb_movie'
-        || isAdultPath(extra.path);
+      let parentIsAdult = false;
+      if (extra.parent_is_adult !== undefined && extra.parent_is_adult !== null) {
+        parentIsAdult = extra.parent_is_adult;
+      } else {
+        const parentScanMode = extra.parent_scan_mode || '';
+        parentIsAdult = extra.parent_type === 'scene'
+          || parentScanMode === 'scenes'
+          || parentScanMode === 'porndb_movie';
+      }
 
       return sessionMode === 'nsfw' ? parentIsAdult : !parentIsAdult;
     };

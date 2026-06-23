@@ -101,7 +101,8 @@
     "overrideSeasonEpisodeRequired": "Season and Episode numbers are required for episodes.",
     "overrideSuccess": "Overrides saved successfully!",
     "bulkOverrideSaveFailed": "Oops! We couldn't save the bulk overrides.",
-    "overrideSaveFailed": "Oops! We couldn't save the overrides."
+    "overrideSaveFailed": "Oops! We couldn't save the overrides.",
+    "selfParentError": "An item cannot be its own parent."
   },
   "actions": {
     "match": "Match",

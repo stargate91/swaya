@@ -1,0 +1,48 @@
+=== ALL MEDIA ITEMS ===
+ID: 1, Name: Relic Hunter - S01E01 - Buddha's Bowl.mkv, Status: matched, ScanMode: movies_tv
+ID: 2, Name: Relic Hunter - S01E02 - Smoking Gun.mkv, Status: matched, ScanMode: movies_tv
+ID: 3, Name: Relic Hunter - S01E03 - The Headless Nun.mkv, Status: matched, ScanMode: movies_tv
+ID: 4, Name: Relic Hunter - S01E04 - Flag Day.mkv, Status: matched, ScanMode: movies_tv
+ID: 5, Name: Relic Hunter - S01E05 - Thank You Very Much.mkv, Status: matched, ScanMode: movies_tv
+ID: 6, Name: Relic Hunter - S01E06 - Diamond in the Rough.mkv, Status: matched, ScanMode: movies_tv
+ID: 7, Name: Relic Hunter - S01E07 - Transformation.mkv, Status: matched, ScanMode: movies_tv
+ID: 8, Name: Relic Hunter - S01E08 - Etched in Stone.mkv, Status: matched, ScanMode: movies_tv
+ID: 9, Name: Relic Hunter - S01E09 - The Book of Love.mkv, Status: matched, ScanMode: movies_tv
+ID: 10, Name: Relic Hunter - S01E10 - The Myth of the Maze.mkv, Status: matched, ScanMode: movies_tv
+ID: 11, Name: Relic Hunter - S01E11 - Irish Crown Affair.mkv, Status: matched, ScanMode: movies_tv
+ID: 12, Name: Relic Hunter - S01E12 - The Emperor's Bride.mkv, Status: matched, ScanMode: movies_tv
+ID: 13, Name: Relic Hunter - S01E13 - Afterlife and Death.mkv, Status: matched, ScanMode: movies_tv
+ID: 14, Name: Relic Hunter - S01E14 - Nine Lives.mkv, Status: matched, ScanMode: movies_tv
+ID: 15, Name: Relic Hunter - S01E15 - Affaire de Coeur.mkv, Status: matched, ScanMode: movies_tv
+ID: 16, Name: Relic Hunter - S01E16 - A Vanishing Art.mkv, Status: matched, ScanMode: movies_tv
+ID: 17, Name: Relic Hunter - S01E17 - A Good Year.mkv, Status: matched, ScanMode: movies_tv
+ID: 18, Name: Relic Hunter - S01E18 - The Last Knight.mkv, Status: matched, ScanMode: movies_tv
+ID: 19, Name: Relic Hunter - S01E19 - Love Letter.mkv, Status: matched, ScanMode: movies_tv
+ID: 20, Name: Relic Hunter - S01E20 - Possessed.mkv, Status: matched, ScanMode: movies_tv
+ID: 21, Name: Relic Hunter - S01E21 - Nothing but the Truth.mkv, Status: matched, ScanMode: movies_tv
+ID: 22, Name: Relic Hunter - S01E22 - Memories of Montmartre.mkv, Status: matched, ScanMode: movies_tv
+ID: 28, Name: 1000facials_ash_hollywood_2014-07-18_hot_cum_on_ash_hollywood's_face_1080p.mp4, Status: matched, ScanMode: scenes
+ID: 29, Name: 1000facials_dillion_harper_2014-02-21_dillion_harper_1080p.mp4, Status: matched, ScanMode: scenes
+ID: 30, Name: 1000facials_rissa_maxxx_2013-07-26_rissa_maxxx_1080p.mp4, Status: matched, ScanMode: scenes
+ID: 31, Name: 1000facials_rose_red_2014-06-13_rose_red_1080p.mp4, Status: matched, ScanMode: scenes
+ID: 32, Name: 1000facials_victoria_daniels_2014-02-14_victoria_daniels_facialed_by_two_cocks_1080p.mp4, Status: matched, ScanMode: scenes
+ID: 33, Name: 1000facials_victoria_voxxx_2020-02-17_cool_step_sister_1080p.mp4, Status: matched, ScanMode: scenes
+ID: 34, Name: alettaoceanempire_aletta_ocean_2010-04-03_kitchen_accident_720p.mp4, Status: no_match, ScanMode: scenes
+ID: 35, Name: allanal_karma_rx_valerica_steele_2021-09-12_valerica_&_karma's_anal_slutfest_1080p.mp4, Status: matched, ScanMode: scenes
+ID: 36, Name: allanal_kyler_quinn_jazmin_luv_2021-08-23_opening_kylers_ass_&_jazmins_throat_1080p.mp4, Status: matched, ScanMode: scenes
+ID: 37, Name: allanal_lexi_lore_harmony_wonder_2019-11-20_gape_frenzy_with_harmony_and_lexi_1080p.mp4, Status: matched, ScanMode: scenes
+ID: 38, Name: allanal_lisey_sweet_candice_dare_2019-10-26_lisey_and_candice_are_bubble_butt_bombshells_1080p.mp4, Status: matched, ScanMode: scenes
+ID: 39, Name: allanal_valentina_nappi_violet_starr_2020-02-13_backdoor_business_with_violet_and_valentina_1080p.mp4, Status: matched, ScanMode: scenes
+ID: 40, Name: americananal_adria_rae_2019-07-02_adria_rae_is_one_sexy_super_slut_she_fucks_so_good_aa041_1080p.mp4, Status: matched, ScanMode: scenes
+ID: 41, Name: analized_aidra_fox_2018-04-24_aidra_fox_has_an_asshole_that_never_gets_enough_1080p.mp4, Status: matched, ScanMode: scenes
+ID: 42, Name: assparade_abella_danger_2020-07-06_abella's_blissful_dp_1080p.mp4, Status: matched, ScanMode: scenes
+ID: 43, Name: Anal Savages 2 (2017) 480p.mp4, Status: matched, ScanMode: movies_tv
+
+=== ALL EXTRA FILES ===
+ID: 9, Name: You Only Live Twice (1967) 1080p.mkv, Category: video, Subtype: other, Parent ID: 1 (Status: matched, Name: Relic Hunter - S01E01 - Buddha's Bowl.mkv)
+ID: 10, Name: 21eroticanal_veronica_leal_2021-01-01_sweet_awakening_1080p.mp4, Category: video, Subtype: other, Parent ID: 28 (Status: matched, Name: 1000facials_ash_hollywood_2014-07-18_hot_cum_on_ash_hollywood's_face_1080p.mp4)
+ID: 11, Name: Zack and Miri Make a Porno (2008) 1080p.mkv, Category: video, Subtype: other, Parent ID: 9 (Status: matched, Name: Relic Hunter - S01E09 - The Book of Love.mkv)
+ID: 12, Name: Youth in Revolt (2009) 1080p.mkv, Category: video, Subtype: None, Parent ID: 1 (Status: matched, Name: Relic Hunter - S01E01 - Buddha's Bowl.mkv)
+ID: 14, Name: Anal Savages 2 (2017) 480p.nfo, Category: metadata, Subtype: nfo, Parent ID: 43 (Status: matched, Name: Anal Savages 2 (2017) 480p.mp4)
+ID: 15, Name: The Gangbang of Riley Reid (2017) 1080p.mp4, Category: video, Subtype: None, Parent ID: 43 (Status: matched, Name: Anal Savages 2 (2017) 480p.mp4)
+ID: 16, Name: Wild Things (1998) 1080p.mkv, Category: video, Subtype: None, Parent ID: 2 (Status: matched, Name: Relic Hunter - S01E02 - Smoking Gun.mkv)

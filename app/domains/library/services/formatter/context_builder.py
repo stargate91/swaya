@@ -65,9 +65,18 @@ class ContextBuilder:
             if getattr(overrides, "custom_audio_type", None) and overrides.custom_audio_type != MediaAudioType.NONE:
                 audio_type_val = overrides.custom_audio_type
 
+        parsed_info = getattr(item, "parsed_info", None) or {}
+        title_val = loc.title if loc and loc.title else ""
+        if not title_val:
+            title_val = parsed_info.get("title") or parsed_info.get("name") or getattr(item, "filename", "").rsplit(".", 1)[0]
+            
+        orig_title_val = getattr(match, "original_title", "") or ""
+        if not orig_title_val:
+            orig_title_val = title_val
+
         ctx.update({
-            "Title": loc.title if loc and loc.title else "",
-            "OriginalTitle": getattr(match, "original_title", "") or "",
+            "Title": title_val,
+            "OriginalTitle": orig_title_val,
             "Year": str(match.release_date.year) if match and match.release_date else "",
             "ReleaseDate": match.release_date.strftime("%Y-%m-%d") if match and match.release_date else "",
             "Edition": self.tech_parser.format_enum_val(edition_val),
@@ -326,6 +335,15 @@ class ContextBuilder:
             tv_title = tv_loc.title
             
         parsed_info = getattr(item, "parsed_info", None) or {}
+        if not tv_title:
+            tv_title = parsed_info.get("show_name") or parsed_info.get("show") or parsed_info.get("title")
+            if not tv_title:
+                fn_data = parsed_info.get("fn") or {}
+                it_data = parsed_info.get("it") or {}
+                fd_data = parsed_info.get("fd") or {}
+                tv_title = fn_data.get("show_name") or fn_data.get("show") or it_data.get("show_name") or it_data.get("show") or fd_data.get("show_name") or fd_data.get("show") or getattr(item, "filename", "").rsplit(".", 1)[0]
+        if not tv_orig_title:
+            tv_orig_title = tv_title
         custom_season = parsed_info.get("season")
         custom_episode = parsed_info.get("episode")
 

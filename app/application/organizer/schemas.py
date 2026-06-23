@@ -53,6 +53,7 @@ class OrganizerExtra(BaseModel):
     planned_path: str
     action: str
     parent_scan_mode: Optional[str] = None
+    parent_is_adult: Optional[bool] = None
 
 class OrganizerGroupsResponse(BaseModel):
     manual: List[OrganizerItem]

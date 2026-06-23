@@ -216,13 +216,50 @@ class OverridesService:
                 relative_path=item.relative_path,
                 filename=item.filename,
                 extension=item.extension,
-                category=ExtraCategory.BONUS,
-                subtype=ExtraSubtype.OTHER
+                category=ExtraCategory.VIDEO,
+                subtype=None
             )
             self.db.add(new_extra)
             self.db.delete(item)
             self.db.commit()
             return {"status": "success", "item_id": item_id}
+
+        # Handle conversion between movie and episode
+        if request.main_type in ("movie", "episode"):
+            parsed = dict(item.parsed_info) if item.parsed_info else {}
+            old_type = parsed.get("type")
+            if not old_type:
+                active_m = next((m for m in item.matches if m.is_active), None) or next((m for m in item.matches), None)
+                if active_m:
+                    old_type = active_m.media_type.value
+                else:
+                    fn_data = parsed.get("fn") or {}
+                    it_data = parsed.get("it") or {}
+                    fd_data = parsed.get("fd") or {}
+                    old_type = fn_data.get("type") or it_data.get("type") or fd_data.get("type") or "movie"
+
+            if str(old_type).lower() != request.main_type.lower():
+                from app.shared_kernel.enums import ItemStatus
+                item.status = ItemStatus.NEW
+                parsed["type"] = request.main_type
+                for match in item.matches:
+                    match.is_active = False
+                    match.media_item_id = None
+                
+                if request.main_type == "movie":
+                    parsed.pop("season", None)
+                    parsed.pop("episode", None)
+                    for k in ["fn", "it", "fd"]:
+                        if k in parsed and isinstance(parsed[k], dict):
+                            parsed[k].pop("season", None)
+                            parsed[k].pop("episode", None)
+                            parsed[k]["type"] = "movie"
+                elif request.main_type == "episode":
+                    for k in ["fn", "it", "fd"]:
+                        if k in parsed and isinstance(parsed[k], dict):
+                            parsed[k]["type"] = "episode"
+            
+            item.parsed_info = parsed
 
         override = self._get_or_create_override(str(item_id))
         if not override:
@@ -298,8 +335,11 @@ class OverridesService:
 
         # Reset Match
         if request.reset_match:
+            from app.shared_kernel.enums import ItemStatus
+            item.status = ItemStatus.NEW
             for match in item.matches:
                 match.is_active = False
+                match.media_item_id = None
 
         # Tags resolution
         tags_input = request.tags

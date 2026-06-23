@@ -79,7 +79,15 @@ class Formatter:
     def _get_target_name_and_subpath(self, item: Any, match: Any, loc: Any) -> tuple[str, str]:
         """Calculates target name and subpath for a media item."""
         is_inplace = not self.config.org_enabled or not self.config.move_to_library or not self.config.library_path
-        media_type = getattr(match, "media_type", MediaType.MOVIE) if match else MediaType.MOVIE
+        media_type = getattr(match, "media_type", None) if match else None
+        if not media_type:
+            inferred = str((item.parsed_info or {}).get("type") or "").lower()
+            if inferred == "episode":
+                media_type = MediaType.EPISODE
+            elif inferred == "scene":
+                media_type = MediaType.SCENE
+            else:
+                media_type = MediaType.MOVIE
 
         if is_inplace:
              if media_type == MediaType.SCENE:
