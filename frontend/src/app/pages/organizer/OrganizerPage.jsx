@@ -423,6 +423,8 @@ export default function OrganizerPage() {
       clearSelectedRows={clearSelectedRows}
       dismissRows={dismissRows}
       selectedRows={selectedRows}
+      scanMode={scanMode}
+      sessionMode={sessionMode}
     >
       {utilityBarTarget && scanModeOptions.length > 1 && createPortal(
         <div className="organizer-utility-bar-wrapper">

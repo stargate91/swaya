@@ -7,6 +7,8 @@ export function OrganizerModalProvider({
   clearSelectedRows,
   dismissRows,
   selectedRows,
+  scanMode,
+  sessionMode,
 }) {
   const {
     openDeleteModal,
@@ -22,6 +24,8 @@ export function OrganizerModalProvider({
     clearSelectedRows,
     dismissRows,
     selectedRows,
+    scanMode,
+    sessionMode,
   });
 
   const contextValue = {

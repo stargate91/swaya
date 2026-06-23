@@ -1,8 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 
+export const getOrganizerQueryKey = (scanMode, sessionMode) => [
+  'organizer',
+  scanMode || 'all',
+  sessionMode || 'sfw',
+];
+
 export const useOrganizerQuery = (scanMode, sessionMode) => useQuery({
-  queryKey: ['organizer'],
+  queryKey: getOrganizerQueryKey(scanMode, sessionMode),
   queryFn: () => api.organizer.get({ scanMode, sessionMode }),
   enabled: false,
 });

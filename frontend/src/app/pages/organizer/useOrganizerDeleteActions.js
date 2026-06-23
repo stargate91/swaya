@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import api from '../../lib/api';
+import { getOrganizerQueryKey } from '../../queries';
 
 export const removeOrganizerRow = (currentOrganizer, row) => {
   if (!currentOrganizer) {
@@ -36,21 +37,25 @@ export function useOrganizerDeleteActions({
   queryClient,
   focusFirstAvailableResult,
   clearSelectedRows,
+  scanMode,
+  sessionMode,
 }) {
+  const queryKey = getOrganizerQueryKey(scanMode, sessionMode);
+
   const refreshOrganizer = useCallback(async () => {
-    const data = await api.organizer.get();
-    queryClient.setQueryData(['organizer'], data);
+    const data = await api.organizer.get({ scanMode, sessionMode });
+    queryClient.setQueryData(queryKey, data);
     focusFirstAvailableResult(data);
     queryClient.invalidateQueries({ queryKey: ['organizer-count'] });
     queryClient.invalidateQueries({ queryKey: ['stats'] });
-  }, [queryClient, focusFirstAvailableResult]);
+  }, [queryClient, focusFirstAvailableResult, scanMode, sessionMode, queryKey]);
 
   const handleResolveOrganizerRow = useCallback(async (row) => {
     closeModal();
-    const previousOrganizer = queryClient.getQueryData(['organizer']);
+    const previousOrganizer = queryClient.getQueryData(queryKey);
     const nextOrganizer = removeOrganizerRow(previousOrganizer, row);
     if (nextOrganizer) {
-      queryClient.setQueryData(['organizer'], nextOrganizer);
+      queryClient.setQueryData(queryKey, nextOrganizer);
       focusFirstAvailableResult(nextOrganizer);
       queryClient.invalidateQueries({ queryKey: ['organizer-count'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
@@ -60,20 +65,20 @@ export function useOrganizerDeleteActions({
       await refreshOrganizer();
     } catch {
       if (previousOrganizer) {
-        queryClient.setQueryData(['organizer'], previousOrganizer);
+        queryClient.setQueryData(queryKey, previousOrganizer);
         focusFirstAvailableResult(previousOrganizer);
       }
       queryClient.invalidateQueries({ queryKey: ['organizer-count'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
     }
-  }, [closeModal, queryClient, focusFirstAvailableResult, refreshOrganizer]);
+  }, [closeModal, queryClient, focusFirstAvailableResult, refreshOrganizer, queryKey]);
 
   const handleResolveOrganizerRows = useCallback(async (rows, performMutationFn) => {
     closeModal();
-    const previousOrganizer = queryClient.getQueryData(['organizer']);
+    const previousOrganizer = queryClient.getQueryData(queryKey);
     const nextOrganizer = removeOrganizerRows(previousOrganizer, rows);
     if (nextOrganizer) {
-      queryClient.setQueryData(['organizer'], nextOrganizer);
+      queryClient.setQueryData(queryKey, nextOrganizer);
       focusFirstAvailableResult(nextOrganizer);
       queryClient.invalidateQueries({ queryKey: ['organizer-count'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
@@ -86,21 +91,21 @@ export function useOrganizerDeleteActions({
       await refreshOrganizer();
     } catch (error) {
       if (previousOrganizer) {
-        queryClient.setQueryData(['organizer'], previousOrganizer);
+        queryClient.setQueryData(queryKey, previousOrganizer);
         focusFirstAvailableResult(previousOrganizer);
       }
       queryClient.invalidateQueries({ queryKey: ['organizer-count'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
       throw error;
     }
-  }, [closeModal, queryClient, focusFirstAvailableResult, refreshOrganizer]);
+  }, [closeModal, queryClient, focusFirstAvailableResult, refreshOrganizer, queryKey]);
 
   const handleDeleteOrganizerRow = useCallback(async (row, mode) => {
     closeModal();
-    const previousOrganizer = queryClient.getQueryData(['organizer']);
+    const previousOrganizer = queryClient.getQueryData(queryKey);
     const nextOrganizer = removeOrganizerRow(previousOrganizer, row);
     if (nextOrganizer) {
-      queryClient.setQueryData(['organizer'], nextOrganizer);
+      queryClient.setQueryData(queryKey, nextOrganizer);
       focusFirstAvailableResult(nextOrganizer);
       queryClient.invalidateQueries({ queryKey: ['organizer-count'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
@@ -119,22 +124,22 @@ export function useOrganizerDeleteActions({
       toast(t(toastKey), 'success');
     } catch (error) {
       if (previousOrganizer) {
-        queryClient.setQueryData(['organizer'], previousOrganizer);
+        queryClient.setQueryData(queryKey, previousOrganizer);
         focusFirstAvailableResult(previousOrganizer);
       }
       queryClient.invalidateQueries({ queryKey: ['organizer-count'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
       throw error;
     }
-  }, [closeModal, queryClient, focusFirstAvailableResult, refreshOrganizer, toast, t]);
+  }, [closeModal, queryClient, focusFirstAvailableResult, refreshOrganizer, toast, t, queryKey]);
 
   const handleDeleteOrganizerRows = useCallback(async (rows, mode) => {
     closeModal();
     clearSelectedRows();
-    const previousOrganizer = queryClient.getQueryData(['organizer']);
+    const previousOrganizer = queryClient.getQueryData(queryKey);
     const nextOrganizer = removeOrganizerRows(previousOrganizer, rows);
     if (nextOrganizer) {
-      queryClient.setQueryData(['organizer'], nextOrganizer);
+      queryClient.setQueryData(queryKey, nextOrganizer);
       focusFirstAvailableResult(nextOrganizer);
       queryClient.invalidateQueries({ queryKey: ['organizer-count'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
@@ -154,14 +159,14 @@ export function useOrganizerDeleteActions({
       toast(t(toastKey).replace('{count}', count), 'success');
     } catch (error) {
       if (previousOrganizer) {
-        queryClient.setQueryData(['organizer'], previousOrganizer);
+        queryClient.setQueryData(queryKey, previousOrganizer);
         focusFirstAvailableResult(previousOrganizer);
       }
       queryClient.invalidateQueries({ queryKey: ['organizer-count'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
       throw error;
     }
-  }, [closeModal, clearSelectedRows, queryClient, focusFirstAvailableResult, refreshOrganizer, toast, t]);
+  }, [closeModal, clearSelectedRows, queryClient, focusFirstAvailableResult, refreshOrganizer, toast, t, queryKey]);
 
   return {
     refreshOrganizer,

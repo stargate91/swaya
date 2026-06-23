@@ -3,7 +3,7 @@ import Dropdown from '../../../ui/Dropdown';
 import SelectableCard from '../../../ui/SelectableCard';
 import { useTranslation } from '../../../providers/LanguageContext';
 import { useQueryClient } from '@tanstack/react-query';
-import { useUpdateMediaMutation } from '../../../queries';
+import { useUpdateMediaMutation, getOrganizerQueryKey } from '../../../queries';
 import { isEpisodeMediaType } from '@/lib/mediaTypes';
 import OverrideMovieFields from './OverrideMovieFields';
 import OverrideEpisodeFields from './OverrideEpisodeFields';
@@ -20,10 +20,9 @@ import {
   MAIN_TYPE_OPTIONS,
 } from './overrideConstants';
 
-export default function OrganizerOverrideModalContent({ row, onClose, toast }) {
+export default function OrganizerOverrideModalContent({ row, onClose, toast, scanMode, sessionMode }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const sessionMode = useLibraryModeStore((state) => state.sessionMode);
 
   const translatedLanguageOptions = useMemo(() =>
     LANGUAGE_OPTIONS.map((opt) => ({
@@ -85,7 +84,7 @@ export default function OrganizerOverrideModalContent({ row, onClose, toast }) {
   }, [t, row.rawPayload]);
 
   // Get parent candidates (movies + tv) from cache
-  const organizer = queryClient.getQueryData(['organizer']) || {};
+  const organizer = queryClient.getQueryData(getOrganizerQueryKey(scanMode, sessionMode)) || {};
   const movies = organizer.movies || [];
   const tv = organizer.tv || [];
 

@@ -106,12 +106,7 @@ export const useUpdateMediaMutation = () => {
   return useMutation({
     mutationFn: (payload) => api.media.update(payload),
     onSuccess: async () => {
-      try {
-        const data = await api.organizer.get();
-        queryClient.setQueryData(['organizer'], data);
-      } catch {
-        await queryClient.refetchQueries({ queryKey: ['organizer'] });
-      }
+      await queryClient.invalidateQueries({ queryKey: ['organizer'] });
       queryClient.invalidateQueries({ queryKey: ['organizer-count'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
     },
@@ -123,12 +118,7 @@ export const useBulkUpdateMediaMutation = () => {
   return useMutation({
     mutationFn: (payload) => api.media.bulkUpdate(payload),
     onSuccess: async () => {
-      try {
-        const data = await api.organizer.get();
-        queryClient.setQueryData(['organizer'], data);
-      } catch {
-        await queryClient.refetchQueries({ queryKey: ['organizer'] });
-      }
+      await queryClient.invalidateQueries({ queryKey: ['organizer'] });
       queryClient.invalidateQueries({ queryKey: ['organizer-count'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
     },

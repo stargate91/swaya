@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useRenameMutation } from '../../queries';
+import { useRenameMutation, getOrganizerQueryKey } from '../../queries';
 import { useOrganizerRename } from './hooks/useOrganizerRename';
 import { useOrganizerScan } from './hooks/useOrganizerScan';
 
@@ -40,6 +40,7 @@ export function useOrganizerActions({
     scanStatusQuery,
     renameStartedRef,
     scanMode,
+    sessionMode,
     includeAdult,
     provider,
   });
@@ -66,7 +67,7 @@ export function useOrganizerActions({
     try {
       const result = await organizerQuery.refetch();
       if (result.data) {
-        queryClient.setQueryData(['organizer'], result.data);
+        queryClient.setQueryData(getOrganizerQueryKey(scanMode, sessionMode), result.data);
         onResultsReady?.(result.data);
       }
       await organizerCountQuery.refetch();

@@ -5,7 +5,7 @@ import Input from '../../../ui/Input';
 import SelectableCard from '../../../ui/SelectableCard';
 import { useTranslation } from '../../../providers/LanguageContext';
 import { useQueryClient } from '@tanstack/react-query';
-import { useBulkUpdateMediaMutation } from '../../../queries';
+import { useBulkUpdateMediaMutation, getOrganizerQueryKey } from '../../../queries';
 
 const DOT = '.';
 
@@ -20,10 +20,9 @@ import {
   MAIN_TYPE_OPTIONS,
 } from './overrideConstants';
 
-export default function OrganizerBulkOverrideModalContent({ rows, onClose, toast }) {
+export default function OrganizerBulkOverrideModalContent({ rows, onClose, toast, scanMode, sessionMode }) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const sessionMode = useLibraryModeStore((state) => state.sessionMode);
 
   const isExtra = rows[0]?.rawType === 'extra';
   const category = isExtra ? (rows[0]?.rawPayload?.category || 'video') : 'video';
@@ -131,7 +130,7 @@ export default function OrganizerBulkOverrideModalContent({ rows, onClose, toast
   const subcategoryList = translatedSubcategoriesByCategory[mainType === 'bonus' ? 'video' : category] || [];
 
   // Get parent candidates (movies + tv) from cache
-  const organizer = queryClient.getQueryData(['organizer']) || {};
+  const organizer = queryClient.getQueryData(getOrganizerQueryKey(scanMode, sessionMode)) || {};
   const movies = organizer.movies || [];
   const tv = organizer.tv || [];
 

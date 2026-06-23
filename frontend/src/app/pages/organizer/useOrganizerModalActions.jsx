@@ -18,6 +18,8 @@ export function useOrganizerModalActions({
   clearSelectedRows,
   dismissRows,
   selectedRows,
+  scanMode,
+  sessionMode,
 }) {
   const { t } = useTranslation();
   const { closeModal, openModal, toast } = useUi();
@@ -37,6 +39,8 @@ export function useOrganizerModalActions({
     queryClient,
     focusFirstAvailableResult,
     clearSelectedRows,
+    scanMode,
+    sessionMode,
   });
 
   const isPlayableOrganizerRow = (row) => {
@@ -217,6 +221,8 @@ export function useOrganizerModalActions({
           onClose={closeModal}
           toast={toast}
           api={api}
+          scanMode={scanMode}
+          sessionMode={sessionMode}
         />
       ),
       footer: (
@@ -244,6 +250,8 @@ export function useOrganizerModalActions({
           rows={rows}
           onClose={closeModal}
           toast={toast}
+          scanMode={scanMode}
+          sessionMode={sessionMode}
         />
       ),
       footer: (

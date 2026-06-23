@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { selectFolder } from '../../../lib/ipc';
 import { scrollOrganizerToTop } from '../organizerScroll';
-import { useScanMutation } from '../../../queries';
+import { useScanMutation, getOrganizerQueryKey } from '../../../queries';
 import { isEpisodeMediaType } from '@/lib/mediaTypes';
 
 const EMPTY_ORGANIZER = {
@@ -77,9 +77,11 @@ export function useOrganizerScan({
   scanStatusQuery,
   renameStartedRef,
   scanMode,
+  sessionMode,
   includeAdult,
   provider,
 }) {
+  const queryKey = getOrganizerQueryKey(scanMode, sessionMode);
   const [isBrowseStarting, setIsBrowseStarting] = useState(false);
   const previousScanActiveRef = useRef(false);
   const lastScanPathsRef = useRef([]);
@@ -115,7 +117,7 @@ export function useOrganizerScan({
         const wasAborted = wasStopRequestedRef.current;
         wasStopRequestedRef.current = false;
 
-        const currentVisibleOrganizer = queryClient.getQueryData(['organizer']) || EMPTY_ORGANIZER;
+        const currentVisibleOrganizer = queryClient.getQueryData(queryKey) || EMPTY_ORGANIZER;
 
         queryClient.invalidateQueries({ queryKey: ['organizer'] });
         queryClient.invalidateQueries({ queryKey: ['organizer-count'] });
@@ -126,7 +128,7 @@ export function useOrganizerScan({
           const nextOrganizer = result.data || EMPTY_ORGANIZER;
 
           if (wasRename) {
-            queryClient.setQueryData(['organizer'], nextOrganizer);
+            queryClient.setQueryData(queryKey, nextOrganizer);
             onResultsReady?.(nextOrganizer);
             if (wasAborted) {
               toast('Renaming stopped.', 'warning');
@@ -138,7 +140,7 @@ export function useOrganizerScan({
               ? filterOrganizerByPaths(nextOrganizer, lastScanPathsRef.current)
               : nextOrganizer;
             const mergedOrganizer = mergeOrganizerGroups(currentVisibleOrganizer, scanSubset);
-            queryClient.setQueryData(['organizer'], mergedOrganizer);
+            queryClient.setQueryData(queryKey, mergedOrganizer);
             onResultsReady?.(mergedOrganizer);
             const matchedMovies = (nextOrganizer.movies || []).length;
             const matchedEpisodes = (nextOrganizer.tv || []).filter((item) => isEpisodeMediaType(item.type)).length;
