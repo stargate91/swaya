@@ -115,32 +115,41 @@ class ScraperPersister:
         scene_id: str,
         norm: Dict[str, Any],
         media_type: MediaType = MediaType.SCENE,
+        media_item_id: Optional[int] = None,
     ) -> MetadataMatch:
         """Takes a normalized scene structure and persists it to the database."""
         with persistence_lock:
             # Find or create match
-            match = self.db.query(MetadataMatch).filter(
+            query = self.db.query(MetadataMatch).filter(
                 MetadataMatch.provider == provider,
                 MetadataMatch.external_id == scene_id,
                 MetadataMatch.media_type == media_type
-            ).first()
+            )
+            if media_item_id is not None:
+                query = query.filter(MetadataMatch.media_item_id == media_item_id)
+            
+            match = query.first()
 
             if not match:
                 match = MetadataMatch(
                     provider=provider,
                     external_id=scene_id,
-                    media_type=media_type
+                    media_type=media_type,
+                    media_item_id=media_item_id
                 )
                 try:
                     with self.db.begin_nested():
                         self.db.add(match)
                         self.db.flush()
                 except Exception:
-                    match = self.db.query(MetadataMatch).filter(
+                    query2 = self.db.query(MetadataMatch).filter(
                         MetadataMatch.provider == provider,
                         MetadataMatch.external_id == scene_id,
                         MetadataMatch.media_type == media_type
-                    ).first()
+                    )
+                    if media_item_id is not None:
+                        query2 = query2.filter(MetadataMatch.media_item_id == media_item_id)
+                    match = query2.first()
 
             # 1. Map basic match fields
             for k, v in norm["match"].items():

@@ -322,6 +322,7 @@
       "type": "Type",
       "movie": "Movie",
       "tv": "TV",
+      "scene": "Scene",
       "year": "Year",
       "seasonShort": "S",
       "episodeShort": "E",

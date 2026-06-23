@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 import uuid
 import logging
@@ -7,6 +8,7 @@ from typing import BinaryIO, Iterable, Optional
 from PIL import Image
 import requests
 from io import BytesIO
+import xml.etree.ElementTree as ET
 
 from app.domains.media_assets.services import image_selectors
 from app.shared_kernel.constants import (
@@ -51,7 +53,10 @@ class ImageProcessingService:
         return self.image_root / "original" / subfolder / filename.lstrip("/")
 
     def get_thumbnail_path(self, subfolder: str, filename: str) -> Path:
-        """Returns target path for the thumbnail image (keeping original extension)."""
+        """Returns target path for the thumbnail image (keeping original extension, except for scene_stills which forces .jpg)."""
+        if subfolder == "scene_stills":
+            base, _ = os.path.splitext(filename)
+            filename = f"{base}.jpg"
         return self.image_root / "thumbnails" / subfolder / filename.lstrip("/")
 
     def exists(self, path: str | Path) -> bool:
@@ -59,7 +64,7 @@ class ImageProcessingService:
         p = Path(path)
         return p.exists() and p.stat().st_size > MIN_CACHED_IMAGE_BYTES
 
-    def write_chunks(self, target_path: str | Path, chunks: Iterable[bytes]) -> Optional[str]:
+    def write_chunks(self, target_path: str | Path, chunks: Iterable[bytes], url: Optional[str] = None) -> Optional[str]:
         """Writes network chunk stream to a file safely via a temp file."""
         target = Path(target_path)
         temp_path = target.with_name(f"{target.name}.{uuid.uuid4().hex}.tmp")
@@ -69,7 +74,7 @@ class ImageProcessingService:
                 for chunk in chunks:
                     if chunk:
                         f.write(chunk)
-            return self._finalize_file(temp_path, target)
+            return self._finalize_file(temp_path, target, url=url)
         finally:
             if temp_path.exists():
                 temp_path.unlink()
@@ -107,12 +112,12 @@ class ImageProcessingService:
             return True
 
         if subfolder == "scene_stills":
-            return True
-
-        limits = MEDIA_IMAGE_LIMITS.get(subfolder)
-        if not limits:
-            # No limits configured for this category (e.g. logos) -> skip thumbnail, use original
-            return True
+            limits = {"max_width": 780}
+        else:
+            limits = MEDIA_IMAGE_LIMITS.get(subfolder)
+            if not limits:
+                # No limits configured for this category (e.g. logos) -> skip thumbnail, use original
+                return True
 
         thumb_temp = thumb.with_name(f"{thumb.name}.{uuid.uuid4().hex}.tmp")
         thumb.parent.mkdir(parents=True, exist_ok=True)
@@ -140,13 +145,15 @@ class ImageProcessingService:
                 if max_height and height > max_height:
                     already_in_bounds = False
 
-            if already_in_bounds:
+            if already_in_bounds and subfolder != "scene_stills":
                 # Already in bounds, no thumbnail needed
                 return True
 
             # 2. Resize if bounds exceeded
             with Image.open(orig) as img:
                 orig_format = img.format or ("PNG" if orig.suffix.lower() == ".png" else "JPEG")
+                if subfolder == "scene_stills":
+                    orig_format = "JPEG"
                 width, height = img.size
                 if use_adult_scene_poster_height_limit(orig.name, width, height):
                     max_width = None
@@ -164,6 +171,8 @@ class ImageProcessingService:
                 # Convert modes if saving as JPEG (must not be RGBA)
                 if orig_format == "JPEG" and img.mode in ("RGBA", "LA", "P"):
                     img = img.convert("RGB")
+                elif orig_format == "JPEG" and img.mode != "RGB":
+                    img = img.convert("RGB")
 
                 # Save using original format with default settings
                 img.save(thumb_temp, orig_format)
@@ -178,7 +187,9 @@ class ImageProcessingService:
                 thumb_temp.unlink()
             return False
 
-    def _finalize_file(self, temp_path: Path, target_path: Path) -> Optional[str]:
+
+
+    def _finalize_file(self, temp_path: Path, target_path: Path, url: Optional[str] = None) -> Optional[str]:
         """Verifies integrity and moves file to target path."""
         if not temp_path.exists() or temp_path.stat().st_size < MIN_CACHED_IMAGE_BYTES:
             return None
@@ -249,17 +260,32 @@ class ImageProcessingService:
         embedded_subfolder = path_parts[0] if len(path_parts) >= 2 else subfolder
         filename = path_parts[-1] if path_parts else os.path.basename(path)
 
-        thumb_path = self.get_thumbnail_path(subfolder, filename)
+        if size == "original":
+            orig_path = self.get_original_path(embedded_subfolder, filename)
+            if self.exists(orig_path):
+                return f"/media/images/original/{embedded_subfolder}/{filename}"
+
+        thumb_subfolder = embedded_subfolder if embedded_subfolder in MEDIA_IMAGE_SUBFOLDERS else subfolder
+        thumb_path = self.get_thumbnail_path(thumb_subfolder, filename)
         if self.exists(thumb_path):
-            return f"/media/images/thumbnails/{subfolder}/{filename}"
+            return f"/media/images/thumbnails/{thumb_subfolder}/{thumb_path.name}"
+
+        if thumb_subfolder == "scene_stills":
+            source_orig_path = self.get_original_path("scene_stills", filename)
+            if self.exists(source_orig_path):
+                self.generate_thumbnail(source_orig_path, thumb_path, "scene_stills")
+                if self.exists(thumb_path):
+                    return f"/media/images/thumbnails/scene_stills/{thumb_path.name}"
 
         if subfolder == "posters" and embedded_subfolder == "scene_stills":
             source_orig_path = self.get_original_path("scene_stills", filename)
+            poster_thumb_path = self.get_thumbnail_path("posters", filename)
+            if self.exists(poster_thumb_path):
+                return f"/media/images/thumbnails/posters/{poster_thumb_path.name}"
             if self.exists(source_orig_path):
-                self.generate_thumbnail(source_orig_path, thumb_path, "posters")
-                if self.exists(thumb_path):
-                    return f"/media/images/thumbnails/posters/{filename}"
-                return f"/media/images/original/scene_stills/{filename}"
+                self.generate_thumbnail(source_orig_path, poster_thumb_path, "posters")
+                if self.exists(poster_thumb_path):
+                    return f"/media/images/thumbnails/posters/{poster_thumb_path.name}"
 
         orig_path = self.get_original_path(embedded_subfolder, filename)
         if self.exists(orig_path):

@@ -333,7 +333,12 @@ export const useUpdateMediaStatusMutation = () => {
           if (!obj || typeof obj !== 'object') return obj;
           if (Array.isArray(obj)) {
             return obj.map(x => {
-              if (x && (String(x.id) === String(variables.itemId) || String(x.id) === `tv_${variables.itemId}`)) {
+              const isMatch = x && (
+                String(x.id) === String(variables.itemId) ||
+                String(x.id) === `tv_${variables.itemId}` ||
+                (variables.tvId && String(x.id) === String(variables.tvId))
+              );
+              if (isMatch) {
                 changed = true;
                 return {
                   ...x,

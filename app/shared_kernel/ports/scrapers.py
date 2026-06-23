@@ -33,5 +33,6 @@ class ScraperGatewayPort(Protocol):
         normalized: dict,
         *,
         media_type: Optional[MediaType] = None,
+        media_item_id: Optional[int] = None,
     ) -> Any:
         ...

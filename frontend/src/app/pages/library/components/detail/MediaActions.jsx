@@ -8,6 +8,7 @@ export default function MediaActions() {
   const {
     isOwned,
     isMovie,
+    isScene,
     item,
     isTracked,
     canToggleTracked,
@@ -82,7 +83,7 @@ export default function MediaActions() {
 
       {isOwned && (
         <>
-          {(item?.is_adult && isMovie) && (
+          {(item?.is_adult && (isMovie || isScene)) && (
             <Button
               variant="ghost"
               onClick={() => addPeakMutation.mutate(item.id)}
@@ -93,7 +94,7 @@ export default function MediaActions() {
             </Button>
           )}
 
-          {isMovie ? (
+          {isMovie || isScene ? (
             <Button
               variant="secondary"
               onClick={handlePlayClick}

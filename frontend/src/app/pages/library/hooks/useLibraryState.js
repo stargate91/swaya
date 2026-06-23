@@ -92,7 +92,8 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
       filter_gender: resolvedGenderFilter,
       filter_favorite: isPeople ? favoriteFilter : undefined,
       selected_decade: decadeFilter !== 'all' ? decadeFilter : undefined,
-      selected_year: yearFilter !== '' ? Number(yearFilter) : undefined
+      selected_year: yearFilter !== '' ? Number(yearFilter) : undefined,
+      include_adult: activeSessionMode === 'nsfw'
     };
   }, [
     isCollections,
@@ -121,13 +122,13 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
 
   const { data: filterData } = useLibraryFiltersQuery(
     !isCollections && !isTags && activeSessionMode
-      ? { tab: backendTab, filter_ownership: ownershipFilter }
+      ? { tab: backendTab, filter_ownership: ownershipFilter, include_adult: activeSessionMode === 'nsfw' }
       : null
   );
 
   const { data: collectionsData, isLoading: isCollectionsLoading } = useCollectionsQuery(
     isCollections && activeSessionMode
-      ? { page: 1, pageSize: 10000, tab: activeSessionMode === 'nsfw' ? 'adult' : 'movies' }
+      ? { page: 1, pageSize: 10000, tab: activeSessionMode === 'nsfw' ? 'adult' : 'movies', include_adult: activeSessionMode === 'nsfw' }
       : null
   );
 
@@ -424,3 +425,4 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
     setSessionMode: handleSetSessionMode,
   };
 }
+

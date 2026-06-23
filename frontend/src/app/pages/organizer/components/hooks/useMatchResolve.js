@@ -11,7 +11,7 @@ const toOptionalNumber = (value) => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
-const buildResolvePayload = (row, candidate, selectedMode, seasonValue, episodeValue) => {
+const buildResolvePayload = (row, candidate, selectedMode, seasonValue, episodeValue, sessionMode) => {
   const episodeList = Array.isArray(candidate?.episodes) ? candidate.episodes : [];
   const mediaType = toMetadataMediaType(candidate?.type || candidate?.media_type || selectedMode, selectedMode);
   const season = toOptionalNumber(seasonValue);
@@ -23,6 +23,7 @@ const buildResolvePayload = (row, candidate, selectedMode, seasonValue, episodeV
     type: mediaType,
     media_type: mediaType,
     provider: candidate.provider || 'tmdb',
+    is_adult: sessionMode === 'nsfw',
   };
 
   const isMatchedEpisode = isEpisodeMediaType(row.rawType)
@@ -57,7 +58,7 @@ const getDefaultEpisode = (row) => {
   return payload.episode ?? payload.fn_episode ?? payload.fd_episode ?? payload.it_episode ?? '';
 };
 
-export function useMatchResolve({ rows = [], t, toast, onResolved, mode }) {
+export function useMatchResolve({ rows = [], t, toast, onResolved, mode, sessionMode }) {
   const [confirmState, setConfirmState] = useState(null);
   const [isResolvingId, setIsResolvingId] = useState(null);
   const resolveMutation = useResolveMetadataMutation();
@@ -137,6 +138,7 @@ export function useMatchResolve({ rows = [], t, toast, onResolved, mode }) {
                 type: mediaType,
                 media_type: mediaType,
                 provider: candidate.provider || 'tmdb',
+                is_adult: sessionMode === 'nsfw',
               };
 
               if (mediaType === MEDIA_TYPES.TV) {
@@ -162,7 +164,7 @@ export function useMatchResolve({ rows = [], t, toast, onResolved, mode }) {
               resolutions,
             });
           } else {
-            const payload = buildResolvePayload(rows[0], candidate, mode, effectiveSeason, effectiveEpisode);
+            const payload = buildResolvePayload(rows[0], candidate, mode, effectiveSeason, effectiveEpisode, sessionMode);
             console.log('[DEBUG] resolveMutation: candidate:', candidate);
             console.log('[DEBUG] resolveMutation: built payload:', payload);
             await resolveMutation.mutateAsync(payload);

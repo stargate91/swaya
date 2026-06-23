@@ -85,6 +85,7 @@ class MetadataResolveRequest(BaseSchema):
     season_number: Optional[int] = None
     episode_number: Optional[Any] = None
     provider: Optional[str] = "tmdb"
+    is_adult: Optional[bool] = False
 
 
 class BulkResolveRequest(BaseSchema):

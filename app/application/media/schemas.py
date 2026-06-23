@@ -1,8 +1,8 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Union
 
 class PlayMediaRequest(BaseModel):
-    item_id: str
+    item_id: Union[str, int]
 
 class PreviewMediaRequest(BaseModel):
     file_path: str

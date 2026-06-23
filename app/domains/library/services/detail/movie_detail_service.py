@@ -24,7 +24,9 @@ class MovieDetailService(DetailFormatter):
 
     def get_library_item_detail(self, item_id: str, full_people: bool = False) -> MovieDetailResponse:
         from app.domains.library.schemas import MovieDetailResponse
+        from app.shared_kernel.user_context import get_current_user_id
         db = self.db
+        current_uid = get_current_user_id()
         
         # Tracked / External TMDB Movie Detail
         if isinstance(item_id, str) and item_id.startswith("tmdb_"):
@@ -76,8 +78,6 @@ class MovieDetailService(DetailFormatter):
                 except:
                     pass
             
-            from app.shared_kernel.user_context import get_current_user_id
-            current_uid = get_current_user_id()
             override = db.query(UserOverride).join(MetadataMatch, UserOverride.metadata_match_id == MetadataMatch.id).filter(
                 UserOverride.user_id == current_uid,
                 MetadataMatch.provider == Provider.TMDB,
@@ -218,7 +218,7 @@ class MovieDetailService(DetailFormatter):
             "companies": [{"name": s.name, "logo_path": self._resolve_img(s.logo_path, "logos")} for s in active_match.studios] if active_match else [],
             "networks": [],
             "poster_path": self._resolve_img(loc.poster_path if loc else None, "posters"),
-            "backdrop_path": self._resolve_img(active_match.backdrop_path if active_match else None, "backdrops"),
+            "backdrop_path": self._resolve_img(active_match.backdrop_path if active_match else None, "backdrops", size="original"),
             "original_language": loc.original_language if loc else DEFAULT_FALLBACK_LANGUAGE,
             "type": active_match.media_type.value if active_match else "movie",
             "cast": cast,

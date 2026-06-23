@@ -38,7 +38,6 @@ export default function MediaDetailPage({ type = 'movie' }) {
   const { openModal, closeModal, toast } = useUi();
 
   const normalizedType = normalizeMediaType(type, type);
-  const isMovie = isMovieMediaType(normalizedType);
 
   const detailState = useMediaDetail({
     id,
@@ -57,6 +56,8 @@ export default function MediaDetailPage({ type = 'movie' }) {
     item,
     isLoading,
     hasTechnicalPanel,
+    isMovie,
+    isScene,
     isOwned
   } = state;
 
@@ -168,7 +169,7 @@ export default function MediaDetailPage({ type = 'movie' }) {
         renderPanelContent={renderPanelContent}
         sideNav={(
           <>
-            {isMovie ? (
+            {isMovie || isScene ? (
               <>
                 {item?.type !== 'scene' && (
                   <button

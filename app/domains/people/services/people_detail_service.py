@@ -175,7 +175,7 @@ class PeopleDetailService:
         # Dynamically enrich from TMDB if tmdb_id is available and we lack images/biography
         ext_ids = person.external_ids or {}
         tmdb_id = ext_ids.get("tmdb") or ext_ids.get("tmdb_id")
-        if not tmdb_id and str(person_id).isdigit() and person_id < 100000000:
+        if not tmdb_id and not person.is_adult and str(person_id).isdigit() and person_id < 100000000:
             tmdb_id = person_id
             
         if tmdb_id and (not loc or not person.images):

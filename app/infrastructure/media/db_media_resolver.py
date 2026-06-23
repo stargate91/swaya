@@ -27,6 +27,7 @@ class DbMediaResolver(MediaResolverPort):
                 self.db.add(match)
                 self.db.flush()
             metadata_match_id = match.id
+            media_item_id = match.media_item_id
         elif isinstance(item_id, str) and item_id.startswith("stash_"):
             stash_id = item_id.split("_")[1]
             match = self.db.query(MetadataMatch).filter(
@@ -38,6 +39,7 @@ class DbMediaResolver(MediaResolverPort):
                 self.db.add(match)
                 self.db.flush()
             metadata_match_id = match.id
+            media_item_id = match.media_item_id
         else:
             try:
                 media_item_id = int(item_id)
@@ -53,6 +55,7 @@ class DbMediaResolver(MediaResolverPort):
                     return None, None
 
         return media_item_id, metadata_match_id
+
 
     def update_item_status(self, item_id: int, status: str) -> Dict[str, Any]:
         item = self.db.query(MediaItem).filter(MediaItem.id == item_id).first()

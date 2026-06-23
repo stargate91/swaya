@@ -233,35 +233,18 @@ class PeopleEnricher:
         }
 
         has_data = False
+        processed_pairs = set()
+        to_process = list(all_links)
 
-        if is_adult and not any(link["provider"] == Provider.PORNDB for link in all_links):
-            temp_db = self._get_temp_db()
-            try:
-                porndb = self._require_scrapers().adult(Provider.PORNDB, temp_db)
-                if porndb.get_setting("porndb_api_key") or porndb.get_setting("porndb_api_token"):
-                    candidates = porndb.search_performers(name)
-                    exact_match = next(
-                        (
-                            candidate
-                            for candidate in candidates
-                            if str(candidate.get("name") or "").strip().casefold() == name.strip().casefold()
-                        ),
-                        None,
-                    )
-                    if exact_match and exact_match.get("id"):
-                        porndb_id = str(exact_match["id"])
-                        all_links.append({"provider": Provider.PORNDB, "external_id": porndb_id})
-                        result["links_to_create"].append(
-                            {"provider": Provider.PORNDB, "external_id": porndb_id}
-                        )
-            except Exception as exc:
-                logger.error(f"Error resolving PornDB performer for {name}: {exc}")
-            finally:
-                temp_db.close()
-
-        for l in all_links:
+        while to_process:
+            l = to_process.pop(0)
             provider = l["provider"]
             external_id = l["external_id"]
+
+            pair = (provider, external_id)
+            if pair in processed_pairs:
+                continue
+            processed_pairs.add(pair)
 
             if provider == Provider.TMDB:
                 temp_db = self._get_temp_db()
@@ -351,10 +334,18 @@ class PeopleEnricher:
 
                     images = perf.get("images") or []
                     if images:
-                        urls = [img.get("url") for img in images if img.get("url")]
-                        if urls:
-                            result["images"] = urls
-                            result["profile_path"] = urls[0]
+                        urls_list = [img.get("url") for img in images if img.get("url")]
+                        if urls_list:
+                            result["images"] = urls_list
+                            result["profile_path"] = urls_list[0]
+
+                    # Parse URLs dynamically to extract exact provider links
+                    perf_urls = perf.get("urls") or []
+                    for ext_link in self._extract_ids_from_urls(perf_urls):
+                        ext_pair = (ext_link["provider"], ext_link["external_id"])
+                        if ext_pair not in processed_pairs:
+                            to_process.append(ext_link)
+                            result["links_to_create"].append(ext_link)
 
         existing_providers = {l["provider"] for l in links}
         for prov_name, ext_id in external_ids.items():
@@ -366,6 +357,38 @@ class PeopleEnricher:
                 pass
 
         return result if has_data else None
+
+    def _extract_ids_from_urls(self, urls: List[str]) -> List[dict]:
+        import re
+        links = []
+        for url in urls:
+            if not url or not isinstance(url, str):
+                continue
+            # PornDB: https://theporndb.net/performers/<uuid>
+            match_porndb = re.search(r'theporndb\.net/performers/([a-fA-F0-9\-]+)', url)
+            if match_porndb:
+                links.append({"provider": Provider.PORNDB, "external_id": match_porndb.group(1)})
+                continue
+                
+            # FansDB: https://fansdb.cc/performers/<uuid>
+            match_fansdb = re.search(r'fansdb\.cc/performers/([a-fA-F0-9\-]+)', url)
+            if match_fansdb:
+                links.append({"provider": Provider.FANSDB, "external_id": match_fansdb.group(1)})
+                continue
+                
+            # StashDB: https://stashdb.org/performers/<uuid>
+            match_stashdb = re.search(r'stashdb\.org/performers/([a-fA-F0-9\-]+)', url)
+            if match_stashdb:
+                links.append({"provider": Provider.STASHDB, "external_id": match_stashdb.group(1)})
+                continue
+                
+            # TMDB: https://www.themoviedb.org/person/(\d+)
+            match_tmdb = re.search(r'themoviedb\.org/person/(\d+)', url)
+            if match_tmdb:
+                links.append({"provider": Provider.TMDB, "external_id": match_tmdb.group(1)})
+                continue
+                
+        return links
 
     def apply_enriched_data(self, person: Person, data: dict):
         from app.domains.tasks import task_manager

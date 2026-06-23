@@ -114,16 +114,29 @@ class SceneDetailService(DetailFormatter):
         
         from app.shared_kernel.user_context import get_current_user_id
         current_uid = get_current_user_id()
-        override = db.query(UserOverride).filter(
-            UserOverride.user_id == current_uid,
-            UserOverride.custom_title == title
-        ).first()
         
         # Resolve local paths from DB match if it exists
         match_db = db.query(MetadataMatch).filter(
             MetadataMatch.external_id == scene_uuid,
             MetadataMatch.media_type == MediaType.SCENE
         ).first()
+        
+        override = None
+        if match_db:
+            override = db.query(UserOverride).filter(
+                UserOverride.user_id == current_uid,
+                UserOverride.metadata_match_id == match_db.id
+            ).first()
+            if not override and match_db.media_item_id:
+                override = db.query(UserOverride).filter(
+                    UserOverride.user_id == current_uid,
+                    UserOverride.media_item_id == match_db.media_item_id
+                ).first()
+        if not override:
+            override = db.query(UserOverride).filter(
+                UserOverride.user_id == current_uid,
+                UserOverride.custom_title == title
+            ).first()
         
         local_poster = None
         local_backdrop = None
@@ -141,7 +154,7 @@ class SceneDetailService(DetailFormatter):
 
         backdrop_resolved = None
         if local_backdrop:
-            backdrop_resolved = self._resolve_img(local_backdrop, "scene_stills")
+            backdrop_resolved = self._resolve_img(local_backdrop, "scene_stills", size="original")
         if not backdrop_resolved:
             backdrop_resolved = poster_url
         
@@ -187,6 +200,7 @@ class SceneDetailService(DetailFormatter):
             "resume_position": override.resume_position if override else 0,
             "last_watched_at": override.last_watched_at.isoformat() if override and override.last_watched_at else None,
             "playback_logs": [],
-            "in_library": False,
+            "in_library": match_db is not None and match_db.media_item_id is not None,
+            "library_item_id": match_db.media_item_id if match_db else None,
         }
         return SceneDetailResponse(**result)

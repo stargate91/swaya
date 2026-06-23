@@ -81,7 +81,8 @@ class OverridesService:
                             media_type=MediaType.SEASON,
                             season_number=ns_num,
                             parent_id=tv_match.id,
-                            confidence_score=1.0
+                            confidence_score=1.0,
+                            is_adult=tv_match.is_adult
                         )
                         self.db.add(season_match)
                         self.db.flush()
@@ -102,13 +103,15 @@ class OverridesService:
                             parent_id=season_match.id,
                             confidence_score=1.0,
                             media_item_id=item.id,
-                            is_active=True
+                            is_active=True,
+                            is_adult=tv_match.is_adult
                         )
                         self.db.add(episode_match)
                         self.db.flush()
                     else:
                         episode_match.media_item_id = item.id
                         episode_match.is_active = True
+                        episode_match.is_adult = tv_match.is_adult
                         
                     for m in item.matches:
                         if m.id != episode_match.id:
@@ -368,7 +371,15 @@ class OverridesService:
             override.tags = tags_list
 
         self.db.commit()
-        return {"status": "success", "item_id": item_id}
+        return {
+            "status": "success",
+            "item_id": item_id,
+            "user_rating": override.user_rating if override else None,
+            "user_comment": override.user_comment if override else None,
+            "is_watched": override.is_watched if override else False,
+            "is_favorite": override.is_favorite if override else False,
+            "tags": [t.name for t in override.tags] if override and override.tags else [],
+        }
 
     def update_item_status(self, item_id: int, status: str) -> Dict[str, Any]:
         return self.resolver.update_item_status(item_id, status)

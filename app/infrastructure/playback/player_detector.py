@@ -13,6 +13,11 @@ def find_media_player(db, settings_port) -> Tuple[Optional[str], Optional[str]]:
     vlc_path = settings_port.get_setting("vlc_path", user_id=current_user_id)
     mpc_path = settings_port.get_setting("mpc_path", user_id=current_user_id)
 
+    if isinstance(vlc_path, str):
+        vlc_path = vlc_path.strip().strip('"').strip("'")
+    if isinstance(mpc_path, str):
+        mpc_path = mpc_path.strip().strip('"').strip("'")
+
     def save_setting(key, val):
         try:
             from app.domains.settings.models import UserSetting

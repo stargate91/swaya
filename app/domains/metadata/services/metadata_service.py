@@ -310,9 +310,8 @@ class MetadataService:
                 from app.infrastructure.scrapers.support.normalizer import ScraperNormalizer
                 normalized = ScraperNormalizer.normalize_porndb_movie(movie_data)
                 match = self.scrapers.persist_adult_scene(
-                    self.db, provider, str(movie_data["id"]), normalized, media_type=MediaType.MOVIE
+                    self.db, provider, str(movie_data["id"]), normalized, media_type=MediaType.MOVIE, media_item_id=item.id
                 )
-                match.media_item_id = item.id
                 item.status = ItemStatus.MATCHED
                 self.db.commit()
                 return {"status": "success", "item_id": item.id, "match_id": match.id}
@@ -323,8 +322,7 @@ class MetadataService:
                 raise BadRequestException(f"Failed to fetch scene details from {provider.value}")
 
             normalized = self.scrapers.normalize_adult_scene(provider, scene_data)
-            match = self.scrapers.persist_adult_scene(self.db, provider, str(scene_data["id"]), normalized)
-            match.media_item_id = item.id
+            match = self.scrapers.persist_adult_scene(self.db, provider, str(scene_data["id"]), normalized, media_item_id=item.id)
             item.status = ItemStatus.MATCHED
             self.db.commit()
             return {"status": "success", "item_id": item.id, "match_id": match.id}
@@ -332,13 +330,16 @@ class MetadataService:
         # Otherwise standard TMDB resolution
         # Check if match with same provider, external_id, and media_type already exists
         match = self.db.query(MetadataMatch).filter(
+            MetadataMatch.media_item_id == item.id,
             MetadataMatch.provider == provider,
             MetadataMatch.external_id == str(external_id),
             MetadataMatch.media_type == mtype
         ).first()
 
         if match:
-            match.media_item_id = item.id
+            match.is_active = True
+            if request.is_adult:
+                match.is_adult = True
             if season_number is not None:
                 match.season_number = season_number
             if episode_number is not None:
@@ -351,7 +352,9 @@ class MetadataService:
                 media_type=mtype,
                 season_number=season_number,
                 episode_number=episode_number,
-                confidence_score=1.0
+                confidence_score=1.0,
+                is_active=True,
+                is_adult=bool(request.is_adult)
             )
             self.db.add(match)
         self.db.flush()

@@ -7,7 +7,7 @@ import CreditCard from '@/ui/CreditCard';
 import BackdropCard from '@/ui/BackdropCard';
 import ImageUploadPanel from '../../modals/ImageUploadPanel';
 import { API_BASE } from '@/lib/backend';
-import { isTvLikeMediaType } from '@/lib/mediaTypes';
+import { isTvLikeMediaType, isSceneMediaType } from '@/lib/mediaTypes';
 import { getPosterImagePath } from '@/lib/imageUrls';
 import { ChevronLeft, ChevronRight, Film, ImageOff, Star, Tv } from 'lucide-react';
 import { resolveDetailsImageUrl } from '../../utils/detailUtils';
@@ -109,6 +109,12 @@ export function EntityCardGrid({ items, type, navigate, t }) {
       return;
     }
 
+    if (isSceneMediaType(resolvedType)) {
+      const sceneId = item.in_library ? (item.library_item_id || item.id) : `stash_${item.stash_id || item.id}`;
+      navigate(`/library/scene/${sceneId}`);
+      return;
+    }
+
     const movieId = item.in_library ? (item.library_item_id || item.id) : `tmdb_${item.tmdb_id || item.id}`;
     navigate(`/library/movie/${movieId}`);
   };
@@ -155,9 +161,16 @@ function HorizontalCollectionItemsList({ items, navigate, t }) {
   }
 
   const openItem = (item) => {
-    if (isTvLikeMediaType(item.media_type || item.type)) {
+    const resolvedType = item.media_type || item.type;
+    if (isTvLikeMediaType(resolvedType)) {
       const tvId = item.library_tv_tmdb_id || item.tv_tmdb_id || item.tmdb_id || item.id;
       navigate(`/library/tv/${tvId}`);
+      return;
+    }
+
+    if (isSceneMediaType(resolvedType)) {
+      const sceneId = item.in_library ? (item.library_item_id || item.id) : `stash_${item.stash_id || item.id}`;
+      navigate(`/library/scene/${sceneId}`);
       return;
     }
 

@@ -63,7 +63,7 @@ export default function LibraryPage({ initialTab = 'movies', lockTab = false, sh
   return (
     <Page className={`library-page ${isAdultMode ? 'library-page--nsfw' : ''}`}>
       <div className="library-main">
-        <div className="organizer-panel">
+        <div className={`organizer-panel ${isAdultMode ? 'organizer-panel--nsfw' : ''}`}>
           <LibraryHeader
             t={state.t}
             pageTitle={pageTitle}

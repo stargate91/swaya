@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import Dropdown from '@/ui/Dropdown';
 import SegmentedControl from '@/ui/SegmentedControl';
 import Pill from '@/ui/Pill';
@@ -50,6 +51,13 @@ export default function LibraryFilters({
   const isTagsTab = isLibraryTagsTab(resolvedTab);
   const isTvTab = isLibraryTvTab(resolvedTab);
   const isScenesTab = isLibraryScenesTab(resolvedTab);
+
+  const decades = useMemo(() => {
+    if (!filterData?.years) return [];
+    const set = new Set(filterData.years.map(y => `${Math.floor(Number(y) / 10) * 10}s`));
+    return Array.from(set).sort((a, b) => b.localeCompare(a));
+  }, [filterData?.years]);
+
 
   return (
     <div className="organizer-panel__row library-filters-row">
@@ -232,7 +240,7 @@ export default function LibraryFilters({
               }}
               options={[
                 { value: 'all', label: t('library.filter.allDecades') || 'All Decades' },
-                ...(filterData?.decades || []).map(d => ({ value: d, label: d })),
+                ...(decades || []).map(d => ({ value: d, label: d })),
               ]}
             />
           </div>

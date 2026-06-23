@@ -359,3 +359,13 @@
 .ui-poster-card__media-shell > .ui-icon-button--play-overlay:hover {
   transform: translateX(-50%) !important;
 }
+
+.ui-icon-button--play-overlay:disabled {
+  opacity: 0;
+}
+
+.ui-poster-card__media-shell:hover .ui-icon-button--play-overlay:disabled,
+.ui-poster-card__media-shell:focus-within .ui-icon-button--play-overlay:disabled,
+.episode-card__still-wrapper:hover .ui-icon-button--play-overlay:disabled {
+  opacity: 0.48;
+}

@@ -126,14 +126,16 @@ export default function PersonCreditsGridSection({ title, personId, mediaType, t
   }
 
   const openItem = (item) => {
-    if (isTvLikeMediaType(item.media_type || item.type)) {
-      const tvId = item.library_tv_tmdb_id || item.tv_tmdb_id || item.tmdb_id || item.id;
-      navigate(`/library/tv/${tvId}`);
+    const isScene = item.media_type === 'scene' || item.type === 'scene';
+    if (isScene) {
+      const sceneId = item.in_library ? (item.library_item_id || item.id) : `stash_${item.stash_id || item.id}`;
+      navigate(`/library/scene/${sceneId}`);
       return;
     }
 
-    if ((item.media_type === 'scene' || item.type === 'scene') && !item.in_library && item.stash_id) {
-      navigate(`/library/movie/stash_${item.stash_id}`);
+    if (isTvLikeMediaType(item.media_type || item.type)) {
+      const tvId = item.library_tv_tmdb_id || item.tv_tmdb_id || item.tmdb_id || item.id;
+      navigate(`/library/tv/${tvId}`);
       return;
     }
 

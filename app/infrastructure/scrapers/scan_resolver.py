@@ -82,7 +82,7 @@ class ScanResolver:
 
         def resolve_task(item_id: int):
             nonlocal current_completed
-            max_attempts = 3
+            max_attempts = 10
             try:
                 for attempt in range(max_attempts):
                     if self._stop_requested(task_id):
@@ -115,7 +115,7 @@ class ScanResolver:
                         if "database is locked" not in str(e).lower() or attempt == max_attempts - 1:
                             raise
                         import random
-                        wait_seconds = 0.25 * (attempt + 1) + random.uniform(0.05, 0.25)
+                        wait_seconds = 0.5 * (attempt + 1) + random.uniform(0.1, 0.5)
                         logger.warning(f"Database was locked while resolving item ID {item_id}; retrying in {wait_seconds:.2f}s")
                         time.sleep(wait_seconds)
                     finally:

@@ -7,8 +7,30 @@ import api from '@/lib/api';
 
 const getDefaultType = (row) => toMetadataMediaType(row?.rawType, MEDIA_TYPES.MOVIE);
 
+const getBetterTitle = (alternative, episode) => {
+  if (!alternative) return episode || '';
+  if (!episode) return alternative || '';
+  return alternative.length >= episode.length ? alternative : episode;
+};
+
 const getDefaultQuery = (row) => {
   const payload = row?.rawPayload || {};
+  const parsed = payload.parsed_info;
+  if (parsed) {
+    const fn = parsed.fn || {};
+    const it = parsed.it || {};
+    const fd = parsed.fd || {};
+
+    if (fn.alternative_title || fn.episode_title) {
+      return getBetterTitle(fn.alternative_title, fn.episode_title);
+    }
+    if (it.alternative_title || it.episode_title) {
+      return getBetterTitle(it.alternative_title, it.episode_title);
+    }
+    if (fd.alternative_title || fd.episode_title) {
+      return getBetterTitle(fd.alternative_title, fd.episode_title);
+    }
+  }
   return payload.title || payload.fn_title || payload.fd_title || row?.source || '';
 };
 

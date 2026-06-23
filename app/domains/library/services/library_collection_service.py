@@ -51,7 +51,7 @@ class LibraryCollectionService:
 
         query = query.filter(MetadataMatch.is_adult == include_adult)
 
-        if tab == "movies":
+        if tab in ("movies", "adult"):
             query = query.filter(MetadataMatch.media_type == MediaType.MOVIE)
 
         matches = query.options(

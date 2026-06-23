@@ -156,7 +156,15 @@ class ItemOverridesUpdate(BaseSchema):
 
 
 class ItemStatusUpdate(BaseSchema):
-    status: str
+    status: Optional[str] = None
+    user_rating: Optional[int] = None
+    user_comment: Optional[str] = None
+    is_favorite: Optional[bool] = None
+    is_watched: Optional[bool] = None
+    media_type: Optional[str] = None
+    custom_tags: Optional[List[Any]] = None
+    tags: Optional[List[Any]] = None
+    resume_position: Optional[int] = None
 
 
 class ImageOverrideUpdate(BaseSchema):

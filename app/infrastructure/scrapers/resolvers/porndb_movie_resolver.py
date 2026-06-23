@@ -32,7 +32,7 @@ class PornDBMovieResolver:
         )
 
     @staticmethod
-    def _parsed_identity(item: MediaItem) -> tuple[bool, Optional[str], Optional[int]]:
+    def _parsed_identity(item: MediaItem) -> tuple[bool, list[str], Optional[int]]:
         parsed = item.parsed_info or {}
         fn_data = parsed.get("fn") or {}
         it_data = parsed.get("it") or {}
@@ -44,13 +44,23 @@ class PornDBMovieResolver:
             or data.get("episode") not in (None, "")
             for data in (fn_data, it_data, fd_data)
         )
-        title = fn_data.get("title") or fd_data.get("title") or it_data.get("title")
+        
+        queries = []
+        for data in (fn_data, fd_data, it_data):
+            alt = data.get("alternative_title") or data.get("episode_title")
+            if alt and alt not in queries:
+                queries.append(alt)
+        for data in (fn_data, fd_data, it_data):
+            title = data.get("title")
+            if title and title not in queries:
+                queries.append(title)
+
         year = fn_data.get("year") or fd_data.get("year") or it_data.get("year")
         try:
             year = int(year) if year is not None else None
         except (TypeError, ValueError):
             year = None
-        return is_tv, title, year
+        return is_tv, queries, year
 
     @staticmethod
     def _movie_runtime_seconds(movie: dict) -> Optional[float]:
@@ -68,29 +78,6 @@ class PornDBMovieResolver:
             return numeric if numeric >= 600 else numeric * 60.0
         return None
 
-    @classmethod
-    def _duration_score_delta(cls, item: MediaItem, movie: dict) -> float:
-        item_duration = float(item.duration) if item.duration not in (None, "") else None
-        movie_duration = cls._movie_runtime_seconds(movie)
-        if not item_duration or not movie_duration:
-            return 0.0
-
-        diff_seconds = abs(item_duration - movie_duration)
-        longer = max(item_duration, movie_duration, 1.0)
-        diff_ratio = diff_seconds / longer
-
-        if diff_seconds <= 90:
-            return 0.12
-        if diff_ratio <= 0.05:
-            return 0.08
-        if diff_ratio <= 0.10:
-            return 0.04
-        if diff_ratio >= 0.25:
-            return -0.12
-        if diff_ratio >= 0.15:
-            return -0.06
-        return 0.0
-
     def _resolve_hash_type(self, item: MediaItem, *, file_hash: Optional[str], hash_type: str, task_id: Optional[int]) -> bool:
         if not file_hash or not self.is_available():
             return False
@@ -99,17 +86,22 @@ class PornDBMovieResolver:
         if not movie:
             return False
 
-        from app.infrastructure.settings.db_settings_adapter import DbSettingsAdapter
-        settings_adapter = DbSettingsAdapter(self.db)
-        tolerance = int(settings_adapter.get_setting("collision_duration_tolerance_seconds") or 10)
+        status = ItemStatus.MATCHED
+        item_duration = float(item.duration) if item.duration not in (None, "") else None
+        movie_duration = self._movie_runtime_seconds(movie)
+        
+        if hash_type == "PHASH":
+            if item_duration and movie_duration:
+                diff_ratio = abs(item_duration - movie_duration) / max(item_duration, movie_duration, 1.0)
+                if diff_ratio <= 0.03:
+                    status = ItemStatus.MATCHED
+                elif diff_ratio <= 0.10:
+                    status = ItemStatus.UNCERTAIN
+                else:
+                    logger.info('[movie] PHASH matched but duration diff ratio too high: %s', diff_ratio)
+                    return False
 
-        if item.duration:
-            movie_duration = self._movie_runtime_seconds(movie)
-            if movie_duration and abs(float(item.duration) - float(movie_duration)) > tolerance:
-                logger.info('[movie] Movie hash matched but duration check failed (local: %s, remote: %s, tol: %s)', item.duration, movie_duration, tolerance)
-                return False
-
-        self._persist(item, movie, status=ItemStatus.MATCHED, confidence=1.0)
+        self._persist(item, movie, status=status, confidence=1.0)
         self.scraper.log_search(
             task_id=task_id,
             media_item_id=item.id,
@@ -120,13 +112,13 @@ class PornDBMovieResolver:
                 "hash_type": hash_type,
                 "matched_movie_id": str(movie.get("id")),
                 "matched_title": movie.get("title"),
-                "final_status": "matched",
+                "final_status": status.value,
             },
         )
         return True
 
     def resolve_hash(self, item: MediaItem, task_id: Optional[int] = None) -> bool:
-        is_tv, _title, _year = self._parsed_identity(item)
+        is_tv, queries, year = self._parsed_identity(item)
         if is_tv or not self.is_available():
             return False
 
@@ -137,121 +129,165 @@ class PornDBMovieResolver:
         return False
 
     def resolve_text(self, item: MediaItem, task_id: Optional[int] = None) -> bool:
-        is_tv, title, year = self._parsed_identity(item)
-        if is_tv or not title or not self.is_available():
+        is_tv, queries, year = self._parsed_identity(item)
+        if is_tv or not queries or not self.is_available():
             return False
 
-        movies = self.scraper.search_movies(title, year=year)
-        candidates = []
-        normalized_query = normalize_title(title)
-        for movie in movies:
-            candidate_title = movie.get("title") or ""
-            score = difflib.SequenceMatcher(
-                None,
-                normalized_query,
-                normalize_title(candidate_title),
-            ).ratio()
+        all_candidates = []
+        for title in queries:
+            movies = self.scraper.search_movies(title, year=year)
+            normalized_query = normalize_title(title)
+            for movie in movies:
+                candidate_title = movie.get("title") or ""
+                score = difflib.SequenceMatcher(
+                    None,
+                    normalized_query,
+                    normalize_title(candidate_title),
+                ).ratio()
 
-            candidate_date = movie.get("date")
-            candidate_year = None
-            if candidate_date:
-                try:
-                    candidate_year = int(str(candidate_date).split("-")[0])
-                except (TypeError, ValueError):
-                    pass
-            if year and candidate_year:
-                score += 0.05 if year == candidate_year else -0.1
+                candidate_date = movie.get("date")
+                candidate_year = None
+                if candidate_date:
+                    try:
+                        candidate_year = int(str(candidate_date).split("-")[0])
+                    except (TypeError, ValueError):
+                        pass
+                
+                if year and candidate_year:
+                    if year != candidate_year:
+                        score -= 0.35
+                    else:
+                        score += 0.05
 
-            score += self._duration_score_delta(item, movie)
-            candidates.append((max(0.0, min(score, 1.0)), movie))
+                all_candidates.append((max(0.0, min(score, 1.0)), movie, title, movies))
 
-        candidates.sort(key=lambda entry: entry[0], reverse=True)
-        best_score = candidates[0][0] if candidates else None
-        best_movie = candidates[0][1] if candidates else None
-        strong_match_threshold = 0.82
-        soft_match_threshold = 0.74
-        ambiguous_gap_threshold = 0.02
-
-        if not candidates or best_score is None or best_score < soft_match_threshold:
+        if not all_candidates:
             self.scraper.log_search(
                 task_id=task_id,
                 media_item_id=item.id,
-                search_query=title,
-                result_count=len(candidates),
+                search_query=", ".join(queries),
+                result_count=0,
                 details={
                     "hash_match": False,
                     "entity_type": "movie",
-                    "best_score": best_score,
-                    "best_duration_delta": self._duration_score_delta(item, best_movie) if best_movie else None,
                     "final_status": "no_match",
                 },
             )
             return False
 
-        near_top_candidates = [
-            (score, movie)
-            for score, movie in candidates
-            if score >= soft_match_threshold and (best_score - score) <= ambiguous_gap_threshold
-        ]
+        matched_candidates = []
+        uncertain_candidates = []
 
-        if best_score >= strong_match_threshold:
-            best_score, movie = candidates[0]
-            movie = self.scraper.enrich_movie_ratings(movie)
-            self._persist(item, movie, status=ItemStatus.MATCHED, confidence=1.0)
-            self.scraper.log_search(
-                task_id=task_id,
-                media_item_id=item.id,
-                search_query=title,
-                result_count=len(candidates),
-                details={
-                    "hash_match": False,
-                    "entity_type": "movie",
-                    "best_score": best_score,
-                    "duration_score_delta": self._duration_score_delta(item, movie),
-                    "matched_movie_id": str(movie.get("id")),
-                    "matched_title": movie.get("title"),
-                    "final_status": "matched",
-                },
-            )
-            return True
+        item_duration = float(item.duration) if item.duration not in (None, "") else None
 
-        if len(near_top_candidates) > 1:
-            self._persist_multiple(item, [movie for _score, movie in near_top_candidates])
-            self.scraper.log_search(
-                task_id=task_id,
-                media_item_id=item.id,
-                search_query=title,
-                result_count=len(candidates),
-                details={
-                    "hash_match": False,
-                    "entity_type": "movie",
-                    "best_score": best_score,
-                    "candidate_count": len(near_top_candidates),
-                    "matched_movie_ids": [str(movie.get("id")) for _score, movie in near_top_candidates],
-                    "final_status": "multiple",
-                },
-            )
-            return True
+        for score, movie, q, s in all_candidates:
+            movie_duration = self._movie_runtime_seconds(movie)
+            
+            if score >= 0.8:
+                if item_duration and movie_duration:
+                    diff_ratio = abs(item_duration - movie_duration) / max(item_duration, movie_duration, 1.0)
+                    if diff_ratio <= 0.03:
+                        matched_candidates.append((score, movie, q, s))
+                    elif diff_ratio <= 0.10:
+                        uncertain_candidates.append((score, movie, q, s))
+                else:
+                    uncertain_candidates.append((score, movie, q, s))
+            elif score >= 0.6:
+                if item_duration and movie_duration:
+                    diff_ratio = abs(item_duration - movie_duration) / max(item_duration, movie_duration, 1.0)
+                    if diff_ratio <= 0.10:
+                        uncertain_candidates.append((score, movie, q, s))
 
-        best_score, movie = candidates[0]
-        movie = self.scraper.enrich_movie_ratings(movie)
-        self._persist(item, movie, status=ItemStatus.UNCERTAIN, confidence=best_score)
+        # 1. Check matched candidates
+        if matched_candidates:
+            if len(matched_candidates) == 1:
+                score, movie, q, s = matched_candidates[0]
+                movie = self.scraper.enrich_movie_ratings(movie)
+                self._persist(item, movie, status=ItemStatus.MATCHED, confidence=score)
+                self.scraper.log_search(
+                    task_id=task_id,
+                    media_item_id=item.id,
+                    search_query=q,
+                    result_count=len(s),
+                    details={
+                        "hash_match": False,
+                        "entity_type": "movie",
+                        "best_score": score,
+                        "matched_movie_id": str(movie.get("id")),
+                        "matched_title": movie.get("title"),
+                        "final_status": "matched",
+                    },
+                )
+                return True
+            else:
+                self._persist_multiple(item, [m for _, m, _, _ in matched_candidates])
+                self.scraper.log_search(
+                    task_id=task_id,
+                    media_item_id=item.id,
+                    search_query=matched_candidates[0][2],
+                    result_count=len(matched_candidates[0][3]),
+                    details={
+                        "hash_match": False,
+                        "entity_type": "movie",
+                        "best_score": matched_candidates[0][0],
+                        "candidate_count": len(matched_candidates),
+                        "matched_movie_ids": [str(m.get("id")) for _, m, _, _ in matched_candidates],
+                        "final_status": "multiple",
+                    },
+                )
+                return True
+
+        # 2. Check uncertain candidates
+        if uncertain_candidates:
+            if len(uncertain_candidates) == 1:
+                score, movie, q, s = uncertain_candidates[0]
+                movie = self.scraper.enrich_movie_ratings(movie)
+                self._persist(item, movie, status=ItemStatus.UNCERTAIN, confidence=score)
+                self.scraper.log_search(
+                    task_id=task_id,
+                    media_item_id=item.id,
+                    search_query=q,
+                    result_count=len(s),
+                    details={
+                        "hash_match": False,
+                        "entity_type": "movie",
+                        "best_score": score,
+                        "matched_movie_id": str(movie.get("id")),
+                        "matched_title": movie.get("title"),
+                        "final_status": "uncertain",
+                    },
+                )
+                return True
+            else:
+                self._persist_multiple(item, [m for _, m, _, _ in uncertain_candidates])
+                self.scraper.log_search(
+                    task_id=task_id,
+                    media_item_id=item.id,
+                    search_query=uncertain_candidates[0][2],
+                    result_count=len(uncertain_candidates[0][3]),
+                    details={
+                        "hash_match": False,
+                        "entity_type": "movie",
+                        "best_score": uncertain_candidates[0][0],
+                        "candidate_count": len(uncertain_candidates),
+                        "matched_movie_ids": [str(m.get("id")) for _, m, _, _ in uncertain_candidates],
+                        "final_status": "multiple",
+                    },
+                )
+                return True
+
         self.scraper.log_search(
             task_id=task_id,
             media_item_id=item.id,
-            search_query=title,
-            result_count=len(candidates),
+            search_query=", ".join(queries),
+            result_count=len(all_candidates),
             details={
                 "hash_match": False,
                 "entity_type": "movie",
-                "best_score": best_score,
-                "duration_score_delta": self._duration_score_delta(item, movie),
-                "matched_movie_id": str(movie.get("id")),
-                "matched_title": movie.get("title"),
-                "final_status": "uncertain",
+                "final_status": "no_match",
             },
         )
-        return True
+        return False
 
     def _persist_multiple(self, item: MediaItem, movies: list[dict]) -> None:
         self.db.query(MetadataMatch).filter(
@@ -299,11 +335,6 @@ class PornDBMovieResolver:
             self.db.query(MetadataMatch).filter(
                 MetadataMatch.media_item_id == item.id
             ).delete()
-        self.db.query(MetadataMatch).filter(
-            MetadataMatch.provider == Provider.PORNDB,
-            MetadataMatch.external_id == str(movie_id),
-            MetadataMatch.media_type == MediaType.MOVIE,
-        ).delete()
 
         normalized = ScraperNormalizer.normalize_porndb_movie(movie)
         match = ScraperPersister(self.db).persist_normalized_scene(
@@ -311,8 +342,8 @@ class PornDBMovieResolver:
             str(movie_id),
             normalized,
             media_type=MediaType.MOVIE,
+            media_item_id=item.id,
         )
-        match.media_item_id = item.id
         match.is_active = is_active
         match.confidence_score = confidence
         if match.imdb_id:

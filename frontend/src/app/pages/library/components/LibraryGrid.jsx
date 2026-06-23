@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePlayMediaMutation } from '@/queries';
+import { usePlayMediaMutation, useSettingsQuery } from '@/queries';
 import api from '@/lib/api';
 import Badge from '@/ui/Badge';
 import PosterGrid from '@/ui/PosterGrid';
@@ -25,7 +25,7 @@ import {
   isLibraryTagsTab,
   isLibraryScenesTab,
 } from '@/lib/libraryTabs';
-import { isMovieMediaType, isPersonMediaType, isTvLikeMediaType } from '@/lib/mediaTypes';
+import { isMovieMediaType, isPersonMediaType, isTvLikeMediaType, isSceneMediaType } from '@/lib/mediaTypes';
 import { Heart, Pencil, Play, Plus, Trash2, UserPlus } from 'lucide-react';
 
 const renderUserRatingBadge = (item) => {
@@ -63,7 +63,9 @@ const LibraryPosterCard = memo(({
   onItemClick,
   onPlayOverlayClick,
   onEditImageClick,
+  settings,
 }) => {
+  const navigate = useNavigate();
   const isLibraryPeople = isLibraryPeopleTab(resolvedTab);
   const isLibraryTv = isLibraryTvTab(resolvedTab);
   const isLibraryMovie = isLibraryMovieTab(resolvedTab);
@@ -79,7 +81,7 @@ const LibraryPosterCard = memo(({
   let ratingImdb = item.rating_imdb;
   let ratingTmdb = item.rating;
 
-  if (isLibraryPeople && (item.is_adult_person || item.is_adult || resolvedTab === 'adult_people')) {
+  if (isLibraryScenes || (isLibraryPeople && (item.is_adult_person || item.is_adult || resolvedTab === 'adult_people'))) {
     ratingTmdb = undefined;
     ratingImdb = undefined;
   }
@@ -124,15 +126,62 @@ const LibraryPosterCard = memo(({
     topRightBadge = renderFavoriteBadge(item, t);
     topRightAction = editButton;
   } else if (isLibraryScenes) {
-    const subtitleParts = [];
-    if (item.year) subtitleParts.push(item.year);
-    if (item.info) {
-      subtitleParts.push(item.info);
-    }
-    subtitle = subtitleParts.join(' • ');
+    const displayDate = item.release_date ? item.release_date.substring(0, 10) : item.year;
     imageUrl = item.displayPosterRemote || resolvePosterUrl(getPosterImagePath(item));
     className = 'library-scene-card';
     topRightAction = editButton;
+
+    const genderPref = settings?.adult_gender_preference;
+    const allPeople = item.people || [];
+    const filteredPeople = genderPref && genderPref !== 'all'
+      ? allPeople.filter(p => {
+          if (genderPref === 'female') return p.gender === 1;
+          if (genderPref === 'male') return p.gender === 2;
+          return true;
+        })
+      : allPeople;
+    const performers = filteredPeople.slice(0, 4);
+
+    subtitle = (
+      <div className="library-scene-card__subtitle-inner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: '8px', flex: 1 }}>
+          {performers.map((p, idx) => (
+            <span key={p.id}>
+              {idx > 0 && ', '}
+              <span
+                role="button"
+                tabIndex={0}
+                className="library-scene-card__performer-link"
+                style={{
+                  cursor: 'pointer',
+                  color: 'var(--color-muted)',
+                  textDecoration: 'none',
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/library/people/${p.id}`);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.stopPropagation();
+                    navigate(`/library/people/${p.id}`);
+                  }
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.color = 'var(--color-accent, var(--color-accent-blue))';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.color = 'var(--color-muted)';
+                }}
+              >
+                {p.name}
+              </span>
+            </span>
+          ))}
+        </span>
+        {displayDate && <span style={{ flexShrink: 0 }}>{displayDate}</span>}
+      </div>
+    );
 
     if (item.in_library !== false) {
       const playTitle = ((item.resume_position || 0) > 0 ? (t('library.details.resume') || 'Resume') : (t('library.details.play') || 'Play'));
@@ -274,6 +323,7 @@ export default function LibraryGrid({
 }) {
   const navigate = useNavigate();
   const playMutation = usePlayMediaMutation();
+  const { data: settings } = useSettingsQuery();
   const { openModal, closeModal, toast } = useUi();
 
   const getNextOwnedEpisode = (tvDetail) => {
@@ -514,6 +564,7 @@ export default function LibraryGrid({
                 onItemClick={handleItemClick}
                 onPlayOverlayClick={handlePlayOverlayClick}
                 onEditImageClick={openImagePicker}
+                settings={settings}
               />
             ))}
           </PosterGrid>
@@ -615,6 +666,8 @@ function ExpandedTagPanel({ tag, t, resolvePosterUrl, emptyIcon, isFocusMode = f
                 navigate(`/library/movie/${item.id}`);
               } else if (isTvLikeMediaType(item.type)) {
                 navigate(`/library/tv/${item.id}`);
+              } else if (isSceneMediaType(item.type)) {
+                navigate(`/library/scene/${item.id}`);
               }
             }}
           />

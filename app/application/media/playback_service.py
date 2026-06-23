@@ -94,11 +94,106 @@ class PlaybackService:
             playback_logs=self._serialize_playback_logs(item),
         )
 
-    def play_media_item(self, item_id: int):
+    def play_media_item(self, item_id: Any):
         from app.infrastructure.playback.player_detector import launch_media_file
         from app.infrastructure.playback.playback_monitor import monitor_playback
         db = self.db
-        item = db.query(MediaItem).filter(MediaItem.id == item_id).first()
+        
+        try:
+            item_id_int = int(item_id)
+        except (ValueError, TypeError):
+            # Try to resolve prefixed string or external_id
+            item_str = str(item_id)
+            match_db = None
+            
+            # Check for tv/tmdb episode ID: provider_tvshowid_season_episode
+            # Example: tmdb_12345_1_1
+            parts = item_str.split("_")
+            if len(parts) >= 4 and parts[0] in {"tmdb", "tv"}:
+                try:
+                    tv_show_id = parts[1]
+                    season_num = int(parts[2])
+                    ep_num = int(parts[3])
+                    
+                    episodes = db.query(MetadataMatch).filter(
+                        MetadataMatch.external_id == tv_show_id,
+                        MetadataMatch.media_type == MediaType.EPISODE,
+                        MetadataMatch.season_number == season_num
+                    ).all()
+                    
+                    for ep in episodes:
+                        ep_val = ep.episode_number
+                        if ep_val == ep_num:
+                            match_db = ep
+                            break
+                        elif isinstance(ep_val, list) and ep_num in ep_val:
+                            match_db = ep
+                            break
+                        elif isinstance(ep_val, str):
+                            try:
+                                import json
+                                loaded = json.loads(ep_val)
+                                if loaded == ep_num or (isinstance(loaded, list) and ep_num in loaded):
+                                    match_db = ep
+                                    break
+                            except:
+                                if ep_val == str(ep_num):
+                                    match_db = ep
+                                    break
+                except ValueError:
+                    pass
+            elif len(parts) == 3:
+                try:
+                    tv_show_id = parts[0]
+                    season_num = int(parts[1])
+                    ep_num = int(parts[2])
+                    
+                    episodes = db.query(MetadataMatch).filter(
+                        MetadataMatch.external_id == tv_show_id,
+                        MetadataMatch.media_type == MediaType.EPISODE,
+                        MetadataMatch.season_number == season_num
+                    ).all()
+                    
+                    for ep in episodes:
+                        ep_val = ep.episode_number
+                        if ep_val == ep_num:
+                            match_db = ep
+                            break
+                        elif isinstance(ep_val, list) and ep_num in ep_val:
+                            match_db = ep
+                            break
+                        elif isinstance(ep_val, str):
+                            try:
+                                import json
+                                loaded = json.loads(ep_val)
+                                if loaded == ep_num or (isinstance(loaded, list) and ep_num in loaded):
+                                    match_db = ep
+                                    break
+                            except:
+                                if ep_val == str(ep_num):
+                                    match_db = ep
+                                    break
+                except ValueError:
+                    pass
+
+            if not match_db and "_" in item_str:
+                parts = item_str.split("_", 1)
+                uuid_or_id = parts[1]
+                match_db = db.query(MetadataMatch).filter(
+                    (MetadataMatch.external_id == uuid_or_id) | (MetadataMatch.id == uuid_or_id)
+                ).first()
+            
+            if not match_db:
+                match_db = db.query(MetadataMatch).filter(
+                    (MetadataMatch.external_id == item_str) | (MetadataMatch.id == item_str)
+                ).first()
+                
+            if match_db and match_db.media_item_id:
+                item_id_int = match_db.media_item_id
+            else:
+                return JSONResponse(status_code=404, content={"error": f"Media item not found for ID: {item_id}"})
+
+        item = db.query(MediaItem).filter(MediaItem.id == item_id_int).first()
         if not item:
             return JSONResponse(status_code=404, content={"error": "Media item not found"})
 
@@ -107,7 +202,7 @@ class PlaybackService:
             return JSONResponse(status_code=404, content={"error": f"Media file not found at: {file_path}"})
 
         # general stats updates
-        override = self.overrides.get_or_create_media_item_override(item_id)
+        override = self.overrides.get_or_create_media_item_override(item_id_int)
 
         override.last_watched_at = datetime.now(timezone.utc)
         

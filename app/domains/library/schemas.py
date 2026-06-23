@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional, Any, Dict
+from typing import List, Optional, Any, Dict, Union
 from pydantic import BaseModel, ConfigDict
 
 from app.shared_kernel.enums import (
@@ -175,7 +175,7 @@ class ContinueWatchingItem(BaseModel):
     last_watched_at: Optional[str] = None
 
 class LibraryTabItem(BaseModel):
-    id: Optional[int] = None
+    id: Optional[Union[int, str]] = None
     title: str
     year: Optional[int] = None
     poster_path: Optional[str] = None
@@ -187,12 +187,20 @@ class LibraryTabItem(BaseModel):
     path: Optional[str] = None
     duration: float
     size: int
+    in_library: Optional[bool] = True
+    release_date: Optional[str] = None
+    user_rating: Optional[float] = None
+    people: Optional[List[Dict[str, Any]]] = None
 
 class LibraryTabCounts(BaseModel):
-    movies: int
-    tv: int
-    scenes: int
-    people: int
+    movies: Optional[int] = None
+    tv: Optional[int] = None
+    scenes: Optional[int] = None
+    people: Optional[int] = None
+    adult: Optional[int] = None
+    adult_tv: Optional[int] = None
+    adult_scenes: Optional[int] = None
+    adult_people: Optional[int] = None
 
 class LibraryTabResponse(BaseModel):
     tab: str

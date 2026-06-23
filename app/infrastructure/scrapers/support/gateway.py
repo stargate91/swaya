@@ -51,12 +51,14 @@ class InfrastructureScraperGateway(ScraperGatewayPort):
         normalized: dict,
         *,
         media_type: Optional[MediaType] = None,
+        media_item_id: Optional[int] = None,
     ) -> Any:
         return ScraperPersister(db_session).persist_normalized_scene(
             provider,
             external_id,
             normalized,
             media_type=media_type or MediaType.SCENE,
+            media_item_id=media_item_id,
         )
 
 

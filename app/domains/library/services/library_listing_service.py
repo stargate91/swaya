@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, selectinload, joinedload
 from app.domains.library.models import MediaItem
 from app.domains.metadata.models import MetadataMatch, MetadataLocalization
 from app.domains.users.models import UserOverride, Tag, user_override_tags
+from app.domains.people.models import MediaPersonLink
 from app.shared_kernel.enums import ItemStatus, MediaType
 from app.shared_kernel.user_context import get_current_user_id
 from app.domains.library.schemas import (
@@ -115,7 +116,8 @@ class LibraryListingService:
         ).options(
             selectinload(MetadataMatch.localizations),
             selectinload(MetadataMatch.media_item),
-            selectinload(MetadataMatch.overrides)
+            selectinload(MetadataMatch.overrides),
+            selectinload(MetadataMatch.people).selectinload(MediaPersonLink.person)
         )
 
         joined_localization = False
@@ -123,13 +125,14 @@ class LibraryListingService:
         lib_statuses = [ItemStatus.RENAMED, ItemStatus.ORGANIZED]
 
         # Ownership filter
-        if filter_ownership == "tracked":
+        if filter_ownership in ("tracked", "unowned"):
             query = query.outerjoin(UserOverride, and_(UserOverride.metadata_match_id == MetadataMatch.id, UserOverride.user_id == get_current_user_id()))
             joined_override = True
             query = query.filter(
                 MetadataMatch.media_item_id == None,
                 UserOverride.is_tracked == True
             )
+
         else: # Default: owned
             query = query.filter(
                 MetadataMatch.media_item_id != None,
@@ -137,9 +140,9 @@ class LibraryListingService:
             )
 
         # Tab filters: movies vs tv vs adult/scenes
-        if tab == "tv":
+        if tab in ("tv", "adult_tv"):
             query = query.filter(MetadataMatch.media_type.in_([MediaType.TV, MediaType.EPISODE, MediaType.SEASON]))
-        elif tab in ("adult", "scenes"):
+        elif tab in ("scenes", "adult_scenes"):
             query = query.filter(MetadataMatch.media_type == MediaType.SCENE)
         else:
             query = query.filter(MetadataMatch.media_type == MediaType.MOVIE)
@@ -227,11 +230,11 @@ class LibraryListingService:
                 query = query.order_by(desc(val_col))
             else:
                 query = query.order_by(val_col.asc())
-        elif sort_by == "date_desc":
+        elif sort_by in ("date_desc", "release_date_desc", "year_desc"):
             query = query.order_by(desc(MetadataMatch.release_date))
-        elif sort_by == "date_asc":
+        elif sort_by in ("date_asc", "release_date_asc", "year_asc"):
             query = query.order_by(MetadataMatch.release_date.asc())
-        elif sort_by == "rating_desc":
+        elif sort_by in ("rating_desc", "user_rating_desc"):
             if not joined_override:
                 query = query.outerjoin(UserOverride, and_(UserOverride.metadata_match_id == MetadataMatch.id, UserOverride.user_id == get_current_user_id()))
                 joined_override = True
@@ -240,6 +243,33 @@ class LibraryListingService:
                 MetadataMatch.rating_porndb,
                 MetadataMatch.rating_tmdb,
             )))
+        elif sort_by == "user_rating_asc":
+            if not joined_override:
+                query = query.outerjoin(UserOverride, and_(UserOverride.metadata_match_id == MetadataMatch.id, UserOverride.user_id == get_current_user_id()))
+                joined_override = True
+            query = query.order_by(func.coalesce(
+                UserOverride.user_rating,
+                MetadataMatch.rating_porndb,
+                MetadataMatch.rating_tmdb,
+            ).asc())
+        elif sort_by == "duration_desc":
+            query = query.order_by(desc(MediaItem.duration))
+        elif sort_by == "duration_asc":
+            query = query.order_by(MediaItem.duration.asc())
+        elif sort_by in ("file_size_desc", "size_desc"):
+            query = query.order_by(desc(MediaItem.size))
+        elif sort_by in ("file_size_asc", "size_asc"):
+            query = query.order_by(MediaItem.size.asc())
+        elif sort_by == "last_watched_desc":
+            if not joined_override:
+                query = query.outerjoin(UserOverride, and_(UserOverride.metadata_match_id == MetadataMatch.id, UserOverride.user_id == get_current_user_id()))
+                joined_override = True
+            query = query.order_by(desc(UserOverride.last_watched_at))
+        elif sort_by == "last_watched_asc":
+            if not joined_override:
+                query = query.outerjoin(UserOverride, and_(UserOverride.metadata_match_id == MetadataMatch.id, UserOverride.user_id == get_current_user_id()))
+                joined_override = True
+            query = query.order_by(UserOverride.last_watched_at.asc())
 
         total_items = query.count()
         items = query.offset((page - 1) * page_size).limit(page_size).all()
@@ -257,19 +287,39 @@ class LibraryListingService:
             if rating is None:
                 rating = match.rating_porndb or match.rating_tmdb or 0.0
 
+            from app.domains.media_assets.services.images import image_processing_service
+            resolved_poster = image_processing_service.resolve_image_url(poster_path, "posters")
+            resolved_backdrop = image_processing_service.resolve_image_url(backdrop_path, "backdrops")
+
+            people_list = []
+            if match.people:
+                for link in sorted(match.people, key=lambda x: x.order):
+                    person = link.person
+                    if person:
+                        people_list.append({
+                            "id": person.id,
+                            "name": person.name,
+                            "gender": person.gender,
+                            "role": link.role.value if hasattr(link.role, "value") else str(link.role),
+                        })
+
             formatted_items.append({
-                "id": item.id if item else None,
+                "id": item.id if item else f"stash_{match.external_id}" if match.media_type == MediaType.SCENE else f"tmdb_{match.external_id}",
                 "title": title,
                 "year": match.release_date.year if match.release_date else None,
-                "poster_path": poster_path,
-                "backdrop_path": backdrop_path,
+                "poster_path": resolved_poster,
+                "backdrop_path": resolved_backdrop,
                 "rating": rating,
                 "rating_porndb": match.rating_porndb,
                 "rating_imdb": match.rating_imdb,
                 "type": match.media_type.value,
                 "path": item.current_path if item else None,
                 "duration": (item.duration or 0.0) if item else 0.0,
-                "size": (item.size or 0) if item else 0
+                "size": (item.size or 0) if item else 0,
+                "in_library": item is not None,
+                "release_date": match.release_date.isoformat() if match.release_date else None,
+                "user_rating": o.user_rating if o else None,
+                "people": people_list,
             })
 
         total_pages = (total_items + page_size - 1) // page_size if total_items > 0 else 1
@@ -289,12 +339,20 @@ class LibraryListingService:
         tv_cnt_query = tv_cnt_query.filter(MetadataMatch.is_adult == include_adult)
         adult_cnt_query = adult_cnt_query.filter(MetadataMatch.is_adult == include_adult)
 
-        counts = {
-            "movies": movies_cnt_query.count(),
-            "tv": tv_cnt_query.count(),
-            "scenes": adult_cnt_query.count(),
-            "people": 0
-        }
+        if include_adult:
+            counts = {
+                "adult": movies_cnt_query.count(),
+                "adult_tv": tv_cnt_query.count(),
+                "adult_scenes": adult_cnt_query.count(),
+                "adult_people": 0
+            }
+        else:
+            counts = {
+                "movies": movies_cnt_query.count(),
+                "tv": tv_cnt_query.count(),
+                "scenes": adult_cnt_query.count(),
+                "people": 0
+            }
 
         return LibraryTabResponse(
             tab=tab,

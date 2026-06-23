@@ -25,6 +25,7 @@ export default function MatchModalSearchForm({
   setProvider,
   sessionMode,
   scanMode,
+  providerOptions,
 }) {
   return (
     <form className="organizer-match-modal__search" onSubmit={onSearch}>

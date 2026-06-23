@@ -46,7 +46,7 @@ class FilmographyService:
             credit_entry = {
                 "id": item.id,
                 "title": title,
-                "type": item.item_type.value,
+                "type": match.media_type.value,
                 "tmdb_id": int(match.external_id) if match.external_id.isdigit() else 0,
                 "year": match.release_date.year if match.release_date else None,
                 "poster_path": self._resolve_img(match_loc.poster_path if match_loc else None, "posters"),
@@ -58,11 +58,11 @@ class FilmographyService:
                 "in_library": True,
             }
             
-            if item.item_type == MediaType.SCENE:
+            if match.media_type == MediaType.SCENE:
                 scenes.append(credit_entry)
-            elif item.item_type == MediaType.MOVIE:
+            elif match.media_type == MediaType.MOVIE:
                 movies.append(credit_entry)
-            elif item.item_type in (MediaType.TV, MediaType.EPISODE):
+            elif match.media_type in (MediaType.TV, MediaType.EPISODE):
                 sid = match.parent_id or match.id
                 if sid not in tv_map:
                     tv_map[sid] = credit_entry

@@ -37,6 +37,7 @@ class OrganizerItem(BaseModel):
     custom_edition: Optional[str] = None
     custom_audio_type: Optional[str] = None
     custom_source: Optional[str] = None
+    parsed_info: Optional[dict] = None
 
 class OrganizerExtra(BaseModel):
     id: int

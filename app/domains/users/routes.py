@@ -230,8 +230,31 @@ def update_item_overrides(payload: ItemOverridesUpdate, db: Session = Depends(ge
     return OverridesService(db, DbMediaResolver(db)).update_item_overrides(payload)
 
 @catalog_router.post("/item/{item_id}/status")
-def update_item_status(item_id: int, payload: ItemStatusUpdate, db: Session = Depends(get_db)):
-    return OverridesService(db, DbMediaResolver(db)).update_item_status(item_id, payload.status)
+def update_item_status(item_id: str, payload: ItemStatusUpdate, db: Session = Depends(get_db)):
+    service = OverridesService(db, DbMediaResolver(db))
+    res = {}
+    if payload.status is not None:
+        try:
+            item_id_int = int(item_id)
+            res.update(service.update_item_status(item_id_int, payload.status))
+        except ValueError:
+            pass
+    has_overrides = any(
+        getattr(payload, field) is not None
+        for field in ["user_rating", "user_comment", "is_favorite", "is_watched", "custom_tags", "tags", "resume_position"]
+    )
+    if has_overrides:
+        overrides_payload = ItemOverridesUpdate(
+            item_id=item_id,
+            user_rating=payload.user_rating,
+            user_comment=payload.user_comment,
+            is_favorite=payload.is_favorite,
+            is_watched=payload.is_watched,
+            tags=payload.custom_tags if payload.custom_tags is not None else payload.tags,
+            resume_position=payload.resume_position,
+        )
+        res.update(service.update_item_overrides(overrides_payload))
+    return res
 
 @catalog_router.post("/item/{item_id}/poster")
 def update_item_poster(item_id: str, payload: ImageOverrideUpdate, db: Session = Depends(get_db)):

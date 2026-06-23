@@ -2,7 +2,7 @@ import { ArrowRight } from 'lucide-react';
 import Checkbox from '../../ui/Checkbox';
 import Pill from '../../ui/Pill';
 import Tooltip from '../../ui/Tooltip';
-import { isEpisodeMediaType, isMovieMediaType, isMovieOrEpisodeMediaType } from '@/lib/mediaTypes';
+import { isEpisodeMediaType, isMovieMediaType, isMovieOrEpisodeMediaType, isSceneMediaType } from '@/lib/mediaTypes';
 import { mapCollisionStrategyLabel, shouldShowCollisionStrategy } from './organizerMappers';
 
 const renderSelectColumn = (paginatedRows, selectedRowIds, handleToggleAll, handleToggleRow) => ({
@@ -111,14 +111,14 @@ const renderStatusCell = (value, row, collisionStrategy, normalizeStatusTone, t)
         {mapCollisionStrategyLabel(row.rawAction || collisionStrategy, t)}
       </Pill>
     ) : null}
-    {row.rawStatus === 'uncertain' && !isMovieMediaType(row.rawType) && (row.season === null || row.season === undefined || row.season === '') ? (
+    {row.rawStatus === 'uncertain' && !isMovieMediaType(row.rawType) && !isSceneMediaType(row.rawType) && (row.season === null || row.season === undefined || row.season === '') ? (
       <Tooltip content={t('organizer.status.missingSeasonTooltip')} side="top">
         <Pill className="organizer-status-cell__policy" variant="default">
           {t('organizer.status.missingSeason')}
         </Pill>
       </Tooltip>
     ) : null}
-    {row.rawStatus === 'uncertain' && !isMovieMediaType(row.rawType) && (row.episode === null || row.episode === undefined || row.episode === '') ? (
+    {row.rawStatus === 'uncertain' && !isMovieMediaType(row.rawType) && !isSceneMediaType(row.rawType) && (row.episode === null || row.episode === undefined || row.episode === '') ? (
       <Tooltip content={t('organizer.status.missingEpisodeTooltip')} side="top">
         <Pill className="organizer-status-cell__policy" variant="default">
           {t('organizer.status.missingEpisode')}

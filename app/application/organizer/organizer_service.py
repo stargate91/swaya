@@ -285,7 +285,8 @@ class OrganizerService:
                 "episode": str(episode_val) if episode_val is not None else None,
                 "custom_edition": custom_edition_val,
                 "custom_audio_type": custom_audio_type_val,
-                "custom_source": custom_source_val
+                "custom_source": custom_source_val,
+                "parsed_info": item.parsed_info or {}
             }
 
             if item.status in [ItemStatus.NEW, ItemStatus.UNCERTAIN, ItemStatus.NO_MATCH, ItemStatus.MULTIPLE, ItemStatus.ERROR]:

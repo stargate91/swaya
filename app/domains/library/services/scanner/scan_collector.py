@@ -195,7 +195,8 @@ class ScanCollector:
                 future_to_path = {executor.submit(self._probe_and_analyze_target, p): p for p in probe_targets}
                 
                 probed_count = 0
-                for future in future_to_path:
+                import concurrent.futures
+                for future in concurrent.futures.as_completed(future_to_path):
                     path = future_to_path[future]
                     path_str = str(path)
                     try:
@@ -213,8 +214,8 @@ class ScanCollector:
                     
                     probed_count += 1
                     if self.progress_callback:
-                        # Map progress between 10% and 40%
-                        pct = 10.0 + (float(probed_count) / len(probe_targets)) * 30.0
+                        # Probing is the most heavy part, allocate 5.0% to 85.0%
+                        pct = 5.0 + (float(probed_count) / len(probe_targets)) * 80.0
                         self.progress_callback(pct)
 
         # 4. Filter into media paths vs extra paths based on duration
@@ -340,7 +341,7 @@ class ScanCollector:
                             else:
                                 existing.hash_md5 = file_hash
                                 existing.hash_oshash = calculate_oshash(str(p))
-                        if existing.status != ItemStatus.MATCHED:
+                        if existing.status not in (ItemStatus.MATCHED, ItemStatus.ORGANIZED, ItemStatus.RENAMED):
                             existing.status = ItemStatus.NEW
                         item = existing
                     else:
@@ -399,8 +400,16 @@ class ScanCollector:
                 if not existing or existing.size != size or existing.mtime != mtime:
                     triple = res.get("guessit_info") if res else self.analyzer.get_triple_data(item_entity.internal_title, item_entity.filename, item_entity.folder_name)
                     triple = {**(triple or {}), "scan_mode": self.mode.value}
+                    if self.mode in (ScanMode.SCENES, ScanMode.PORNDB_MOVIE):
+                        for pk in ["fn", "it", "fd"]:
+                            if pk in triple and isinstance(triple[pk], dict):
+                                triple[pk].pop("season", None)
+                                triple[pk].pop("episode", None)
+                                triple[pk].pop("season_count", None)
+                                triple[pk].pop("episode_count", None)
+                                triple[pk]["type"] = "movie" if self.mode == ScanMode.PORNDB_MOVIE else "scene"
                     item_entity.parsed_info = sanitize_parsed_info(triple)
-                    logger.info("[scan:%s] Parsed %s | fn.type=%s | fd.type=%s | scan_mode=%s", self.mode.value, item_entity.filename, (triple.get("fn") or {}).get("type"), (triple.get("fd") or {}).get("type"), triple.get("scan_mode"))
+                    logger.info("[scan:%s] Parsed %s | fn.type=%s | fd.type=%s | scan_mode=%s", self.mode.value, item_entity.filename, (triple.get("fn") or {}).get("type") if triple else None, (triple.get("fd") or {}).get("type") if triple else None, triple.get("scan_mode") if triple else None)
                     
                     if triple:
                         fn_data = triple.get("fn") or {}
@@ -420,7 +429,10 @@ class ScanCollector:
 
             media_processed += 1
             if self.progress_callback:
-                pct = 40.0 + (float(media_processed) / len(media_paths)) * 40.0
+                if probe_targets:
+                    pct = 85.0 + (float(media_processed) / len(media_paths)) * 13.0
+                else:
+                    pct = 5.0 + (float(media_processed) / len(media_paths)) * 93.0
                 self.progress_callback(pct)
 
         self.db.flush()

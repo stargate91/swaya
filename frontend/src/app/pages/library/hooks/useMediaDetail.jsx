@@ -11,7 +11,7 @@ import { useSettingsQuery } from '@/queries/settingsQueries';
 import { useLibraryModeStore } from '@/stores/useLibraryModeStore';
 import { API_BASE } from '@/lib/backend';
 import api from '@/lib/api';
-import { isMovieMediaType } from '@/lib/mediaTypes';
+import { isMovieMediaType, isSceneMediaType } from '@/lib/mediaTypes';
 import {
   getDurationText,
   resolveDetailsImageUrl
@@ -24,6 +24,8 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
   const normalizedId = id == null ? '' : String(id);
   const cleanId = normalizedId.startsWith('tv_') ? normalizedId.replace('tv_', '') : normalizedId;
   const isMovie = isMovieMediaType(type);
+  const isSceneMedia = isSceneMediaType(type);
+  const isSingleItem = isMovie || isSceneMedia;
 
   const [hoveredRating, setHoveredRating] = useState(null);
   const [expandedSeasons, setExpandedSeasons] = useState({ 1: true });
@@ -44,10 +46,10 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
   const playMutation = usePlayMediaMutation();
   const bulkUpdateWatchedMutation = useBulkUpdateWatchedMutation();
 
-  const { data: movieDetail, isLoading: isMovieLoading } = useLibraryItemDetailQuery(cleanId, { enabled: isMovie });
-  const { data: tvDetail, isLoading: isTvLoading } = useLibraryTvDetailQuery(cleanId, { enabled: !isMovie, seasonsLimit: 5, initialEpisodesLimit: 4 });
-  const item = isMovie ? movieDetail : tvDetail;
-  const isLoading = isMovie ? isMovieLoading : isTvLoading;
+  const { data: movieDetail, isLoading: isMovieLoading } = useLibraryItemDetailQuery(cleanId, { enabled: isSingleItem });
+  const { data: tvDetail, isLoading: isTvLoading } = useLibraryTvDetailQuery(cleanId, { enabled: !isSingleItem, seasonsLimit: 5, initialEpisodesLimit: 4 });
+  const item = isSingleItem ? movieDetail : tvDetail;
+  const isLoading = isSingleItem ? isMovieLoading : isTvLoading;
   const effectiveId = item?.id ?? cleanId;
   const { data: settings } = useSettingsQuery();
 
@@ -62,7 +64,7 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
 
   const [prevItem, setPrevItem] = useState(item);
   const [prevCleanId, setPrevCleanId] = useState(cleanId);
-  const isScene = item?.type === 'scene';
+  const isScene = isSceneMedia || item?.type === 'scene';
   const [activePanel, setActivePanel] = useState(() => {
     if (isScene) return null;
     if (isMovie) return 'details';
@@ -254,7 +256,7 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
     });
   };
 
-  const title = item?.title || item?.filename || (isMovie ? 'Movie Title Placeholder' : 'Tv Title Placeholder');
+  const title = item?.title || item?.filename || (isMovie ? 'Movie Title Placeholder' : isScene ? 'Scene Title Placeholder' : 'Tv Title Placeholder');
   const originalTitle = item?.original_title;
   const showOriginalTitle = originalTitle && title && originalTitle.toLowerCase() !== title.toLowerCase();
   const tagline = item?.tagline || '';
@@ -276,7 +278,15 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
   };
   const metaDate = getMetaDate();
 
-  const formattedDuration = isMovie && item?.runtime ? getDurationText(item.runtime * 60, t) : '';
+  const getSceneDuration = () => {
+    if (item?.formatted_duration) return item.formatted_duration;
+    const dur = item?.runtime || item?.technical?.duration;
+    if (dur) return getDurationText(dur, t);
+    return '';
+  };
+  const formattedDuration = isMovie && item?.runtime
+    ? getDurationText(item.runtime * 60, t)
+    : (isScene ? getSceneDuration() : '');
 
   let seasonsCount = 0;
   let episodesCount = 0;
@@ -562,6 +572,7 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
       overview,
       hasTechnicalPanel,
       isMovie,
+      isScene,
       isOwned,
       isTracked,
       canToggleTracked,

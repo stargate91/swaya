@@ -114,12 +114,19 @@ def get_library_items(
 ):
     service = LibraryListingService(db)
     if tab:
+        tags_list = None
+        if selected_tags:
+            tags_list = [t.strip() for t in selected_tags.split(",") if t.strip()]
         return service.get_library_tab_page(
             tab=tab,
             page=page,
             page_size=page_size,
             sort_by=sort_by,
             search=search,
+            selected_tags=tags_list,
+            selected_genre=selected_genre,
+            selected_decade=selected_decade,
+            selected_year=selected_year,
             filter_favorite=filter_favorite,
             filter_watched=filter_watched,
             filter_ownership=filter_ownership,
@@ -128,6 +135,7 @@ def get_library_items(
             people_role=people_role,
             include_adult=include_adult,
         )
+
     return service.get_grouped_library(include_adult=include_adult)
 
 

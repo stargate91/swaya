@@ -64,6 +64,7 @@ export default function useMatchModalViewModel({
     mode,
     season,
     episode,
+    sessionMode,
   });
 
   const handleBrowseSeasonClick = async (seasonEntry) => {

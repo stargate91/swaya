@@ -125,7 +125,7 @@ class DownloadWorker:
         try:
             response = self.image_service.session.get(url, stream=True, timeout=HEAVY_IMAGE_DOWNLOAD_TIMEOUT)
             if response.status_code == 200:
-                saved_path = self.image_service.write_chunks(orig_path, response.iter_content(chunk_size=8192))
+                saved_path = self.image_service.write_chunks(orig_path, response.iter_content(chunk_size=8192), url=url)
                 if saved_path:
                     # 3. Generate thumbnail
                     self.image_service.generate_thumbnail(orig_path, thumb_path, subfolder)
