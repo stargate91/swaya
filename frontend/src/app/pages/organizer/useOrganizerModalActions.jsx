@@ -197,6 +197,7 @@ export function useOrganizerModalActions({
           rows={targetRows}
           t={t}
           toast={toast}
+          scanMode={scanMode}
           onResolved={(performMutationFn) => {
             handleResolveOrganizerRows(targetRows, performMutationFn);
           }}
@@ -320,8 +321,17 @@ export function useOrganizerModalActions({
       className: 'is-danger',
       onClick: (row) => openDeleteModal(row),
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t, dismissRows]);
+  ], [
+    t,
+    dismissRows,
+    scanMode,
+    openMatchModal,
+    openOverrideModal,
+    openDeleteModal,
+    isPlayableOrganizerRow,
+    handlePreviewRow,
+    toast,
+  ]);
 
   const bulkActionBar = (
     <FloatingActionBar

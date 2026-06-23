@@ -9,6 +9,7 @@ export default function useMatchModalViewModel({
   t,
   toast,
   onResolved,
+  scanMode,
 }) {
   const targetRows = rows.length > 0 ? rows : (row ? [row] : []);
   const isBulk = targetRows.length > 1;
@@ -33,7 +34,7 @@ export default function useMatchModalViewModel({
     provider,
     setProvider,
     sessionMode,
-  } = useMatchSearch({ rows: targetRows, t, toast });
+  } = useMatchSearch({ rows: targetRows, t, toast, scanMode });
 
   const {
     browserState,
@@ -123,8 +124,11 @@ export default function useMatchModalViewModel({
     resetBrowser();
 
     let nextMode = mode;
-    if (nextProvider === 'porndb') {
-      console.log('[DEBUG] handleProviderChange: PornDB selected. Forcing mode to movie.');
+    if (scanMode === 'scenes') {
+      nextMode = 'scene';
+      setMode('scene');
+    } else if (nextProvider === 'porndb') {
+      console.log('[DEBUG] handleProviderChange: PornDB selected in non-scenes mode. Forcing mode to movie.');
       nextMode = 'movie';
       setMode('movie');
     }

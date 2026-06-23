@@ -45,6 +45,7 @@ export default function OrganizerMatchModalContent({
   t,
   toast,
   onResolved,
+  scanMode,
 }) {
   const {
     query,
@@ -83,7 +84,7 @@ export default function OrganizerMatchModalContent({
     provider,
     handleProviderChange,
     sessionMode,
-  } = useMatchModalViewModel({ row, rows, t, toast, onResolved });
+  } = useMatchModalViewModel({ row, rows, t, toast, onResolved, scanMode });
 
   const targetRows = rows.length > 0 ? rows : (row ? [row] : []);
   const isBulk = targetRows.length > 1;
@@ -129,6 +130,7 @@ export default function OrganizerMatchModalContent({
         provider={provider}
         setProvider={handleProviderChange}
         sessionMode={sessionMode}
+        scanMode={scanMode}
       />
 
       <section className="organizer-match-modal__section">

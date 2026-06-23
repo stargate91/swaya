@@ -24,6 +24,7 @@ export default function MatchModalSearchForm({
   provider,
   setProvider,
   sessionMode,
+  scanMode,
 }) {
   return (
     <form className="organizer-match-modal__search" onSubmit={onSearch}>
@@ -39,10 +40,18 @@ export default function MatchModalSearchForm({
                   menuClassName="search-source-dropdown-menu"
                   value={provider}
                   onChange={(e) => setProvider(e.target.value)}
-                  options={[
-                    { value: 'tmdb', label: 'TMDb' },
-                    { value: 'porndb', label: 'PornDB' },
-                  ]}
+                  options={
+                    scanMode === 'scenes'
+                      ? [
+                          { value: 'stashdb', label: 'StashDB' },
+                          { value: 'fansdb', label: 'FansDB' },
+                          { value: 'porndb', label: 'PornDB' },
+                        ]
+                      : [
+                          { value: 'tmdb', label: 'TMDb' },
+                          { value: 'porndb', label: 'PornDB' },
+                        ]
+                  }
                 />
               </div>
               <div className="organizer-match-modal__form-input-wrapper">
@@ -118,7 +127,7 @@ export default function MatchModalSearchForm({
             </IconButton>
           </Tooltip>
         </div>
-        {!isBulk && provider !== 'porndb' ? (
+        {!isBulk && provider !== 'porndb' && scanMode !== 'scenes' ? (
           <SegmentedControl
             className="organizer-match-modal__mode-toggle"
             options={[

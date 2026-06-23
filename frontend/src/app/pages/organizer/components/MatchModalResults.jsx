@@ -33,7 +33,10 @@ export default function MatchModalResults({
   return (
     <>
       {shouldShowPosterResults ? (
-        <div ref={posterResultsRef} className="organizer-match-modal__poster-results">
+        <div
+          ref={posterResultsRef}
+          className={`organizer-match-modal__poster-results${mode === 'scene' || visibleResultCandidates.some(c => c.type === 'scene' || c.media_type === 'scene') ? ' is-scene' : ''}`}
+        >
           {visibleResultCandidates.map((candidate) => (
             <MatchCandidateCard
               key={`existing-${candidate.tmdb_id || candidate.id}`}

@@ -25,11 +25,17 @@ const getDefaultEpisode = (row) => {
   return payload.episode ?? payload.fn_episode ?? payload.fd_episode ?? payload.it_episode ?? '';
 };
 
-export function useMatchSearch({ rows = [], t, toast }) {
+export function useMatchSearch({ rows = [], t, toast, scanMode }) {
   const primaryRow = rows[0] || null;
   const isBulk = rows.length > 1;
   const [query, setQuery] = useState(() => (isBulk ? '' : getDefaultQuery(primaryRow)));
-  const [mode, setMode] = useState(() => (isBulk ? MEDIA_TYPES.TV : getDefaultType(primaryRow)));
+  const [mode, setMode] = useState(() => {
+    const isSceneModeOrType = scanMode === 'scenes' || primaryRow?.rawType === 'scene' || primaryRow?.rawPayload?.scan_mode === 'scenes';
+    if (isSceneModeOrType) {
+      return 'scene';
+    }
+    return isBulk ? MEDIA_TYPES.TV : getDefaultType(primaryRow);
+  });
   const [year, setYear] = useState(() => (isBulk ? '' : String(getDefaultYear(primaryRow) || '')));
   const [season, setSeason] = useState(() => (isBulk ? '' : String(getDefaultSeason(primaryRow) || '')));
   const [episode, setEpisode] = useState(() => (isBulk ? '' : String(getDefaultEpisode(primaryRow) || '')));
@@ -37,7 +43,13 @@ export function useMatchSearch({ rows = [], t, toast }) {
   const [hasSearched, setHasSearched] = useState(false);
   const sessionMode = useLibraryModeStore((state) => state.sessionMode);
   const includeAdult = sessionMode === 'nsfw';
-  const [provider, setProvider] = useState(() => (sessionMode === 'nsfw' ? 'porndb' : 'tmdb'));
+  const [provider, setProvider] = useState(() => {
+    const isSceneModeOrType = scanMode === 'scenes' || primaryRow?.rawType === 'scene' || primaryRow?.rawPayload?.scan_mode === 'scenes';
+    if (isSceneModeOrType) {
+      return 'stashdb';
+    }
+    return 'tmdb';
+  });
   const isTvMode = mode === MEDIA_TYPES.TV && provider !== 'porndb';
 
   const [isSearching, setIsSearching] = useState(false);
@@ -47,16 +59,16 @@ export function useMatchSearch({ rows = [], t, toast }) {
       if (rows.length > 1) {
         return [];
       }
+      const isSceneModeOrType = scanMode === 'scenes' || primaryRow?.rawType === 'scene' || primaryRow?.rawPayload?.scan_mode === 'scenes';
       return (primaryRow?.rawPayload?.matches || [])
-        .filter((match) => (match.provider || 'tmdb') === provider)
         .map((match) => ({
-          id: match.tmdb_id,
-          tmdb_id: match.tmdb_id,
-          type: match.type,
+          id: match.external_id || match.tmdb_id || match.id,
+          tmdb_id: match.external_id || match.tmdb_id || match.id,
+          type: match.type || (isSceneModeOrType ? 'scene' : null),
           title: match.title,
           release_date: match.year ? `${match.year}-01-01` : null,
           first_air_date: match.year ? `${match.year}-01-01` : null,
-          poster_path: match.poster_path,
+          poster_path: match.image_path || match.poster_path,
           vote_average: match.vote_average,
           confidence: match.confidence,
           is_active: match.is_active,
@@ -64,7 +76,7 @@ export function useMatchSearch({ rows = [], t, toast }) {
           provider: match.provider || 'tmdb',
         }));
     },
-    [primaryRow, rows.length, provider],
+    [primaryRow, rows.length, scanMode],
   );
 
   const performSearch = async (resetBrowser, searchMode = mode, searchProvider = provider) => {
@@ -100,9 +112,9 @@ export function useMatchSearch({ rows = [], t, toast }) {
       console.log('[DEBUG] performSearch success, received data length:', data?.length);
       const searchResults = Array.isArray(data)
         ? data.map((candidate) => ({
-            ...candidate,
-            media_type: toMetadataMediaType(candidate.media_type || candidate.type || searchMode, searchMode),
-          }))
+          ...candidate,
+          media_type: toMetadataMediaType(candidate.media_type || candidate.type || searchMode, searchMode),
+        }))
         : [];
       setResults(searchResults);
       return searchResults;

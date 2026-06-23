@@ -966,3 +966,44 @@
   padding-left: var(--space-md) !important;
 }
 
+/* 16:9 aspect ratio style modifications for scene matches */
+.organizer-match-modal__poster-results.is-scene {
+  grid-auto-columns: minmax(280px, 320px);
+}
+
+.organizer-match-modal__poster-card.is-scene .organizer-match-modal__poster-card-image,
+.organizer-match-modal__poster-card.is-scene .ui-poster-card__image-wrapper {
+  aspect-ratio: 16 / 9;
+}
+
+.organizer-match-modal__result-card.is-scene {
+  grid-template-columns: 170px minmax(0, 1fr);
+}
+
+.organizer-match-modal__result-card.is-scene .organizer-match-modal__poster {
+  width: 170px;
+  height: 96px;
+  aspect-ratio: 16 / 9;
+}
+
+.organizer-match-modal__poster-card.is-scene.ui-backdrop-card {
+  border-radius: calc(var(--radius-md) - 2px) !important;
+}
+
+.organizer-match-modal__poster-card.is-scene.ui-backdrop-card:hover:not(.ui-backdrop-card--disabled) {
+  transform: none !important;
+  border-color: var(--color-accent-blue) !important;
+  box-shadow: 0 0 0 2px var(--color-accent-blue) !important;
+}
+
+.organizer-match-modal__poster-card.is-scene.ui-backdrop-card:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-accent-blue) !important;
+}
+
+.organizer-match-modal__poster-card.is-scene.ui-backdrop-card.is-active {
+  border-color: color-mix(in srgb, var(--color-accent) 42%, transparent) !important;
+}
+
+
+
+

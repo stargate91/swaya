@@ -90,6 +90,42 @@ class MetadataService:
                     logger.error(f"Search failed on PornDB movies: {e}")
                     return []
 
+            if prov_enum == Provider.PORNDB and item_type in ("scene", "scenes", "adult"):
+                try:
+                    params = {"q": query}
+                    if year:
+                        params["year"] = year
+                    api_token = scraper.get_setting("porndb_api_key") or scraper.get_setting("porndb_api_token")
+                    headers = {
+                        "Authorization": f"Bearer {api_token}",
+                        "Accept": "application/json"
+                    }
+                    resp = scraper.session.get(f"{PORNDB_API_BASE}/scenes", params=params, headers=headers, timeout=SCRAPER_REQUEST_TIMEOUT)
+                    if resp.status_code == 200:
+                        scenes = resp.json().get("data") or []
+                        formatted = []
+                        for s in scenes:
+                            site_data = s.get("site") or {}
+                            formatted.append({
+                                "id": s.get("id"),
+                                "title": s.get("title"),
+                                "original_title": None,
+                                "release_date": s.get("date"),
+                                "year": int(str(s["date"]).split("-")[0]) if s.get("date") else None,
+                                "overview": s.get("description") or s.get("details"),
+                                "poster_path": s.get("image") or s.get("face") or s.get("thumbnail"),
+                                "backdrop_path": s.get("image"),
+                                "rating": s.get("rating") or 0.0,
+                                "media_type": "scene",
+                                "provider": prov_enum.value,
+                                "studio": site_data.get("name")
+                            })
+                        return formatted
+                    else:
+                        logger.error(f"PornDB REST scenes search failed with status {resp.status_code}")
+                except Exception as e:
+                    logger.error(f"PornDB REST scenes search error: {e}")
+
             search_query = """
             query SearchScenes($q: String!) {
               searchScene(term: $q) {
@@ -111,7 +147,12 @@ class MetadataService:
                 res = scraper.execute_query(search_query, {"q": query})
                 scenes = res.get("searchScene", []) if res else []
                 if not scenes:
-                  scenes = []
+                    scenes = []
+                
+                # Client-side year filtering for GraphQL search results
+                if year:
+                    scenes = [s for s in scenes if s.get("date") and str(s.get("date")).startswith(str(year))]
+
                 formatted = []
                 for s in scenes:
                     studio_data = s.get("studio") or {}
