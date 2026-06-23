@@ -14,6 +14,16 @@ const prettifyToken = (value) => String(value || '')
   .replace(/[_-]+/g, ' ')
   .replace(/\b\w/g, (char) => char.toUpperCase());
 
+export const mapOrganizerTypeLabel = (type, t) => {
+  const value = String(type || '').toLowerCase();
+  if (value === 'episode') return t('organizer.typeLabels.episode');
+  if (value === 'movie') return t('organizer.typeLabels.movie');
+  if (value === 'tv') return t('organizer.typeLabels.tv');
+  if (value === 'scene') return t('organizer.typeLabels.scene');
+  if (value === 'extra') return t('organizer.typeLabels.extra');
+  return prettifyToken(value) || t('organizer.typeLabels.media');
+};
+
 export const normalizeStatusTone = (value, t) => {
   if (value === t('organizer.status.ready')) return 'success';
   if (value === t('organizer.status.collision') || value === t('organizer.status.error')) return 'danger';
@@ -49,14 +59,7 @@ const mapItemStatus = (status, hasCollision, t) => {
   return prettifyToken(value) || t('organizer.status.pending');
 };
 
-const mapItemType = (type, t) => {
-  const value = String(type || '').toLowerCase();
-  if (value === 'episode') return t('organizer.typeLabels.episode');
-  if (value === 'movie') return t('organizer.typeLabels.movie');
-  if (value === 'tv') return t('organizer.typeLabels.tv');
-  if (value === 'scene') return t('organizer.typeLabels.scene');
-  return prettifyToken(value) || t('organizer.typeLabels.media');
-};
+const mapItemType = (type, t) => mapOrganizerTypeLabel(type, t);
 
 export const normalizeItemStatus = (status) => String(status || '').toLowerCase();
 export const getFilenameFromPath = (value) => String(value || '').split(/[/\\]/).pop() || '-';
@@ -114,4 +117,3 @@ export const mapExtraRow = (item, t) => ({
   images: [],
   rawPayload: item,
 });
-

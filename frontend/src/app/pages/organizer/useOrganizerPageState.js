@@ -34,6 +34,8 @@ export function useOrganizerPageState({ organizer, t, scanMode, sessionMode }) {
     sessionVisibleExtraCount,
     tabCounts,
     tabFilteredRows,
+    modeVisibleMatchedItems,
+    modeVisibleExtrasForRename,
   } = useOrganizerFilteredRows({
     organizer,
     t,
@@ -187,5 +189,8 @@ export function useOrganizerPageState({ organizer, t, scanMode, sessionMode }) {
     sortedRows,
     tabCounts,
     totalPages,
+    modeVisibleMatchedItems,
+    modeVisibleExtrasForRename,
   };
 }
+

@@ -4,21 +4,14 @@ import Button from '../../../ui/Button';
 import OrganizerRenameModalContent from '../OrganizerRenameModalContent.jsx';
 import { mapOrganizerItemRow, mapExtraRow } from '../organizerMappers';
 
-const EMPTY_ORGANIZER = {
-  manual: [],
-  movies: [],
-  tv: [],
-  extras: [],
-  collisions: [],
-};
-
 export function useOrganizerRename({
-  organizerQuery,
-  sortedRows,
+  modeVisibleMatchedItems,
+  modeVisibleExtrasForRename,
   isScanActive,
   renameMutation,
   queryClient,
   renameStartedRef,
+  setIsRenamePending,
   t,
   toast,
   openModal,
@@ -31,49 +24,13 @@ export function useOrganizerRename({
       return;
     }
 
-    const currentOrganizer = organizerQuery.data || EMPTY_ORGANIZER;
-    const allItems = [
-      ...(currentOrganizer.manual || []),
-      ...(currentOrganizer.movies || []),
-      ...(currentOrganizer.tv || []),
-      ...(currentOrganizer.collisions || []),
-    ];
-    const organizerItemsById = new Map(allItems.map((item) => [item.id, item]));
-
-    const visibleMatchedItemIds = new Set();
-    const visibleExtraIds = new Set();
-
-    (sortedRows || []).forEach((row) => {
-      if (row.rawType === 'extra') {
-        if (String(row.parentStatus || '').toLowerCase() === 'matched' && row.parent_id) {
-          visibleMatchedItemIds.add(row.parent_id);
-          visibleExtraIds.add(row.itemId);
-        }
-        return;
-      }
-
-      if (row.rawStatus === 'matched') {
-        visibleMatchedItemIds.add(row.itemId);
-      }
-    });
-
-    const matchedItems = [...visibleMatchedItemIds]
-      .map((itemId) => organizerItemsById.get(itemId))
-      .filter(Boolean);
+    const matchedItems = modeVisibleMatchedItems || [];
+    const matchedExtras = modeVisibleExtrasForRename || [];
 
     if (matchedItems.length === 0) {
       toast(t('organizer.toasts.noMatchedItems'), 'danger');
       return;
     }
-
-    const matchedItemIds = new Set(matchedItems.map((item) => item.id));
-    const matchedExtras = (currentOrganizer.extras || []).filter((extra) => {
-      const parentId = extra.parent_id || extra.parent_item_id;
-      const extraId = extra.id;
-      const parentIsMatched = matchedItemIds.has(parentId);
-      const isShownExtra = visibleExtraIds.size === 0 || visibleExtraIds.has(extraId);
-      return parentIsMatched && isShownExtra;
-    });
 
     const mappedItems = [
       ...matchedItems.map((item) => mapOrganizerItemRow(item, t)),
@@ -83,17 +40,36 @@ export function useOrganizerRename({
     const executeRename = async () => {
       closeModal();
       setIsRenameStarting(true);
+      const previousScanStatus = queryClient.getQueryData(['scan-status']);
       try {
         const ids = matchedItems.map((item) => item.id);
         if (renameStartedRef) {
           renameStartedRef.current = true;
         }
-        await renameMutation.mutateAsync({ item_ids: ids });
-        queryClient.invalidateQueries({ queryKey: ['scan-status'] });
+        setIsRenamePending(true);
+        queryClient.setQueryData(['scan-status'], (current) => ({
+          ...(current || {}),
+          active: true,
+          phase: 'organizing',
+          current: 0,
+          total: ids.length,
+          start_time: Math.floor(Date.now() / 1000),
+          can_stop: true,
+          stop_requested: false,
+          current_file_progress: 0,
+        }));
+        const response = await renameMutation.mutateAsync({ item_ids: ids });
+        if (response?.status === 'error') {
+          throw new Error(response.message);
+        }
+        queryClient.invalidateQueries({ queryKey: ['history'] });
+        queryClient.invalidateQueries({ queryKey: ['library'] });
       } catch (error) {
+        queryClient.setQueryData(['scan-status'], previousScanStatus || null);
         if (renameStartedRef) {
           renameStartedRef.current = false;
         }
+        setIsRenamePending(false);
         toast(error.message || t('organizer.toasts.renameStartFailed'), 'danger');
       } finally {
         setIsRenameStarting(false);

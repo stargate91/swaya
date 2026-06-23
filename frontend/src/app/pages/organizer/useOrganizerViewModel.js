@@ -6,6 +6,7 @@ export function useOrganizerViewModel({
   isBrowseStarting,
   isOrganizerCountReady,
   isLoadingAll,
+  isRenamePending,
   isRenameStarting,
   isScanActive,
   pageEnd,
@@ -25,13 +26,14 @@ export function useOrganizerViewModel({
       : null;
     const shouldShowLoadRest = hasVisibleItems && isOrganizerCountReady && remainingOrganizerCount > 0;
     const summaryText = `${pageStart}-${pageEnd} / ${sortedRows.length}`;
+    const isRenameActive = isRenamePending || (isScanActive && scanPhase === 'organizing');
 
     const loadingState = isLoadingAll
       ? {
         label: t('organizer.loadingStates.loadAll.label'),
         description: t('organizer.loadingStates.loadAll.description'),
       }
-      : isScanActive && scanPhase === 'organizing'
+      : isRenameActive
         ? {
           label: t('organizer.loadingStates.rename.label'),
           description: t('organizer.loadingStates.rename.description'),
@@ -73,7 +75,7 @@ export function useOrganizerViewModel({
           ? `${t('organizer.buttons.loadTheRest')} (${remainingOrganizerCount})`
           : t('organizer.buttons.loadTheRest'),
       loadingState,
-      renameButtonLabel: isRenameStarting || (isScanActive && scanPhase === 'organizing')
+      renameButtonLabel: isRenameStarting || isRenameActive
         ? t('organizer.buttons.organizing')
         : t('organizer.buttons.rename'),
       shouldShowDetailsPanel: !emptyState && !loadingState,
@@ -85,6 +87,7 @@ export function useOrganizerViewModel({
     isBrowseStarting,
     isOrganizerCountReady,
     isLoadingAll,
+    isRenamePending,
     isRenameStarting,
     isScanActive,
     pageEnd,

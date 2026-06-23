@@ -419,6 +419,7 @@
     "episode": "Episode",
     "movie": "Movie",
     "tv": "Tv",
+    "scene": "Scene",
     "media": "Media",
     "extra": "Extra"
   },
@@ -426,3 +427,5 @@
     "rowsPerPage": "Rows per page"
   }
 }
+
+

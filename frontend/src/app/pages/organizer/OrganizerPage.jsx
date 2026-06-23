@@ -193,6 +193,8 @@ export default function OrganizerPage() {
     dismissedRowIds,
     visibleExtraCount,
     visibleMediaCount,
+    modeVisibleMatchedItems,
+    modeVisibleExtrasForRename,
   } = useOrganizerPageState({ organizer, t, scanMode, sessionMode });
 
   const {
@@ -202,6 +204,7 @@ export default function OrganizerPage() {
     handleScanPaths,
     isBrowseStarting,
     isLoadingAll,
+    isRenamePending,
     isRenameStarting,
   } = useOrganizerActions({
     defaultScanDir: settingsQuery.data?.default_scan_dir,
@@ -215,6 +218,8 @@ export default function OrganizerPage() {
     openModal,
     closeModal,
     sortedRows,
+    modeVisibleMatchedItems,
+    modeVisibleExtrasForRename,
     scanStatusQuery,
     scanMode,
     sessionMode,
@@ -248,6 +253,7 @@ export default function OrganizerPage() {
     isBrowseStarting,
     isOrganizerCountReady,
     isLoadingAll,
+    isRenamePending,
     isRenameStarting,
     isScanActive,
     pageEnd,
@@ -373,7 +379,7 @@ export default function OrganizerPage() {
             size="sm"
             className="organizer-panel__browse-btn"
             onClick={handleRename}
-            disabled={isScanActive || isRenameStarting}
+            disabled={isScanActive || isRenamePending || isRenameStarting}
           >
             {renameButtonLabel}
           </Button>
@@ -491,7 +497,7 @@ export default function OrganizerPage() {
         emptyStateActions={emptyStateActions}
         headerActions={headerActions}
         onDropPaths={handleScanPaths}
-        isDropzoneDisabled={isScanActive || isBrowseStarting || isLoadingAll || isRenameStarting}
+        isDropzoneDisabled={isScanActive || isBrowseStarting || isLoadingAll || isRenamePending || isRenameStarting}
         scanMode={scanMode}
         scanModeOptions={scanModeOptions}
         setScanMode={setScanMode}
@@ -665,6 +671,8 @@ function OrganizerPageContent({
     </Page>
   );
 }
+
+
 
 
 

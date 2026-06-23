@@ -14,11 +14,17 @@ export const getPhaseProgress = (status) => {
 
   const total = Number(status.total) || 0;
   const current = Number(status.current) || 0;
+  const currentFileProgress = Math.max(0, Math.min(1, Number(status.current_file_progress) || 0));
   if (total <= 0) {
     return 0;
   }
 
-  return Math.max(0, Math.min(1, current / total));
+  const safeCurrent = Math.max(0, Math.min(total, current));
+  const fractionalCurrent = safeCurrent >= total
+    ? safeCurrent
+    : Math.min(total, safeCurrent + currentFileProgress);
+
+  return Math.max(0, Math.min(1, fractionalCurrent / total));
 };
 
 export const getScanProgress = (status) => {
@@ -29,12 +35,15 @@ export const getScanProgress = (status) => {
   const phaseProgress = getPhaseProgress(status);
   const range = PHASE_RANGES[status.phase];
 
+  let progress;
   if (!range) {
-    return clampPercent(Math.round(phaseProgress * 100));
+    progress = clampPercent(Math.round(phaseProgress * 100));
+  } else {
+    const [start, end] = range;
+    progress = clampPercent(Math.round(start + ((end - start) * phaseProgress)));
   }
 
-  const [start, end] = range;
-  return clampPercent(Math.round(start + ((end - start) * phaseProgress)));
+  return status.active && progress >= 100 ? 99 : progress;
 };
 
 export const formatScanRemaining = (status, progress, now = Date.now()) => {

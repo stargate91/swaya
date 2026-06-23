@@ -43,7 +43,7 @@ export function useOrganizerFilteredRows({
         || itemScanMode === 'porndb_movie'
         || itemScanMode === 'scenes'
       );
-      
+
       let isAdult = false;
       if (isAdultScanModeOrType) {
         isAdult = true;
@@ -146,6 +146,32 @@ export function useOrganizerFilteredRows({
     return ids.size;
   }, [matchedOrganizerMedia, reviewOrganizerMedia]);
 
+  const modeVisibleMatchedItems = useMemo(() => (
+    matchedOrganizerMedia.filter((item) => {
+      const id = `item-${item.id}`;
+      return !dismissedRowIds.has(id)
+        && isModeType(item, scanMode)
+        && MATCHED_STATUSES.has(normalizeItemStatus(item.status));
+    })
+  ), [dismissedRowIds, matchedOrganizerMedia, scanMode]);
+
+  const modeVisibleMatchedItemIds = useMemo(
+    () => new Set(modeVisibleMatchedItems.map((item) => item.id)),
+    [modeVisibleMatchedItems],
+  );
+
+  const modeVisibleExtrasForRename = useMemo(() => (
+    filteredExtras.filter((item) => {
+      const id = `extra-${item.id}`;
+      const parentId = item.parent_id || item.parent_item_id;
+      const parentRowId = `item-${parentId}`;
+      return isExtraForMode(item, scanMode)
+        && modeVisibleMatchedItemIds.has(parentId)
+        && !dismissedRowIds.has(id)
+        && !dismissedRowIds.has(parentRowId);
+    })
+  ), [dismissedRowIds, filteredExtras, modeVisibleMatchedItemIds, scanMode]);
+
   const tabCounts = useMemo(() => {
     const visibleReview = reviewOrganizerMedia.filter((item) => {
       const id = `item-${item.id}`;
@@ -153,12 +179,7 @@ export function useOrganizerFilteredRows({
         && isModeType(item, scanMode)
         && MANUAL_REVIEW_STATUSES.has(normalizeItemStatus(item.status));
     });
-    const visibleMatched = matchedOrganizerMedia.filter((item) => {
-      const id = `item-${item.id}`;
-      return !dismissedRowIds.has(id)
-        && isModeType(item, scanMode)
-        && MATCHED_STATUSES.has(normalizeItemStatus(item.status));
-    });
+    const visibleMatched = modeVisibleMatchedItems;
 
     const manualCount = visibleReview.length;
     const manualMoviesCount = visibleReview.filter((item) => isRegularMovieType(item.type)).length;
@@ -168,11 +189,7 @@ export function useOrganizerFilteredRows({
     const episodesCount = visibleMatched.filter((item) => isTvLikeMediaType(item.type)).length;
     const scenesCount = visibleMatched.filter((item) => isSceneType(item.type)).length;
 
-    const extrasCount = filteredExtras.filter((item) => {
-      const id = `extra-${item.id}`;
-      const parentId = `item-${item.parent_id || item.parent_item_id}`;
-      return isExtraForMode(item, scanMode) && !dismissedRowIds.has(id) && !dismissedRowIds.has(parentId);
-    }).length;
+    const extrasCount = modeVisibleExtrasForRename.length;
 
     return {
       manualCount,
@@ -184,7 +201,7 @@ export function useOrganizerFilteredRows({
       scenesCount,
       extrasCount,
     };
-  }, [matchedOrganizerMedia, reviewOrganizerMedia, dismissedRowIds, scanMode, filteredExtras]);
+  }, [dismissedRowIds, modeVisibleExtrasForRename.length, modeVisibleMatchedItems, reviewOrganizerMedia, scanMode]);
 
   const tabFilteredRows = useMemo(() => {
     let rows = [];
@@ -230,6 +247,8 @@ export function useOrganizerFilteredRows({
     sessionVisibleExtraCount: sessionFilteredExtras.length,
     reviewOrganizerMedia,
     matchedOrganizerMedia,
+    modeVisibleMatchedItems,
+    modeVisibleExtrasForRename,
     tabCounts,
     tabFilteredRows,
   };

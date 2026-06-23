@@ -12,6 +12,7 @@ import { useUi } from '../../providers/UiProvider';
 import { useTranslation } from '../../providers/LanguageContext';
 import { useOrganizerDeleteActions } from './useOrganizerDeleteActions';
 import { useSettingsQuery } from '../../queries';
+import { mapOrganizerTypeLabel } from './organizerMappers';
 
 export function useOrganizerModalActions({
   focusFirstAvailableResult,
@@ -214,7 +215,7 @@ export function useOrganizerModalActions({
 
   const openOverrideModal = (row) => {
     openModal({
-      title: t('organizer.overrideModal.title').replace('{type}', row.rawType || ''),
+      title: t('organizer.overrideModal.title').replace('{type}', mapOrganizerTypeLabel(row.rawType, t) || ''),
       description: t('organizer.overrideModal.description'),
       icon: Sliders,
       content: (
@@ -243,7 +244,7 @@ export function useOrganizerModalActions({
   const openBulkOverrideModal = (rows) => {
     const type = rows[0]?.rawType || '';
     openModal({
-      title: (t('organizer.overrideModal.titleBulk') || 'Bulk Override {type}s').replace('{type}', type),
+      title: (t('organizer.overrideModal.titleBulk') || 'Bulk Override {type}s').replace('{type}', mapOrganizerTypeLabel(type, t)),
       description: t('organizer.overrideModal.descriptionBulk') || 'Apply settings or numberings to all selected items.',
       icon: Sliders,
       className: 'ui-modal--bulk-override',
@@ -392,3 +393,4 @@ export function useOrganizerModalActions({
     refreshOrganizer,
   };
 }
+

@@ -76,6 +76,7 @@ export function useOrganizerScan({
   toast,
   scanStatusQuery,
   renameStartedRef,
+  setIsRenamePending,
   scanMode,
   sessionMode,
   includeAdult,
@@ -113,6 +114,7 @@ export function useOrganizerScan({
       const finalizeScan = async () => {
         const wasRename = renameStartedRef.current;
         renameStartedRef.current = false;
+        setIsRenamePending(false);
 
         const wasAborted = wasStopRequestedRef.current;
         wasStopRequestedRef.current = false;
@@ -122,6 +124,8 @@ export function useOrganizerScan({
         queryClient.invalidateQueries({ queryKey: ['organizer'] });
         queryClient.invalidateQueries({ queryKey: ['organizer-count'] });
         queryClient.invalidateQueries({ queryKey: ['stats'] });
+        queryClient.invalidateQueries({ queryKey: ['history'] });
+        queryClient.invalidateQueries({ queryKey: ['library'] });
 
         try {
           const result = await organizerQuery.refetch();
@@ -131,7 +135,7 @@ export function useOrganizerScan({
             queryClient.setQueryData(queryKey, nextOrganizer);
             onResultsReady?.(nextOrganizer);
             if (wasAborted) {
-              toast('Renaming stopped.', 'warning');
+              toast(t('organizer.toasts.renameAborted') || 'Renaming stopped.', 'warning');
             } else {
               toast(t('organizer.toasts.renameComplete') || 'Renaming complete!', 'success');
             }
@@ -148,7 +152,7 @@ export function useOrganizerScan({
             toast(t('organizer.toasts.scanComplete').replace('{count}', matchedReady), 'success');
           }
         } catch {
-          toast(wasRename ? t('organizer.toasts.renameStartFailed') : t('organizer.toasts.scanCompleteFallback'), 'success');
+          toast(wasRename ? (t('organizer.toasts.renameComplete') || 'Renaming complete!') : t('organizer.toasts.scanCompleteFallback'), 'success');
         }
         lastScanPathsRef.current = [];
       };
@@ -157,7 +161,7 @@ export function useOrganizerScan({
       scrollOrganizerToTop();
     }
     previousScanActiveRef.current = isScanActive;
-  }, [isScanActive, onResultsReady, queryClient, t, toast, organizerQuery, renameStartedRef, scanStatus]);
+  }, [isScanActive, onResultsReady, queryClient, queryKey, setIsRenamePending, t, toast, organizerQuery, renameStartedRef, scanStatus]);
 
   const handleScanPaths = async (paths) => {
     if (isScanActive || isBrowseStarting) {

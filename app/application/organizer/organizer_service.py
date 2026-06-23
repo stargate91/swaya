@@ -299,9 +299,17 @@ class OrganizerService:
 
         extras = self.db.query(ExtraFile).join(
             MediaItem, ExtraFile.media_item_id == MediaItem.id
+        ).options(
+            joinedload(ExtraFile.media_item).joinedload(MediaItem.matches)
         ).filter(
-            ~MediaItem.status.in_([ItemStatus.IGNORED])
+            ~MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED, ItemStatus.IGNORED])
         ).all()
+
+        extras = [
+            ex for ex in extras
+            if self._matches_scan_mode_filter((ex.media_item.parsed_info or {}).get("scan_mode") or "", scan_mode)
+            and self._matches_session_mode_filter(ex.media_item, session_mode)
+        ]
 
         parent_scan_modes = getattr(self, "_parent_scan_modes", {})
         extra_parent_ids = {ex.media_item_id for ex in extras}
@@ -381,3 +389,5 @@ class OrganizerService:
             self.db.query(ExtraFile).filter(ExtraFile.id.in_(extra_ids)).delete(synchronize_session=False)
         self.db.commit()
         return ActionResponse(status="success", deleted_items=len(item_ids), deleted_extras=len(extra_ids), mode=mode)
+
+

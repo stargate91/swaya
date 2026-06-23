@@ -26,6 +26,7 @@ class ScannerService:
         "can_stop": False,
         "stop_requested": False,
         "current_file_progress": 0.0,
+        "last_completed": 0,
     }
 
     def __init__(self, db: Session, scan_resolver_factory: Optional[Any] = None):
@@ -124,6 +125,7 @@ class ScannerService:
                 "can_stop": True,
                 "stop_requested": False,
                 "current_file_progress": 0.0,
+                "last_completed": 0,
             })
                 
         # Register task in the new db task manager
@@ -316,14 +318,25 @@ class ScannerService:
         if item_ids is not None:
             query = query.filter(MediaItem.id.in_(item_ids))
         items = query.all()
-        
+
         if not items:
+            with ScannerService.scan_status_lock:
+                ScannerService.scan_status.update({
+                    "active": False,
+                    "phase": "idle",
+                    "current": 0,
+                    "total": 0,
+                    "can_stop": False,
+                    "stop_requested": False,
+                    "current_file_progress": 0.0,
+                    "last_completed": int(time.time()),
+                })
             return
-            
+
         batch = ActionBatch(name=f"Organize {len(items)} items")
         self.db.add(batch)
         self.db.commit()
-        
+
         with ScannerService.scan_status_lock:
             ScannerService.scan_status.update({
                 "active": True,
@@ -333,16 +346,16 @@ class ScannerService:
                 "start_time": time.time(),
                 "can_stop": True,
                 "stop_requested": False,
+                "current_file_progress": 0.0,
             })
-            
+
         from app.application.media.renamer_engine import RenamerEngine
         from app.infrastructure.settings.formatter_config_adapter import build_formatter_from_db
         import os
-        
+
         engine = RenamerEngine(self.db)
         formatter = build_formatter_from_db(self.db)
-        
-        # Pre-plan all previews to resolve collisions in batch
+
         previews = []
         for item in items:
             active_match = next((m for m in item.matches), None)
@@ -355,27 +368,50 @@ class ScannerService:
         if previews:
             formatter.resolve_collisions(previews)
 
+        with ScannerService.scan_status_lock:
+            ScannerService.scan_status["total"] = len(previews)
+
+        if not previews:
+            self.db.commit()
+            with ScannerService.scan_status_lock:
+                ScannerService.scan_status.update({
+                    "active": False,
+                    "phase": "idle",
+                    "current": 0,
+                    "total": 0,
+                    "can_stop": False,
+                    "stop_requested": False,
+                    "current_file_progress": 0.0,
+                    "last_completed": int(time.time()),
+                })
+            return
+
         for idx, preview in enumerate(previews):
             if self._is_stop_requested():
                 break
-                
+
             def progress_cb(pct):
                 with ScannerService.scan_status_lock:
                     ScannerService.scan_status["current_file_progress"] = pct
-                    
-            success = await asyncio.to_thread(engine.execute_single, preview, batch.id, progress_callback=progress_cb)
-            
+
+            await asyncio.to_thread(engine.execute_single, preview, batch.id, progress_callback=progress_cb)
+            self.db.commit()
+
             with ScannerService.scan_status_lock:
                 ScannerService.scan_status["current"] += 1
                 ScannerService.scan_status["current_file_progress"] = 0.0
-                
+
             self.task_manager.update_progress(task_id, ((idx + 1) / len(previews)) * 100.0)
-            
+
+        self.db.commit()
+
         with ScannerService.scan_status_lock:
             ScannerService.scan_status["active"] = False
             ScannerService.scan_status["phase"] = "idle"
             ScannerService.scan_status["can_stop"] = False
             ScannerService.scan_status["stop_requested"] = False
+            ScannerService.scan_status["current_file_progress"] = 0.0
+            ScannerService.scan_status["last_completed"] = int(time.time())
 
     def start_undo(self, batch_id: int) -> Dict[str, Any]:
         with ScannerService.scan_status_lock:
@@ -416,5 +452,10 @@ class ScannerService:
             ScannerService.scan_status["phase"] = "idle"
             ScannerService.scan_status["can_stop"] = False
             ScannerService.scan_status["stop_requested"] = False
+
+
+
+
+
 
 

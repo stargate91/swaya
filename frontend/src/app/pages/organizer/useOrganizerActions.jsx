@@ -15,6 +15,8 @@ export function useOrganizerActions({
   openModal,
   closeModal,
   sortedRows,
+  modeVisibleMatchedItems,
+  modeVisibleExtrasForRename,
   scanStatusQuery,
   scanMode,
   sessionMode,
@@ -22,6 +24,7 @@ export function useOrganizerActions({
   provider,
 }) {
   const [isLoadingAll, setIsLoadingAll] = useState(false);
+  const [isRenamePending, setIsRenamePending] = useState(false);
   const renameStartedRef = useRef(false);
   const renameMutation = useRenameMutation();
 
@@ -39,6 +42,7 @@ export function useOrganizerActions({
     toast,
     scanStatusQuery,
     renameStartedRef,
+    setIsRenamePending,
     scanMode,
     sessionMode,
     includeAdult,
@@ -48,10 +52,13 @@ export function useOrganizerActions({
   const { handleRename, isRenameStarting } = useOrganizerRename({
     organizerQuery,
     sortedRows,
+    modeVisibleMatchedItems,
+    modeVisibleExtrasForRename,
     isScanActive,
     renameMutation,
     queryClient,
     renameStartedRef,
+    setIsRenamePending,
     t,
     toast,
     openModal,
@@ -84,6 +91,7 @@ export function useOrganizerActions({
     handleScanPaths,
     isBrowseStarting,
     isLoadingAll,
+    isRenamePending,
     isRenameStarting,
   };
 }
