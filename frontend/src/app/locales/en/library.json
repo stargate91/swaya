@@ -22,7 +22,10 @@
       "writer": "Writer",
       "creator": "Creator",
       "story": "Story",
-      "screenplay": "Screenplay"
+      "screenplay": "Screenplay",
+      "acting": "Actor",
+      "directing": "Director",
+      "writing": "Writer"
     }
   },
   "addPeople": {

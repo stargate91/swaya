@@ -66,7 +66,7 @@ export default function TMDBImageGrid({
       let list = personDetail.images;
       if (selectedSource && selectedSource !== 'all') {
         if (selectedSource === 'tmdb') {
-          list = list.filter(img => img.startsWith('/'));
+          list = list.filter(img => img.startsWith('/') || img.includes('tmdb') || (!img.includes('stashdb') && !img.includes('fansdb') && !img.includes('theporndb') && !img.includes('metadataapi')));
         } else if (selectedSource === 'stashdb') {
           list = list.filter(img => img.includes('stashdb'));
         } else if (selectedSource === 'fansdb') {
@@ -309,7 +309,7 @@ export default function TMDBImageGrid({
               ? resolveDetailsImageUrl(path, API_BASE, 'backdrop')
               : path.startsWith('/')
                 ? buildTmdbImageUrl(path, TMDB_IMAGE_SIZES.backdropThumb)
-                : resolveDetailsImageUrl(path, API_BASE, 'backdrop');
+                : resolveDetailsImageUrl(path, API_BASE, 'backdropThumb');
           } else if (imageType === 'poster') {
             thumbUrl = path.startsWith('/media/')
               ? resolveDetailsImageUrl(path, API_BASE, isPerson ? 'person' : 'poster')

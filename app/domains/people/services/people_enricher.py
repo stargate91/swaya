@@ -552,8 +552,25 @@ class PeopleEnricher:
                         break
                 filename = f"{prov_val}_{ext_id}{ext}"
 
-            person.local_profile_path = f"people/{filename}"
-            person.images = data.get("images") or person.images
+            existing_imgs = person.images or []
+            new_imgs = data.get("images") or []
+            seen = set()
+            res_list = []
+            for img in existing_imgs:
+                if not img:
+                    continue
+                norm = img.split("/")[-1].split("?")[0].lower()
+                if norm not in seen:
+                    seen.add(norm)
+                    res_list.append(img)
+            for img in new_imgs:
+                if not img:
+                    continue
+                norm = img.split("/")[-1].split("?")[0].lower()
+                if norm not in seen:
+                    seen.add(norm)
+                    res_list.append(img)
+            person.images = res_list
 
             task_manager.download_worker.enqueue_download(url, "people", filename)
 

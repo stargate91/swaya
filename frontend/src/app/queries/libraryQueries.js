@@ -212,7 +212,7 @@ export const usePeopleInfiniteQuery = (params) => useInfiniteQuery({
 export const useAddPersonTmdbMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (tmdbId) => api.people.addTmdb(tmdbId),
+    mutationFn: (payload) => api.people.addTmdb(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['people'] });
       queryClient.invalidateQueries({ queryKey: ['people-infinite'] });
@@ -485,15 +485,11 @@ export const useUpdatePersonStatusMutation = () => {
         return;
       }
 
-      if ('is_active' in payload || 'is_favorite' in payload) {
+      if ('is_active' in payload || 'is_favorite' in payload || 'user_rating' in payload) {
         queryClient.invalidateQueries({ queryKey: ['people'] });
         queryClient.invalidateQueries({ queryKey: ['people-infinite'] });
         queryClient.invalidateQueries({ queryKey: ['library'] });
         queryClient.invalidateQueries({ queryKey: ['stats'] });
-      } else {
-        if ('user_rating' in payload) {
-          queryClient.invalidateQueries({ queryKey: ['stats'] });
-        }
       }
 
       if ('custom_tags' in payload) {

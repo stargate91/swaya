@@ -65,6 +65,8 @@ class PersonSearchItem(BaseModel):
     is_active: bool
     library_count: int
     known_for: Optional[str] = None
+    external_ids: Optional[dict[str, Any]] = None
+
 
 class PeopleSearchResponse(BaseModel):
     items: List[PersonSearchItem]
@@ -130,6 +132,15 @@ class PersonStatusUpdate(BaseModel):
     user_rating: Optional[float] = None
     is_favorite: Optional[bool] = None
     user_comment: Optional[str] = None
+
+
+class PersonAddTmdb(BaseModel):
+    tmdb_id: Any
+    name: Optional[str] = None
+    profile_path: Optional[str] = None
+    gender: Optional[int] = None
+    is_adult: Optional[bool] = None
+
 
 
 

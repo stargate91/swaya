@@ -11,6 +11,7 @@ from app.domains.people.schemas import (
     PersonDetailResponse,
     PersonFilmographyResponse,
     PersonStatusUpdate,
+    PersonAddTmdb,
 )
 from app.domains.users.schemas import ImageOverrideUpdate
 
@@ -75,8 +76,38 @@ def get_people(
     )
 
 
+@router.post("/add-tmdb")
+def add_person_tmdb(
+    payload: PersonAddTmdb,
+    db: Session = Depends(get_db)
+):
+    return PeopleDetailService(db, scraper_gateway).add_person_tmdb(
+        db_id_or_external=payload.tmdb_id,
+        name=payload.name,
+        profile_path=payload.profile_path,
+        gender=payload.gender,
+        is_adult=payload.is_adult
+    )
+
+
+
+@router.get("/search-tmdb")
+def search_people_tmdb(
+    query: str,
+    language: str = None,
+    adult_only: bool = False,
+    page: int = 1,
+    source: str = "all",
+    db: Session = Depends(get_db)
+):
+    return PeopleDetailService(db, scraper_gateway).search_people_tmdb(
+        query=query, language=language, adult_only=adult_only, page=page, source=source
+    )
+
+
 @router.get("/{person_id}", response_model=PersonDetailResponse)
 def get_person_detail(person_id: int, db: Session = Depends(get_db)):
+
     return PeopleDetailService(db, scraper_gateway).get_person_detail(person_id)
 
 
@@ -110,9 +141,39 @@ def get_person_scenes(
     return PeopleDetailService(db, scraper_gateway).get_person_scenes(person_id, page=page, page_size=page_size)
 
 
+def resolve_person(person_id: Any, db: Session):
+    from app.domains.people.models import Person, ExternalSourceLink
+    from app.shared_kernel.enums import Provider
+    
+    person_id_str = str(person_id)
+    if ":" in person_id_str:
+        parts = person_id_str.split(":", 1)
+        source_name = parts[0]
+        uuid_str = parts[1]
+        
+        scraper_name = "porndb" if source_name == "theporndb" else source_name
+        try:
+            provider_enum = Provider(scraper_name)
+            link = db.query(ExternalSourceLink).filter(
+                ExternalSourceLink.provider == provider_enum,
+                ExternalSourceLink.external_id == uuid_str
+            ).first()
+            if link:
+                return link.person
+        except Exception:
+            pass
+        return None
+    else:
+        try:
+            p_id = int(person_id_str)
+            return db.query(Person).filter(Person.id == p_id).first()
+        except (ValueError, TypeError):
+            return None
+
+
 @router.post("/{person_id}/status")
 def update_person_status(
-    person_id: int,
+    person_id: str,
     payload: PersonStatusUpdate,
     db: Session = Depends(get_db)
 ):
@@ -120,7 +181,7 @@ def update_person_status(
     from app.domains.users.models import UserOverride
     from app.shared_kernel.user_context import get_current_user_id
 
-    person = db.query(Person).filter(Person.id == person_id).first()
+    person = resolve_person(person_id, db)
     if not person:
         raise HTTPException(status_code=404, detail="Person not found")
 
@@ -141,16 +202,21 @@ def update_person_status(
         person.is_active = True
 
     # 2. Update UserOverride fields
-    if has_user_interaction or "is_active" in fields_set:
+    has_override_update = (
+        "user_rating" in fields_set
+        or "is_favorite" in fields_set
+        or "user_comment" in fields_set
+    )
+    if has_override_update:
         override = db.query(UserOverride).filter(
             UserOverride.user_id == user_id,
-            UserOverride.person_id == person_id
+            UserOverride.person_id == person.id
         ).first()
 
         if not override:
             override = UserOverride(
                 user_id=user_id,
-                person_id=person_id
+                person_id=person.id
             )
             db.add(override)
 
@@ -167,7 +233,19 @@ def update_person_status(
             override.user_comment_at = datetime.now(timezone.utc) if payload.user_comment else None
 
     db.commit()
-    return {"status": "ok", "is_active": person.is_active}
+
+    override = db.query(UserOverride).filter(
+        UserOverride.user_id == user_id,
+        UserOverride.person_id == person.id
+    ).first()
+
+    return {
+        "status": "ok",
+        "is_active": person.is_active,
+        "is_favorite": override.is_favorite if override else False,
+        "user_rating": override.user_rating if override else None,
+        "user_comment": override.user_comment if override else None,
+    }
 
 
 @router.get("/{person_id}/credit-backdrops")
@@ -184,25 +262,58 @@ def get_person_credit_backdrops(
 
 @router.post("/{person_id}/backdrop")
 def update_person_backdrop(
-    person_id: int,
+    person_id: str,
     payload: ImageOverrideUpdate,
     db: Session = Depends(get_db)
 ):
+    person = resolve_person(person_id, db)
+    if not person:
+        raise HTTPException(status_code=404, detail="Person not found")
     path = payload.path or payload.url or payload.backdrop_path
     if not path:
         raise HTTPException(status_code=400, detail="Backdrop path/url is required")
-    return PeopleDetailService(db, scraper_gateway).update_person_backdrop(person_id, path)
+    return PeopleDetailService(db, scraper_gateway).update_person_backdrop(person.id, path)
 
 
 @router.post("/{person_id}/upload-backdrop")
 def upload_person_backdrop(
-    person_id: int,
+    person_id: str,
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
+    person = resolve_person(person_id, db)
+    if not person:
+        raise HTTPException(status_code=404, detail="Person not found")
     return PeopleDetailService(db, scraper_gateway).handle_person_backdrop_upload(
-        person_id, file.filename, file.file
+        person.id, file.filename, file.file
     )
 
 
+@router.post("/{person_id}/profile")
+def update_person_profile(
+    person_id: str,
+    payload: ImageOverrideUpdate,
+    db: Session = Depends(get_db)
+):
+    person = resolve_person(person_id, db)
+    if not person:
+        raise HTTPException(status_code=404, detail="Person not found")
+    path = payload.path or payload.url or payload.profile_path or payload.poster_path or payload.backdrop_path or payload.logo_path
+    if not path:
+        raise HTTPException(status_code=400, detail="Profile path/url is required")
+    return PeopleDetailService(db, scraper_gateway).update_person_profile(person.id, path)
+
+
+@router.post("/{person_id}/upload-profile")
+def upload_person_profile(
+    person_id: str,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    person = resolve_person(person_id, db)
+    if not person:
+        raise HTTPException(status_code=404, detail="Person not found")
+    return PeopleDetailService(db, scraper_gateway).handle_person_profile_upload(
+        person.id, file.filename, file.file
+    )
 

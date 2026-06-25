@@ -81,7 +81,7 @@ const LibraryPosterCard = memo(({
   let ratingImdb = item.rating_imdb;
   let ratingTmdb = item.rating;
 
-  if (isLibraryScenes || (isLibraryPeople && (item.is_adult_person || item.is_adult || resolvedTab === 'adult_people'))) {
+  if (isLibraryScenes || isLibraryPeople) {
     ratingTmdb = undefined;
     ratingImdb = undefined;
   }

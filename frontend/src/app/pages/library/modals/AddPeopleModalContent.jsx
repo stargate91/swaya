@@ -134,7 +134,18 @@ export default function AddPeopleModalContent({ isAdult, t, onClose }) {
 
       try {
         if (task.source === 'search' && task.newActiveStatus) {
-          await addPersonMutation.mutateAsync(task.personId);
+          const searchPerson = tmdbResults.find(p => p.id === task.personId);
+          if (searchPerson) {
+            await addPersonMutation.mutateAsync({
+              tmdb_id: task.personId,
+              name: searchPerson.name,
+              profile_path: searchPerson.profile_path,
+              gender: searchPerson.gender,
+              is_adult: searchPerson.is_adult !== undefined ? searchPerson.is_adult : true,
+            });
+          } else {
+            await addPersonMutation.mutateAsync(task.personId);
+          }
         } else {
           await updateStatusMutation.mutateAsync({
             personId: task.personId,

@@ -152,7 +152,13 @@ export default function BulkImportResolveModalContent({ t, isAdult = false }) {
                             onClick={async () => {
                               setPendingAdds((prev) => ({ ...prev, [candidate.id]: true }));
                               try {
-                                await addPersonMutation.mutateAsync(candidate.id);
+                                await addPersonMutation.mutateAsync({
+                                  tmdb_id: candidate.id,
+                                  name: candidate.name,
+                                  profile_path: candidate.profile_path,
+                                  gender: candidate.gender,
+                                  is_adult: candidate.is_adult !== undefined ? candidate.is_adult : isAdult
+                                });
                                 setResolvedRows((prev) => {
                                   const next = { ...prev, [row.line_number]: candidate.id };
                                   if (resolveStateStorageKey) {
