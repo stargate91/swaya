@@ -73,20 +73,31 @@ export default function usePeopleCollectionDetailController({
   const profileLinks = useMemo(
     () => {
       if (isPeople && item?.is_adult) {
-        const order = ['imdb', 'tmdb', 'stashdb', 'fansdb', 'theporndb'];
+        const order = ['tmdb', 'stashdb', 'fansdb', 'theporndb'];
         const chosen = [];
         for (const key of order) {
           const found = externalLinks.find((link) => link.key === key);
           if (found) {
             chosen.push(found);
-            if (chosen.length === 2) {
-              break;
-            }
           }
+        }
+        if (chosen.length % 2 === 1) {
+          chosen[chosen.length - 1] = {
+            ...chosen[chosen.length - 1],
+            fullWidth: true
+          };
         }
         return chosen;
       }
-      return externalLinks.filter((link) => link.key === 'tmdb' || link.key === 'imdb');
+      const chosen = [];
+      const tmdbFound = externalLinks.find((link) => link.key === 'tmdb');
+      if (tmdbFound) {
+        chosen.push({
+          ...tmdbFound,
+          fullWidth: true
+        });
+      }
+      return chosen;
     },
     [externalLinks, isPeople, item?.is_adult]
   );

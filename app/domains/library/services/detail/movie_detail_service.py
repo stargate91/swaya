@@ -108,11 +108,13 @@ class MovieDetailService(DetailFormatter):
             belongs_to_col = tmdb_data.get("belongs_to_collection")
             collection_data = None
             if belongs_to_col:
+                col_db = match.collection if (match and match.collection and match.collection.external_id == str(belongs_to_col.get("id"))) else None
+                col_loc = LanguageService.get_best_localization(col_db.localizations, ui_lang) if (col_db and col_db.localizations) else None
                 collection_data = {
                     "tmdb_id": belongs_to_col.get("id"),
                     "title": belongs_to_col.get("name"),
-                    "poster_path": self._resolve_img(belongs_to_col.get("poster_path"), "posters"),
-                    "backdrop_path": self._resolve_img(belongs_to_col.get("backdrop_path"), "backdrops"),
+                    "poster_path": self._resolve_img(col_loc.local_poster_path or col_loc.poster_path if col_loc else belongs_to_col.get("poster_path"), "posters"),
+                    "backdrop_path": self._resolve_img(col_db.local_backdrop_path or col_db.backdrop_path if col_db else belongs_to_col.get("backdrop_path"), "backdrops"),
                 }
 
             keywords_list = [k["name"] for k in tmdb_data.get("keywords", {}).get("keywords", [])] if tmdb_data.get("keywords") else []
@@ -267,8 +269,8 @@ class MovieDetailService(DetailFormatter):
             collection_data = {
                 "tmdb_id": int(col.external_id) if col.external_id.isdigit() else col.id,
                 "title": col_loc.title if col_loc else "Collection",
-                "poster_path": self._resolve_img(col_loc.poster_path if col_loc else None, "posters"),
-                "backdrop_path": self._resolve_img(col.backdrop_path, "backdrops"),
+                "poster_path": self._resolve_img(col_loc.local_poster_path or col_loc.poster_path if col_loc else None, "posters"),
+                "backdrop_path": self._resolve_img(col.local_backdrop_path or col.backdrop_path, "backdrops"),
             }
 
         keywords_list = []

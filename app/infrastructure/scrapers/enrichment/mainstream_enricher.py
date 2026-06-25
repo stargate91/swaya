@@ -244,9 +244,13 @@ class MainstreamEnricher:
             loc.title = coll.get("name") or loc.title
             loc.poster_path = coll.get("poster_path") or loc.poster_path
 
-            if loc.poster_path:
+            if loc.poster_path and not loc.local_poster_path:
                 asset_prefix = f"tmdb_{collection.external_id}"
                 loc.local_poster_path = self._queue_image(loc.poster_path, "posters", asset_prefix)
+            
+            if collection.backdrop_path and not collection.local_backdrop_path:
+                asset_prefix = f"tmdb_{collection.external_id}"
+                collection.local_backdrop_path = self._queue_image(collection.backdrop_path, "backdrops", asset_prefix)
             
         selected_backdrop_path = image_processing_service.pick_backdrop_path(details, preferred_language=language)
         if selected_backdrop_path:

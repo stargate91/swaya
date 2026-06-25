@@ -30,7 +30,7 @@ class FilmographyService:
         links = db.query(MediaPersonLink).join(MediaPersonLink.match).join(MetadataMatch.media_item).filter(
             MediaPersonLink.person_id == person_id,
             MetadataMatch.is_active == True,
-            MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED])
+            MediaItem.status.in_([ItemStatus.MATCHED, ItemStatus.RENAMED, ItemStatus.ORGANIZED])
         ).all()
         
         movies = []
@@ -260,15 +260,23 @@ class FilmographyService:
 
         return parsed_movies, parsed_tv, local_scenes, known_for
 
-    def get_person_movies(self, person_id: int, page: int = 1, page_size: int = 12):
+    def get_person_movies(self, person_id: int, page: int = 1, page_size: int = 12, source: Optional[str] = None):
         db = self.db
         # Load movie credits
-        links = db.query(MediaPersonLink).join(MediaPersonLink.match).join(MetadataMatch.media_item).filter(
+        query = db.query(MediaPersonLink).join(MediaPersonLink.match).join(MetadataMatch.media_item).filter(
             MediaPersonLink.person_id == person_id,
             MetadataMatch.media_type == MediaType.MOVIE,
             MetadataMatch.is_active == True,
-            MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED])
-        ).all()
+            MediaItem.status.in_([ItemStatus.MATCHED, ItemStatus.RENAMED, ItemStatus.ORGANIZED])
+        )
+        if source:
+            try:
+                from app.shared_kernel.enums import Provider
+                provider_enum = Provider(source.lower())
+                query = query.filter(MetadataMatch.provider == provider_enum)
+            except ValueError:
+                pass
+        links = query.all()
         
         movies = []
         ui_lang = DEFAULT_FALLBACK_LANGUAGE
@@ -313,7 +321,7 @@ class FilmographyService:
             MediaPersonLink.person_id == person_id,
             MetadataMatch.media_type.in_([MediaType.TV, MediaType.EPISODE]),
             MetadataMatch.is_active == True,
-            MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED])
+            MediaItem.status.in_([ItemStatus.MATCHED, ItemStatus.RENAMED, ItemStatus.ORGANIZED])
         ).all()
         
         tv_map = {}
@@ -355,15 +363,23 @@ class FilmographyService:
             "total_pages": total_pages,
         }
 
-    def get_person_scenes(self, person_id: int, page: int = 1, page_size: int = 12):
+    def get_person_scenes(self, person_id: int, page: int = 1, page_size: int = 12, source: Optional[str] = None):
         db = self.db
         # Load scene credits
-        links = db.query(MediaPersonLink).join(MediaPersonLink.match).join(MetadataMatch.media_item).filter(
+        query = db.query(MediaPersonLink).join(MediaPersonLink.match).join(MetadataMatch.media_item).filter(
             MediaPersonLink.person_id == person_id,
             MetadataMatch.media_type == MediaType.SCENE,
             MetadataMatch.is_active == True,
-            MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED])
-        ).all()
+            MediaItem.status.in_([ItemStatus.MATCHED, ItemStatus.RENAMED, ItemStatus.ORGANIZED])
+        )
+        if source:
+            try:
+                from app.shared_kernel.enums import Provider
+                provider_enum = Provider(source.lower())
+                query = query.filter(MetadataMatch.provider == provider_enum)
+            except ValueError:
+                pass
+        links = query.all()
         
         scenes = []
         ui_lang = DEFAULT_FALLBACK_LANGUAGE

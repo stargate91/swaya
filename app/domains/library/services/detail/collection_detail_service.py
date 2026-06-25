@@ -87,6 +87,8 @@ class CollectionDetailService(DetailFormatter):
                     asset_prefix = f"tmdb_{collection.external_id}"
                     if loc.poster_path and not loc.local_poster_path:
                         loc.local_poster_path = queue_image(loc.poster_path, "posters", asset_prefix)
+                    if collection.backdrop_path and not collection.local_backdrop_path:
+                        collection.local_backdrop_path = queue_image(collection.backdrop_path, "backdrops", asset_prefix)
                 except Exception as e:
                     logger.error(f"Failed to queue image download for collection detail: {e}")
 
@@ -187,8 +189,8 @@ class CollectionDetailService(DetailFormatter):
                 UserOverride.collection_id == collection.id
             ).first()
 
-        final_poster = self._resolve_img(tmdb_details.get("poster_path"), "posters")
-        final_backdrop = self._resolve_img(tmdb_details.get("backdrop_path"), "backdrops")
+        final_poster = self._resolve_img(loc.local_poster_path or loc.poster_path or tmdb_details.get("poster_path") if loc else tmdb_details.get("poster_path"), "posters")
+        final_backdrop = self._resolve_img(collection.local_backdrop_path or collection.backdrop_path or tmdb_details.get("backdrop_path") if collection else tmdb_details.get("backdrop_path"), "backdrops")
 
         if col_override:
             if col_override.custom_poster:

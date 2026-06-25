@@ -130,17 +130,29 @@ export default function TMDBImageGrid({
     if (!activeMatch && fullMetadata?.raw_details?.images) {
       const rawImages = fullMetadata.raw_details.images[imageKey];
       if (Array.isArray(rawImages)) {
-        const isTvBackdrop = normalizedMediaType === 'tv' && imageType === 'backdrop';
+        const isBackdrop = imageType === 'backdrop';
         const localeShort = String(metadataLanguage || '').split('-', 1)[0].toLowerCase();
-        return rawImages
-          .filter((img) => !isTvBackdrop || (img.width || 0) >= 720)
-          .map((img) => {
+        
+        if (isBackdrop) {
+          return rawImages
+            .filter((img) => {
+              const imgLang = String(img.iso_639_1 || '').toLowerCase();
+              return (imgLang === '' || imgLang === 'null') && (img.width || 0) >= 1280;
+            })
+            .map((img) => ({
+              file_path: img.file_path,
+              width: img.width,
+              height: img.height,
+              vote_average: img.vote_average,
+              score: (img.width || 0) >= 1920 ? 2 : 1,
+            }))
+            .sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0));
+        }
+
+        return rawImages.map((img) => {
           const imgLang = String(img.iso_639_1 || '').toLowerCase();
           let score = 0;
-          if (isTvBackdrop) {
-            // TV backdrops: language-independent, score only by resolution
-            score = (img.width || 0) >= 1920 ? 2 : 1;
-          } else if (imgLang === String(metadataLanguage || '').toLowerCase()) {
+          if (imgLang === String(metadataLanguage || '').toLowerCase()) {
             score = 4;
           } else if (localeShort && imgLang.split('-', 1)[0] === localeShort) {
             score = 3;
@@ -170,6 +182,7 @@ export default function TMDBImageGrid({
       : (activeMatch?.api_responses || activeMatch?.tv_api_responses || {});
 
     const responseEntries = Object.entries(responseMap);
+    const isBackdrop = imageType === 'backdrop';
     const isTvBackdrop = normalizedMediaType === 'tv' && imageType === 'backdrop';
     const localeShort = String(metadataLanguage || '').split('-', 1)[0].toLowerCase();
     const allImagesMap = new Map();
@@ -179,9 +192,15 @@ export default function TMDBImageGrid({
       if (!Array.isArray(rawImages)) continue;
 
       const normalizedLang = String(lang || '').toLowerCase();
+      
+      // For backdrops, only include language-independent entries
+      if (isBackdrop && normalizedLang !== 'null' && normalizedLang !== '') {
+        continue;
+      }
+
       let langScore = 0;
-      if (isTvBackdrop) {
-        langScore = 1; // language-independent: all equal
+      if (isBackdrop) {
+        langScore = 1;
       } else if (normalizedLang === String(metadataLanguage || '').toLowerCase()) {
         langScore = 4;
       } else if (localeShort && normalizedLang.split('-', 1)[0] === localeShort) {
@@ -194,8 +213,8 @@ export default function TMDBImageGrid({
 
       for (const img of rawImages) {
         if (!img.file_path) continue;
-        if (isTvBackdrop && (img.width || 0) < 720) continue;
-        const score = isTvBackdrop ? ((img.width || 0) >= 1920 ? 2 : 1) : langScore;
+        if (isBackdrop && (img.width || 0) < 1280) continue;
+        const score = isBackdrop ? ((img.width || 0) >= 1920 ? 2 : 1) : langScore;
         const existing = allImagesMap.get(img.file_path);
         if (!existing || existing.score < score) {
           allImagesMap.set(img.file_path, {

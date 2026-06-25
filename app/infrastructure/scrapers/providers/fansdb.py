@@ -69,12 +69,21 @@ class FansDBScraper(BaseScraper):
                 hair_color
                 eye_color
                 height
-                measurements {
-                  band_size
-                  cup_size
-                  waist
-                  hip
+                band_size
+                cup_size
+                waist_size
+                hip_size
+                urls {
+                  url
+                  site {
+                    id
+                    name
+                  }
                 }
+                career_start_year
+                career_end_year
+                death_date
+                country
               }
             }
             images {
@@ -95,6 +104,17 @@ class FansDBScraper(BaseScraper):
                     return None
                 data = result.get("data", {}).get("findScene")
                 if data:
+                    for p_entry in data.get("performers") or []:
+                        perf = p_entry.get("performer")
+                        if perf:
+                            perf["measurements"] = {
+                                "band_size": perf.get("band_size"),
+                                "cup_size": perf.get("cup_size"),
+                                "waist": perf.get("waist_size"),
+                                "hip": perf.get("hip_size"),
+                            }
+                            if "urls" in perf and isinstance(perf["urls"], list):
+                                perf["urls"] = [u.get("url") for u in perf["urls"] if u and u.get("url")]
                     self.cache.set(Provider.FANSDB, cache_key, data, status_code=200, media_type=MediaType.SCENE, external_id=scene_id)
                     return data
                 else:

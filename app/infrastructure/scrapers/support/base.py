@@ -93,6 +93,8 @@ class BaseScraper:
                 headers=headers,
                 timeout=15
             )
+            if response.status_code != 200:
+                logger.error(f"GraphQL HTTP error {response.status_code} from {pref}: {response.text}")
             response.raise_for_status()
             res_data = response.json()
             if "errors" in res_data:
@@ -125,9 +127,24 @@ class BaseScraper:
 
     def get_performer_details(self, performer_id: str) -> Optional[Dict[str, Any]]:
         """Gets detailed performer metadata using GraphQL."""
-        gql_query = """
-        query GetPerformer($id: ID!) {
-          findPerformer(id: $id) {
+        is_stash = self.provider == Provider.STASHDB
+        measurements_field = """
+            band_size
+            cup_size
+            waist_size
+            hip_size
+        """ if is_stash else """
+            measurements {
+              cup_size
+              band_size
+              waist
+              hip
+            }
+        """
+
+        gql_query = f"""
+        query GetPerformer($id: ID!) {{
+          findPerformer(id: $id) {{
             id
             name
             gender
@@ -137,34 +154,60 @@ class BaseScraper:
             eye_color
             hair_color
             height
-            weight
             aliases
-            details
-            tattoos {
-              body_part
+            tattoos {{
+              location
               description
-            }
-            piercings {
-              body_part
+            }}
+            piercings {{
+              location
               description
-            }
-            measurements {
-              cup_size
-              band_size
-              waist
-              hip
-            }
-            images {
+            }}
+            {measurements_field}
+            images {{
               url
-            }
-            urls
-          }
-        }
+            }}
+            urls {{
+              url
+              site {{
+                id
+                name
+              }}
+            }}
+            career_start_year
+            career_end_year
+            death_date
+            country
+          }}
+        }}
         """
         data = self.execute_query(gql_query, {"id": performer_id})
         if not data or "findPerformer" not in data:
             return None
-        return data["findPerformer"]
+        res = data["findPerformer"]
+        if res:
+            # Map location -> body_part for tattoos and piercings
+            if "tattoos" in res and isinstance(res["tattoos"], list):
+                for t in res["tattoos"]:
+                    if "location" in t:
+                        t["body_part"] = t["location"]
+            if "piercings" in res and isinstance(res["piercings"], list):
+                for p in res["piercings"]:
+                    if "location" in p:
+                        p["body_part"] = p["location"]
+            
+            # Map urls to a list of strings
+            if "urls" in res and isinstance(res["urls"], list):
+                res["urls"] = [u.get("url") for u in res["urls"] if u and u.get("url")]
+
+            # Map measurements
+            res["measurements"] = {
+                "band_size": res.get("band_size"),
+                "cup_size": res.get("cup_size"),
+                "waist": res.get("waist_size"),
+                "hip": res.get("hip_size"),
+            }
+        return res
 
 
 

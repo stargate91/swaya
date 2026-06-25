@@ -18,6 +18,7 @@ class PersonRead(BaseSchema):
     scene_count: Optional[int] = None
     profile_path: Optional[str] = None
     local_profile_path: Optional[str] = None
+    homepage: Optional[str] = None
     external_ids: Optional[dict[str, Any]] = None
     is_adult: bool
     
@@ -116,8 +117,11 @@ class PersonDetailResponse(BaseModel):
     profile_path: Optional[str] = None
     backdrop_path: Optional[str] = None
     is_active: bool
+    homepage: Optional[str] = None
     external_ids: dict[str, Any]
     images: List[str]
+    career_start_year: Optional[int] = None
+    career_end_year: Optional[int] = None
     known_for: List[PersonCreditItem]
     total_movie_credits: int
     total_tv_credits: int

@@ -116,9 +116,10 @@ def get_person_movies(
     person_id: int,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=12, ge=1),
+    source: str = Query(default=None),
     db: Session = Depends(get_db)
 ):
-    return PeopleDetailService(db, scraper_gateway).get_person_movies(person_id, page=page, page_size=page_size)
+    return PeopleDetailService(db, scraper_gateway).get_person_movies(person_id, page=page, page_size=page_size, source=source)
 
 
 @router.get("/{person_id}/tv", response_model=PersonFilmographyResponse)
@@ -136,9 +137,10 @@ def get_person_scenes(
     person_id: int,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=12, ge=1),
+    source: str = Query(default=None),
     db: Session = Depends(get_db)
 ):
-    return PeopleDetailService(db, scraper_gateway).get_person_scenes(person_id, page=page, page_size=page_size)
+    return PeopleDetailService(db, scraper_gateway).get_person_scenes(person_id, page=page, page_size=page_size, source=source)
 
 
 def resolve_person(person_id: Any, db: Session):

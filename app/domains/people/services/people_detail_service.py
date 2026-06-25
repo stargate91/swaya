@@ -48,7 +48,7 @@ class PeopleDetailService:
     ):
         db = self.db
         
-        statuses = [ItemStatus.RENAMED, ItemStatus.ORGANIZED]
+        statuses = [ItemStatus.MATCHED, ItemStatus.RENAMED, ItemStatus.ORGANIZED]
 
         # Determine target match IDs linked to library items
         matched_match_ids = [
@@ -119,6 +119,13 @@ class PeopleDetailService:
                 
             # Populate normalized external_ids like in detail view
             external_ids = dict(person.external_ids or {})
+            for link in person.external_links:
+                prov_key = link.provider.value
+                if prov_key not in external_ids:
+                    external_ids[prov_key] = link.external_id
+                alt_key = f"{prov_key}_id" if prov_key != "porndb" else "theporndb_id"
+                if alt_key not in external_ids:
+                    external_ids[alt_key] = link.external_id
             if "tmdb" in external_ids and "tmdb_id" not in external_ids:
                 external_ids["tmdb_id"] = external_ids["tmdb"]
             if "stashdb" in external_ids and "stashdb_id" not in external_ids:
@@ -217,6 +224,10 @@ class PeopleDetailService:
         # Dynamically enrich from TMDB if tmdb_id is available and we lack images/biography
         ext_ids = person.external_ids or {}
         tmdb_id = ext_ids.get("tmdb") or ext_ids.get("tmdb_id")
+        if not tmdb_id:
+            link = next((l for l in person.external_links if l.provider == Provider.TMDB), None)
+            if link:
+                tmdb_id = link.external_id
         if not tmdb_id and not person.is_adult and str(person_id).isdigit() and person_id < 100000000:
             tmdb_id = person_id
             
@@ -230,6 +241,7 @@ class PeopleDetailService:
                     person.deathday = tmdb_details.get("deathday") or person.deathday
                     person.profile_path = tmdb_details.get("profile_path") or person.profile_path
                     person.known_for_department = tmdb_details.get("known_for_department") or person.known_for_department
+                    person.homepage = tmdb_details.get("homepage") or person.homepage
                     
                     profiles = tmdb_details.get("images", {}).get("profiles") or []
                     new_imgs = [p.get("file_path") for p in profiles if p.get("file_path")]
@@ -256,16 +268,23 @@ class PeopleDetailService:
                         if val and current_ids.get(key) != val:
                             current_ids[key] = val
                             updated = True
+                    if tmdb_id and current_ids.get("tmdb") != str(tmdb_id):
+                        current_ids["tmdb"] = str(tmdb_id)
+                        current_ids["tmdb_id"] = str(tmdb_id)
+                        updated = True
                     if updated:
                         person.external_ids = current_ids
 
                     db.commit()
             except Exception as e:
                 logger.error(f"Failed to dynamically enrich person {person_id}: {e}")
-        elif person.is_adult:
+        if person.is_adult:
             try:
                 from app.domains.people.services.people_enricher import PeopleEnricher
                 enricher = PeopleEnricher(db, scrapers=self.scrapers)
+                
+                # Refresh ext_ids in case TMDB enrichment updated them
+                ext_ids = person.external_ids or {}
                 
                 # Gather links
                 links = db.query(ExternalSourceLink).filter(ExternalSourceLink.person_id == person_id).all()
@@ -304,7 +323,7 @@ class PeopleDetailService:
         effective_backdrop = None
         if override and override.custom_backdrop:
             effective_backdrop = override.custom_backdrop
-        elif not person.is_adult and tmdb_id:
+        elif tmdb_id:
             from app.domains.people.helpers import resolve_person_known_for_backdrop
             effective_backdrop = resolve_person_known_for_backdrop(
                 db,
@@ -317,6 +336,14 @@ class PeopleDetailService:
             )
 
         external_ids = dict(person.external_ids or {})
+        for link in person.external_links:
+            prov_key = link.provider.value
+            if prov_key not in external_ids:
+                external_ids[prov_key] = link.external_id
+            # Also keep track of aliases like tmdb_id, etc.
+            alt_key = f"{prov_key}_id" if prov_key != "porndb" else "theporndb_id"
+            if alt_key not in external_ids:
+                external_ids[alt_key] = link.external_id
         if "tmdb" in external_ids and "tmdb_id" not in external_ids:
             external_ids["tmdb_id"] = external_ids["tmdb"]
         if "stashdb" in external_ids and "stashdb_id" not in external_ids:
@@ -376,6 +403,7 @@ class PeopleDetailService:
             "is_favorite": override.is_favorite if override else False,
             "user_rating": override.user_rating if override else None,
             "user_comment": override.user_comment if override else None,
+            "homepage": person.homepage,
             "external_ids": external_ids,
             "images": [self._resolve_img(img, "people") for img in (person.images or [])],
             "hair_color": person.hair_color,
@@ -389,6 +417,8 @@ class PeopleDetailService:
             "piercings": person.piercings,
             "orientation": person.orientation,
             "socials": person.socials or {},
+            "career_start_year": person.career_start_year,
+            "career_end_year": person.career_end_year,
             "known_for": [
                 {
                     **item,
@@ -406,7 +436,7 @@ class PeopleDetailService:
         }
         return PersonDetailResponse(**result)
 
-    def get_person_movies(self, person_id: int, page: int = 1, page_size: int = 12) -> PersonFilmographyResponse:
+    def get_person_movies(self, person_id: int, page: int = 1, page_size: int = 12, source: Optional[str] = None) -> PersonFilmographyResponse:
         db = self.db
         person = db.query(Person).filter(Person.id == person_id).first()
         if not person:
@@ -427,6 +457,33 @@ class PeopleDetailService:
             person_name=person.name
         )
         
+        if source:
+            try:
+                from app.shared_kernel.enums import Provider
+                provider_enum = Provider(source.lower())
+                # Filter combining filmography movies by source
+                filtered_movies = []
+                for m in movies:
+                    # In get_combined_filmography, we might not have provider directly if it was from TMDB details.
+                    # But if we query specifically by source, let's filter:
+                    # wait, TMDB is "tmdb". Porndb is "porndb".
+                    # Let's check how the local movies/scenes are matched.
+                    # For local movies, we query from DB. For TMDB movies, we query from API.
+                    # Wait, if source == "tmdb", keep all movies from TMDB API + local TMDB movies.
+                    # If source == "porndb", we only have local movies mapped to porndb.
+                    # Let's query from filmography_service.get_person_movies directly if source is porndb or stashdb or fansdb!
+                    pass
+            except ValueError:
+                pass
+        
+        # Actually, let's simplify! If source is provided, let's check if it is TMDB.
+        # If it is NOT tmdb, then we ONLY have local movies/scenes linked in the DB!
+        # So we can just fetch them from self.filmography_service.get_person_movies(person_id, page, page_size, source)!
+        if source and source.lower() != "tmdb":
+            res = self.filmography_service.get_person_movies(person_id, page, page_size, source)
+            return PersonFilmographyResponse(**res)
+
+        # Otherwise, use combined filmography (which is TMDB-based or fallback local)
         total_items = len(movies)
         total_pages = max(1, math.ceil(total_items / page_size))
         start_idx = (page - 1) * page_size
@@ -476,12 +533,12 @@ class PeopleDetailService:
         }
         return PersonFilmographyResponse(**res)
 
-    def get_person_scenes(self, person_id: int, page: int = 1, page_size: int = 12) -> PersonFilmographyResponse:
+    def get_person_scenes(self, person_id: int, page: int = 1, page_size: int = 12, source: Optional[str] = None) -> PersonFilmographyResponse:
         db = self.db
         person = db.query(Person).filter(Person.id == person_id).first()
         if not person:
             raise HTTPException(status_code=404, detail="Person not found")
-        res = self.filmography_service.get_person_scenes(person_id, page, page_size)
+        res = self.filmography_service.get_person_scenes(person_id, page, page_size, source)
         return PersonFilmographyResponse(**res)
 
     def get_person_credit_backdrops(self, person_id: int, tmdb_id: int, media_type: str) -> Dict[str, Any]:
@@ -888,7 +945,8 @@ class PeopleDetailService:
                 is_adult=True,
                 provider=provider_enum,
                 external_id=uuid_str,
-                known_for_department="Acting"
+                known_for_department="Acting",
+                urls=perf.get("urls")
             )
             
             person.is_active = True

@@ -72,7 +72,7 @@ export default function EntityDetailHeroSection({
                 href={link.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="entity-detail-page__profile-link"
+                className={`entity-detail-page__profile-link${link.fullWidth ? ' entity-detail-page__profile-link--full-width' : ''}`}
               >
                 {link.label}
               </a>

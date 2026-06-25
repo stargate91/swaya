@@ -361,7 +361,7 @@ class ScraperPersister:
                     loc.title = coll_info.get("name") or loc.title
                     loc.poster_path = coll_info.get("poster_path") or loc.poster_path
                     
-                    if loc.poster_path:
+                    if loc.poster_path and not loc.local_poster_path:
                         try:
                             from app.domains.tasks import task_manager
                             image_service = task_manager.download_worker.image_service
@@ -379,6 +379,25 @@ class ScraperPersister:
                                 loc.local_poster_path = f"posters/{filename}"
                         except Exception as e:
                             logger.error(f"Failed to queue image download for collection in persistence: {e}")
+
+                    if collection.backdrop_path and not collection.local_backdrop_path:
+                        try:
+                            from app.domains.tasks import task_manager
+                            image_service = task_manager.download_worker.image_service
+                            url = image_service.get_download_url(collection.backdrop_path, "backdrops")
+                            if url:
+                                import os
+                                import re
+                                from urllib.parse import urlparse
+                                basename = os.path.basename(urlparse(collection.backdrop_path).path)
+                                ext = os.path.splitext(basename)[1].lower() or ".jpg"
+                                asset_prefix = f"tmdb_{collection.external_id}"
+                                safe_prefix = re.sub(r"[^A-Za-z0-9_.-]+", "_", asset_prefix).strip("_")
+                                filename = f"{safe_prefix}_{basename}{ext}"
+                                task_manager.download_worker.enqueue_download(url, "backdrops", filename)
+                                collection.local_backdrop_path = f"backdrops/{filename}"
+                        except Exception as e:
+                            logger.error(f"Failed to queue backdrop download for collection in persistence: {e}")
 
             # 4. Map Localization
             loc = None
@@ -417,9 +436,11 @@ class ScraperPersister:
                     gender=cast_member["gender"],
                     is_adult=cast_member["is_adult"],
                     tmdb_id=cast_member["tmdb_id"],
+                    performer_details=cast_member.get("performer_details"),
                     provider=Provider(cast_member["provider"]) if cast_member.get("provider") else None,
                     external_id=cast_member.get("external_id"),
-                    known_for_department=cast_member.get("known_for_department")
+                    known_for_department=cast_member.get("known_for_department"),
+                    urls=cast_member.get("urls")
                 )
                 
                 # Queue profile image download

@@ -346,7 +346,11 @@ class ScraperNormalizer:
                 "scene_count": cast_member.get("scene_count"),
                 "rating_porndb": cast_member.get("rating_porndb") or cast_member.get("rating"),
                 "weight": cast_member.get("weight") or extra.get("weight"),
-                "measurements": measurements or extra.get("measurements")
+                "measurements": measurements or extra.get("measurements"),
+                "career_start_year": cast_member.get("career_start_year"),
+                "career_end_year": cast_member.get("career_end_year"),
+                "deathday": cast_member.get("death_date") or cast_member.get("deathday"),
+                "place_of_birth": cast_member.get("country")
             }
 
             performers.append({
@@ -358,7 +362,8 @@ class ScraperNormalizer:
                 "character": None,
                 "performer_details": performer_details,
                 "provider": provider,
-                "external_id": str(cast_member.get("id")) if cast_member.get("id") else None
+                "external_id": str(cast_member.get("id")) if cast_member.get("id") else None,
+                "urls": cast_member.get("urls") or []
             })
 
         # Main match fields

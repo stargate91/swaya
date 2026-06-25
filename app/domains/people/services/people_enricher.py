@@ -236,7 +236,10 @@ class PeopleEnricher:
             "piercings": None,
             "orientation": None,
             "socials": {},
-            "known_for_department": None
+            "urls": [],
+            "known_for_department": None,
+            "career_start_year": None,
+            "career_end_year": None
         }
 
         has_data = False
@@ -273,6 +276,7 @@ class PeopleEnricher:
                     result["profile_path"] = details.get("profile_path")
                     if details.get("known_for_department"):
                         result["known_for_department"] = details.get("known_for_department")
+                    result["homepage"] = details.get("homepage")
                     
                     
                     images_data = details.get("images", {}).get("profiles", [])
@@ -295,7 +299,7 @@ class PeopleEnricher:
 
                     # Extract TMDB socials
                     ext_ids = details.get("external_ids") or {}
-                    for soc_key in ["instagram", "twitter", "tiktok", "facebook"]:
+                    for soc_key in ["instagram", "twitter", "tiktok", "facebook", "youtube"]:
                         soc_val = ext_ids.get(f"{soc_key}_id")
                         if soc_val:
                             result["socials"][soc_key] = str(soc_val)
@@ -364,6 +368,14 @@ class PeopleEnricher:
                     if perf.get("orientation"):
                         result["orientation"] = perf["orientation"]
 
+                    # Extract career & origin
+                    result["place_of_birth"] = perf.get("country") or perf.get("place_of_birth") or result["place_of_birth"]
+                    result["deathday"] = perf.get("death_date") or perf.get("deathday") or result["deathday"]
+                    if perf.get("career_start_year") is not None:
+                        result["career_start_year"] = int(perf["career_start_year"])
+                    if perf.get("career_end_year") is not None:
+                        result["career_end_year"] = int(perf["career_end_year"])
+
                     g = perf.get("gender")
                     if g:
                         g_lower = str(g).lower()
@@ -398,6 +410,8 @@ class PeopleEnricher:
 
                     # Parse URLs dynamically to extract exact provider links and socials
                     perf_urls = perf.get("urls") or []
+                    if perf_urls:
+                        result["urls"].extend(perf_urls)
                     for url in perf_urls:
                         if not url or not isinstance(url, str):
                             continue
@@ -409,16 +423,38 @@ class PeopleEnricher:
                                 to_process.append(ext_link)
                                 result["links_to_create"].append(ext_link)
 
-                        # Extract socials
-                        inst_m = re.search(r'instagram\.com/([a-zA-Z0-9\._]+)', url)
-                        if inst_m:
-                            result["socials"]["instagram"] = inst_m.group(1)
-                        tw_m = re.search(r'twitter\.com/([a-zA-Z0-9_]+)', url)
-                        if tw_m:
-                            result["socials"]["twitter"] = tw_m.group(1)
-                        of_m = re.search(r'onlyfans\.com/([a-zA-Z0-9_\.]+)', url)
-                        if of_m:
-                            result["socials"]["onlyfans"] = of_m.group(1)
+                        # Extract socials dynamically using regex patterns
+                        social_patterns = {
+                            "instagram": r'instagram\.com/([a-zA-Z0-9\._\-]+)',
+                            "twitter": r'(?:twitter|x)\.com/([a-zA-Z0-9_\-]+)',
+                            "tiktok": r'tiktok\.com/@?([a-zA-Z0-9\._\-]+)',
+                            "facebook": r'facebook\.com/([a-zA-Z0-9\._\-]+)',
+                            "threads": r'threads\.net/@?([a-zA-Z0-9\._\-]+)',
+                            "twitch": r'twitch\.tv/([a-zA-Z0-9_\-]+)',
+                            "kick": r'kick\.com/([a-zA-Z0-9_\-]+)',
+                            "youtube": r'youtube\.com/@?([a-zA-Z0-9\._\-]+)',
+                            "onlyfans": r'onlyfans\.com/([a-zA-Z0-9_\.\-]+)',
+                            "fansly": r'fansly\.com/([a-zA-Z0-9_\.\-]+)',
+                            "patreon": r'patreon\.com/([a-zA-Z0-9_\.\-]+)',
+                            "loyalfans": r'loyalfans\.com/([a-zA-Z0-9_\.\-]+)',
+                            "manyvids": r'manyvids\.com/([a-zA-Z0-9_\.\-]+)',
+                            "linktree": r'linktr\.ee/([a-zA-Z0-9_\.\-]+)',
+                            "bluesky": r'bsky\.app/profile/([a-zA-Z0-9_\.\-]+)',
+                            "pornhub": r'pornhub\.com/((?:model|pornstar|users)/[a-zA-Z0-9_\-\+]+)',
+                            "clips4sale": r'clips4sale\.(?:com|org)/((?:studio|room)/[a-zA-Z0-9_\-\/]+)',
+                            "allmylinks": r'allmylinks\.com/([a-zA-Z0-9_\-\.]+)',
+                            "beacons": r'beacons\.(?:ai|page)/([a-zA-Z0-9_\-\.]+)',
+                            "iafd": r'iafd\.com/person\.rme/([a-zA-Z0-9_\-\.\=\/]+)',
+                            "babepedia": r'babepedia\.com/babe/([a-zA-Z0-9_\-\.\+]+)',
+                            "freeones": r'freeones\.(?:com|xxx)/([a-zA-Z0-9_\-\.]+)',
+                            "data18": r'data18\.com/star/([a-zA-Z0-9_\-\.\+]+)'
+                        }
+                        for platform, pattern in social_patterns.items():
+                            match = re.search(pattern, url, re.IGNORECASE)
+                            if match:
+                                val = next((g for g in reversed(match.groups()) if g is not None), None)
+                                if val:
+                                    result["socials"][platform] = val
 
         existing_providers = {l["provider"] for l in links}
         for prov_name, ext_id in external_ids.items():
@@ -473,6 +509,8 @@ class PeopleEnricher:
             person.place_of_birth = data["place_of_birth"]
         if data.get("known_for_department"):
             person.known_for_department = data["known_for_department"]
+        if data.get("homepage"):
+            person.homepage = data["homepage"]
         if data.get("gender") is not None:
             person.gender = data["gender"]
         if data.get("popularity") is not None:
@@ -506,10 +544,26 @@ class PeopleEnricher:
             person.piercings = data["piercings"]
         if data.get("orientation"):
             person.orientation = data["orientation"]
+        if data.get("career_start_year") is not None:
+            person.career_start_year = data["career_start_year"]
+        if data.get("career_end_year") is not None:
+            person.career_end_year = data["career_end_year"]
         if data.get("socials"):
             existing_socials = person.socials or {}
             existing_socials.update(data["socials"])
             person.socials = existing_socials
+
+        if data.get("urls"):
+            ids = person.external_ids or {}
+            existing_urls = ids.get("urls") or []
+            existing_urls_set = {u.get("url") if isinstance(u, dict) else u for u in existing_urls}
+            for new_url in data["urls"]:
+                url_str = new_url.get("url") if isinstance(new_url, dict) else new_url
+                if url_str and url_str not in existing_urls_set:
+                    existing_urls.append({"url": url_str})
+                    existing_urls_set.add(url_str)
+            ids["urls"] = existing_urls
+            person.external_ids = ids
 
         for l in data["links_to_create"]:
             link = self.db.query(ExternalSourceLink).filter(

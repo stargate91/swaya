@@ -162,6 +162,7 @@ class MediaCollection(Base):
     provider: Mapped[Provider] = mapped_column(SQLEnum(Provider), index=True)
     external_id: Mapped[str] = mapped_column(String, index=True)
     backdrop_path: Mapped[Optional[str]] = mapped_column(String)
+    local_backdrop_path: Mapped[Optional[str]] = mapped_column(String)
     
     # Relationships
     matches: Mapped[List["MetadataMatch"]] = relationship("MetadataMatch", back_populates="collection")

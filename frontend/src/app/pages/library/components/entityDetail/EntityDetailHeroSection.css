@@ -39,6 +39,10 @@
   transition: background var(--motion-fast), border-color var(--motion-fast), color var(--motion-fast), transform var(--motion-fast);
 }
 
+.entity-detail-page__profile-link--full-width {
+  grid-column: span 2;
+}
+
 .entity-detail-page__profile-link:hover {
   transform: translateY(-1px);
   background: color-mix(in srgb, var(--color-surface-glass-strong) 58%, transparent);

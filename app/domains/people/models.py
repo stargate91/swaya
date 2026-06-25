@@ -26,6 +26,7 @@ class Person(Base):
     scene_count: Mapped[Optional[int]] = mapped_column(Integer, index=True)
     profile_path: Mapped[Optional[str]] = mapped_column(String)
     local_profile_path: Mapped[Optional[str]] = mapped_column(String) # Local path to cached profile image
+    homepage: Mapped[Optional[str]] = mapped_column(String)
     images: Mapped[Optional[List[str]]] = mapped_column(JSON) # List of alternative profile image URLs
     external_ids: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON) # {"tmdb": "123", "stashdb": "uuid-xyz"}
     socials: Mapped[Optional[dict[str, str]]] = mapped_column(JSON) # Social media handles/links (e.g. instagram, twitter)
@@ -43,6 +44,10 @@ class Person(Base):
     tattoos: Mapped[Optional[str]] = mapped_column(String)
     piercings: Mapped[Optional[str]] = mapped_column(String)
     orientation: Mapped[Optional[str]] = mapped_column(String, index=True)
+    
+    # Career & Origin details
+    career_start_year: Mapped[Optional[int]] = mapped_column(Integer)
+    career_end_year: Mapped[Optional[int]] = mapped_column(Integer)
     
     # Relationships
     media_links: Mapped[List["MediaPersonLink"]] = relationship(back_populates="person", cascade="all, delete-orphan")

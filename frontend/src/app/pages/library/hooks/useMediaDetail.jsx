@@ -269,13 +269,13 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
     if (isMovie) {
       return item.release_date ? item.release_date.substring(0, 10) : '';
     } else {
-      const firstDate = item.first_air_date ? item.first_air_date.substring(0, 10) : '';
-      const lastDate = item.last_air_date ? item.last_air_date.substring(0, 10) : '';
+      const firstYear = item.first_air_date ? item.first_air_date.substring(0, 4) : '';
+      const lastYear = item.last_air_date ? item.last_air_date.substring(0, 4) : '';
       const isEnded = item.release_status?.toLowerCase() === 'ended' || item.release_status?.toLowerCase() === 'canceled';
-      if (firstDate && lastDate && isEnded) {
-        return `${firstDate} – ${lastDate}`;
+      if (firstYear && lastYear && isEnded) {
+        return firstYear === lastYear ? firstYear : `${firstYear} – ${lastYear}`;
       }
-      return firstDate;
+      return firstYear;
     }
   };
   const metaDate = getMetaDate();

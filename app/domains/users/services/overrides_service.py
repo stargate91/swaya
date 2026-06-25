@@ -476,14 +476,39 @@ class OverridesService:
         if not override:
             raise NotFoundException("Target item not found")
 
+        if image_type not in ("poster", "backdrop", "logo"):
+            raise BadRequestException(f"Invalid image type: {image_type}")
+
+        subfolder = "posters"
+        if image_type == "backdrop":
+            subfolder = "backdrops"
+        elif image_type == "logo":
+            subfolder = "logos"
+
+        if path and (path.startswith("/") or path.startswith(("http://", "https://"))):
+            try:
+                from app.domains.tasks import task_manager
+                image_service = task_manager.download_worker.image_service
+                url = image_service.get_download_url(path, subfolder)
+                if url:
+                    import re
+                    from urllib.parse import urlparse
+                    basename = os.path.basename(urlparse(path).path)
+                    ext = os.path.splitext(basename)[1].lower() or ".jpg"
+                    prefix = f"user_override_{override.user_id}_{item_id}"
+                    safe_prefix = re.sub(r"[^A-Za-z0-9_.-]+", "_", prefix).strip("_")
+                    filename = f"{safe_prefix}_{basename}{ext}"
+                    task_manager.download_worker.enqueue_download(url, subfolder, filename)
+                    path = f"{subfolder}/{filename}"
+            except Exception as e:
+                logger.error(f"Failed to queue image download for user override: {e}")
+
         if image_type == "poster":
             override.custom_poster = path
         elif image_type == "backdrop":
             override.custom_backdrop = path
         elif image_type == "logo":
             override.custom_logo = path
-        else:
-            raise BadRequestException(f"Invalid image type: {image_type}")
 
         self.db.commit()
         return {"status": "success", "image_type": image_type, "path": path}

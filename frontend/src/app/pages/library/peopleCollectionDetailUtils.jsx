@@ -318,6 +318,187 @@ export function buildPersonExternalLinks(item, t) {
     });
   }
 
+  if (externalIds.threads_id) {
+    addLink({
+      key: 'threads',
+      label: 'Threads',
+      href: `https://www.threads.net/@${externalIds.threads_id.replace(/^@/, '')}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#000000',
+    });
+  }
+
+  if (externalIds.twitch_id) {
+    addLink({
+      key: 'twitch',
+      label: 'Twitch',
+      href: `https://www.twitch.tv/${externalIds.twitch_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#9146ff',
+    });
+  }
+
+  if (externalIds.kick_id) {
+    addLink({
+      key: 'kick',
+      label: 'Kick',
+      href: `https://kick.com/${externalIds.kick_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#53fc18',
+    });
+  }
+
+  if (externalIds.bluesky_id) {
+    addLink({
+      key: 'bluesky',
+      label: 'BlueSky',
+      href: `https://bsky.app/profile/${externalIds.bluesky_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#0285FF',
+    });
+  }
+
+  if (externalIds.onlyfans_id) {
+    addLink({
+      key: 'onlyfans',
+      label: 'OnlyFans',
+      href: `https://onlyfans.com/${externalIds.onlyfans_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#00aff0',
+    });
+  }
+
+  if (externalIds.fansly_id) {
+    addLink({
+      key: 'fansly',
+      label: 'Fansly',
+      href: `https://fansly.com/${externalIds.fansly_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#5b93fa',
+    });
+  }
+
+  if (externalIds.patreon_id) {
+    addLink({
+      key: 'patreon',
+      label: 'Patreon',
+      href: `https://www.patreon.com/${externalIds.patreon_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#ff424d',
+    });
+  }
+
+  if (externalIds.loyalfans_id) {
+    addLink({
+      key: 'loyalfans',
+      label: 'LoyalFans',
+      href: `https://www.loyalfans.com/${externalIds.loyalfans_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#eb1b4b',
+    });
+  }
+
+  if (externalIds.manyvids_id) {
+    addLink({
+      key: 'manyvids',
+      label: 'ManyVids',
+      href: `https://www.manyvids.com/${externalIds.manyvids_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#ff5c00',
+    });
+  }
+
+
+  if (externalIds.linktree_id) {
+    addLink({
+      key: 'linktree',
+      label: 'Linktree',
+      href: `https://linktr.ee/${externalIds.linktree_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#39e09b',
+    });
+  }
+
+  if (externalIds.pornhub_id) {
+    addLink({
+      key: 'pornhub',
+      label: 'Pornhub',
+      href: `https://www.pornhub.com/${externalIds.pornhub_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#ff9900',
+    });
+  }
+
+  if (externalIds.clips4sale_id) {
+    addLink({
+      key: 'clips4sale',
+      label: 'Clips4Sale',
+      href: `https://www.clips4sale.com/${externalIds.clips4sale_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#ff0000',
+    });
+  }
+
+  if (externalIds.allmylinks_id) {
+    addLink({
+      key: 'allmylinks',
+      label: 'AllMyLinks',
+      href: `https://allmylinks.com/${externalIds.allmylinks_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#00c2ff',
+    });
+  }
+
+  if (externalIds.beacons_id) {
+    addLink({
+      key: 'beacons',
+      label: 'Beacons',
+      href: `https://beacons.ai/${externalIds.beacons_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#8A2BE2',
+    });
+  }
+
+  if (externalIds.iafd_id) {
+    addLink({
+      key: 'iafd',
+      label: 'IAFD',
+      href: `https://www.iafd.com/person.rme/${externalIds.iafd_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#1d2a44',
+    });
+  }
+
+  if (externalIds.babepedia_id) {
+    addLink({
+      key: 'babepedia',
+      label: 'Babepedia',
+      href: `https://www.babepedia.com/babe/${externalIds.babepedia_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#ff0066',
+    });
+  }
+
+  if (externalIds.freeones_id) {
+    addLink({
+      key: 'freeones',
+      label: 'FreeOnes',
+      href: `https://www.freeones.com/${externalIds.freeones_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#0066cc',
+    });
+  }
+
+  if (externalIds.data18_id) {
+    addLink({
+      key: 'data18',
+      label: 'DATA18',
+      href: `https://www.data18.com/star/${externalIds.data18_id}`,
+      iconSrc: '/links/website.svg',
+      brandColor: '#f25b29',
+    });
+  }
+
   // Adult Sources specific links
   if (externalIds.stashdb_id) {
     addLink({
