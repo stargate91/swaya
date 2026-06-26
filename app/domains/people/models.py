@@ -87,7 +87,7 @@ class MediaPersonLink(Base):
     
     # Relationships
     person: Mapped["Person"] = relationship(back_populates="media_links")
-    match: Mapped["MetadataMatch"] = relationship()
+    match: Mapped["MetadataMatch"] = relationship(back_populates="people_links")
 
 
 class ExternalSourceLink(Base):

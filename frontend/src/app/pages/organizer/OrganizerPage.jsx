@@ -410,6 +410,8 @@ export default function OrganizerPage() {
     queryClient,
     focusFirstAvailableResult,
     clearSelectedRows,
+    scanMode,
+    sessionMode,
   });
 
   useEffect(() => {

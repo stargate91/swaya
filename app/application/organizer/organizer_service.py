@@ -38,8 +38,11 @@ class OrganizerService:
     def get_organizer_groups(self, scan_mode: Optional[str] = None, session_mode: Optional[str] = None) -> OrganizerGroupsResponse:
         items = OrganizerDomainService.get_unorganized_media_items(self.db, scan_mode, session_mode)
 
+        from app.shared_kernel.user_context import get_current_user_id
+        current_uid = get_current_user_id()
+
         from app.infrastructure.settings.formatter_config_adapter import build_formatter_from_db
-        formatter = build_formatter_from_db(self.db)
+        formatter = build_formatter_from_db(self.db, user_id=current_uid)
 
         groups = {"manual": [], "movies": [], "tv": [], "extras": [], "collisions": []}
         parent_planned_paths = {}

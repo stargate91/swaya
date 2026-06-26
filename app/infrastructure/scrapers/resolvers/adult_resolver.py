@@ -102,8 +102,13 @@ class AdultResolver:
         for key in ('fn', 'fd', 'it'):
             data = parsed.get(key) or {}
             unique_title = data.get('alternative_title') or data.get('episode_title')
-            if unique_title and unique_title not in queries:
-                queries.append(unique_title)
+            if unique_title:
+                if isinstance(unique_title, list):
+                    for t in unique_title:
+                        if isinstance(t, str) and t.strip() and t not in queries:
+                            queries.append(t)
+                elif isinstance(unique_title, str) and unique_title.strip() and unique_title not in queries:
+                    queries.append(unique_title)
         return queries
 
     def _persist_scene_match(

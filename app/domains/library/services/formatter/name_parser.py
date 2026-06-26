@@ -136,14 +136,17 @@ class NameParser:
         from app.shared_kernel.enums import RoleType
         
         if people_links is None and match:
-            from sqlalchemy import inspect
-            insp = inspect(match)
-            if insp.session:
-                from app.domains.people.models import MediaPersonLink
-                from sqlalchemy.orm import joinedload
-                people_links = insp.session.query(MediaPersonLink).options(
-                    joinedload(MediaPersonLink.person)
-                ).filter(MediaPersonLink.match_id == match.id).all()
+            if hasattr(match, "people_links") and match.people_links is not None:
+                people_links = match.people_links
+            else:
+                from sqlalchemy import inspect
+                insp = inspect(match)
+                if insp.session:
+                    from app.domains.people.models import MediaPersonLink
+                    from sqlalchemy.orm import joinedload
+                    people_links = insp.session.query(MediaPersonLink).options(
+                        joinedload(MediaPersonLink.person)
+                    ).filter(MediaPersonLink.match_id == match.id).all()
         
         people_links = people_links or []
         actor_links = [l for l in people_links if getattr(l, "role", None) == RoleType.ACTOR]
@@ -169,9 +172,9 @@ class NameParser:
                 continue
                 
             gender_filter = self.config.naming_performer_gender_filter
-            if gender_filter == "female" and getattr(person, "gender", None) != 1:
+            if gender_filter == "female" and getattr(person, "gender", None) == 2:
                 continue
-            if gender_filter == "male" and getattr(person, "gender", None) != 2:
+            if gender_filter == "male" and getattr(person, "gender", None) == 1:
                 continue
                 
             performer_names.append(person.name)

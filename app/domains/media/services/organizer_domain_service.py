@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.shared_kernel.enums import MediaType, ItemStatus
 from app.domains.library.models import MediaItem, ExtraFile
 from app.domains.metadata.models import MetadataMatch
+from app.domains.people.models import MediaPersonLink
 
 class OrganizerDomainService:
     @staticmethod
@@ -70,6 +71,7 @@ class OrganizerDomainService:
         all_items = db.query(MediaItem).options(
             joinedload(MediaItem.matches).joinedload(MetadataMatch.localizations),
             joinedload(MediaItem.matches).joinedload(MetadataMatch.overrides),
+            joinedload(MediaItem.matches).joinedload(MetadataMatch.people_links).joinedload(MediaPersonLink.person),
             joinedload(MediaItem.extras),
             joinedload(MediaItem.overrides)
         ).filter(

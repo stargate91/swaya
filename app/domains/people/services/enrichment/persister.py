@@ -1,6 +1,7 @@
 import logging
 from app.domains.people.models import Person, PersonLocalization, ExternalSourceLink
 from app.domains.people.services.enrichment.helpers import EnrichmentHelpers
+from app.shared_kernel.enums import Provider
 
 logger = logging.getLogger(__name__)
 
@@ -70,15 +71,44 @@ def apply_enriched_data(enricher, person: Person, data: dict):
         person.external_ids = ids
 
     for l in data["links_to_create"]:
+        prov_val = l["provider"]
+        prov_enum = None
+        if isinstance(prov_val, str):
+            try:
+                prov_enum = Provider(prov_val.lower())
+            except ValueError:
+                try:
+                    prov_enum = Provider[prov_val.upper()]
+                except KeyError:
+                    pass
+        elif isinstance(prov_val, Provider):
+            prov_enum = prov_val
+
+        if not prov_enum:
+            continue
+
+        # Check if already in session to avoid duplicate inserts
+        already_added = False
+        for obj in enricher.db.new:
+            if (isinstance(obj, ExternalSourceLink) and 
+                obj.person_id == person.id and 
+                obj.provider == prov_enum and 
+                obj.external_id == l["external_id"]):
+                already_added = True
+                break
+
+        if already_added:
+            continue
+
         link = enricher.db.query(ExternalSourceLink).filter(
             ExternalSourceLink.person_id == person.id,
-            ExternalSourceLink.provider == l["provider"],
+            ExternalSourceLink.provider == prov_enum,
             ExternalSourceLink.external_id == l["external_id"]
         ).first()
         if not link:
             new_link = ExternalSourceLink(
                 person_id=person.id,
-                provider=l["provider"],
+                provider=prov_enum,
                 external_id=l["external_id"]
             )
             enricher.db.add(new_link)

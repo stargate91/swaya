@@ -100,6 +100,7 @@ class MetadataMatch(Base):
     studios: Mapped[List["Studio"]] = relationship("Studio", secondary=metadata_match_studios, back_populates="matches")
     overrides: Mapped[Optional["UserOverride"]] = relationship("UserOverride", back_populates="metadata_match", cascade="all, delete-orphan")
     external_links: Mapped[List["ExternalMatchLink"]] = relationship("ExternalMatchLink", back_populates="match", cascade="all, delete-orphan")
+    people_links: Mapped[List["MediaPersonLink"]] = relationship("MediaPersonLink", back_populates="match", cascade="all, delete-orphan")
 
 
 class MetadataLocalization(Base):

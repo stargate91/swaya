@@ -296,23 +296,41 @@ class ScraperNormalizer:
             if not isinstance(cast_member, dict):
                 continue
             
+            # Ensure cast_member has a unified "extra" dict
+            cast_extra = cast_member.get("extra") or cast_member.get("extras") or {}
+            if not isinstance(cast_extra, dict):
+                cast_extra = {}
+            cast_member["extra"] = cast_extra
+
             # If parent performer details exist (site-specific performers on PornDB REST), merge/fallback keys from parent
             parent_member = cast_member.get("parent")
             if isinstance(parent_member, dict):
-                for key in ["image", "face", "photo", "image_path", "images", "gender", "hair_color", "eye_color", "ethnicity", "height", "weight", "measurements", "extra"]:
-                    if cast_member.get(key) is None and parent_member.get(key) is not None:
-                        cast_member[key] = parent_member[key]
-                if isinstance(cast_member.get("extra"), dict) and isinstance(parent_member.get("extra"), dict):
-                    for e_key, e_val in parent_member["extra"].items():
-                        if cast_member["extra"].get(e_key) is None:
-                            cast_member["extra"][e_key] = e_val
+                parent_extra = parent_member.get("extra") or parent_member.get("extras") or {}
+                if not isinstance(parent_extra, dict):
+                    parent_extra = {}
+                
+                # Merge top level keys
+                for key in ["image", "face", "photo", "image_path", "images", "gender", "hair_color", "eye_color", "ethnicity", "height", "weight", "measurements"]:
+                    val = parent_member.get(key) or parent_extra.get(key)
+                    if cast_member.get(key) is None and val is not None:
+                        cast_member[key] = val
+                
+                # Merge extra details keys
+                for e_key, e_val in parent_extra.items():
+                    if cast_member["extra"].get(e_key) is None:
+                        cast_member["extra"][e_key] = e_val
 
             p_name = cast_member.get("name")
             if not p_name:
                 continue
             
-            p_gender = cast_member.get("gender")
-            gender_int = 1 if p_gender == "FEMALE" else (2 if p_gender == "MALE" else None)
+            p_gender = (
+                cast_member.get("gender") or 
+                cast_member["extra"].get("gender") or 
+                ""
+            )
+            p_gender = str(p_gender).upper()
+            gender_int = 1 if "FEMALE" in p_gender else (2 if "MALE" in p_gender else None)
             
             p_image = cast_member.get("image_path") or cast_member.get("image") or cast_member.get("photo")
             # If images is list
