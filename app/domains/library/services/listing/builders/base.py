@@ -138,6 +138,10 @@ class BaseQueryBuilder:
                 MetadataMatch.rating_porndb,
                 MetadataMatch.rating_tmdb,
             ).asc())
+        elif params.sort_by == "rating_imdb_desc":
+            query = query.order_by(desc(MetadataMatch.rating_imdb))
+        elif params.sort_by == "rating_imdb_asc":
+            query = query.order_by(MetadataMatch.rating_imdb.asc())
         elif params.sort_by == "duration_desc":
             query = query.order_by(desc(MediaItem.duration))
         elif params.sort_by == "duration_asc":
