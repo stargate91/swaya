@@ -7,6 +7,7 @@ import Button from '@/ui/Button';
 import Input from '@/ui/Input';
 import Dropdown from '@/ui/Dropdown';
 import FloatingActionBar from '@/ui/FloatingActionBar';
+import { TARGET_LANGUAGE_OPTIONS } from '@/pages/settings/settingsLanguageOptions';
 
 export default function PerformerCustomValuesTab({ personId, person: initialPerson, onDirtyChange, isShaking }) {
   const { t } = useTranslation();
@@ -14,7 +15,6 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
   const { data: fetchedPerson } = usePersonDetailQuery(personId);
   const person = fetchedPerson || initialPerson;
   const saveMutation = useSavePersonCustomFieldsMutation();
-
   const manualLink = person?.external_links?.find(l => l.provider === 'manual');
   const manualData = manualLink?.source_data || {};
 
@@ -79,8 +79,10 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
     return [...standardOptions, { value: upperValue, label }];
   };
 
+  const [selectedBioLang, setSelectedBioLang] = useState('en');
+
   const [form, setForm] = useState({
-    biography: '',
+    biographies: {},
     birthday: '',
     place_of_birth: '',
     gender: '',
@@ -104,7 +106,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
   useEffect(() => {
     if (manualData) {
       const initialized = {
-        biography: manualData.biography || '',
+        biographies: manualData.biographies || (manualData.biography ? { en: manualData.biography } : {}),
         birthday: manualData.birthday || '',
         place_of_birth: manualData.place_of_birth || '',
         gender: manualData.gender !== undefined ? String(manualData.gender) : '',
@@ -180,7 +182,15 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
     try {
       const payload = {};
       Object.entries(form).forEach(([k, v]) => {
-        if (v === '') {
+        if (k === 'biographies') {
+          const cleanedBios = {};
+          Object.entries(v || {}).forEach(([lang, val]) => {
+            if (val && val.trim() !== '') {
+              cleanedBios[lang] = val;
+            }
+          });
+          payload['biographies'] = cleanedBios;
+        } else if (v === '') {
           payload[k] = null;
         } else if (k === 'gender' || k === 'height' || k === 'band_size' || k === 'waist' || k === 'hip') {
           payload[k] = Number(v);
@@ -223,6 +233,15 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
 
   const isDirty = initialForm && Object.keys(form).some(key => {
     if (key === 'measurements') return false;
+    if (key === 'biographies') {
+      const current = form[key] || {};
+      const initial = initialForm[key] || {};
+      const allKeys = new Set([...Object.keys(current), ...Object.keys(initial)]);
+      for (const k of allKeys) {
+        if ((current[k] || '') !== (initial[k] || '')) return true;
+      }
+      return false;
+    }
     return form[key] !== initialForm[key];
   });
 
@@ -247,12 +266,38 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
           </div>
           <div className="custom-values-card__body">
             <div className="ui-field custom-values-field--full">
-              <label className="ui-field__label">Biography</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label className="ui-field__label" style={{ margin: 0 }}>Biography</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: 'var(--font-size-sm, 12px)', color: 'var(--color-text-secondary)' }}>Language:</span>
+                  <select
+                    className="ui-input"
+                    style={{ width: 'auto', padding: '2px 8px', height: '28px', fontSize: 'var(--font-size-sm, 12px)' }}
+                    value={selectedBioLang}
+                    onChange={e => setSelectedBioLang(e.target.value)}
+                  >
+                    {TARGET_LANGUAGE_OPTIONS.map(opt => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label} {form.biographies?.[opt.value] ? '✓' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
               <textarea
                 className="ui-input performer-custom-values-bio"
-                value={form.biography}
-                onChange={e => handleChange('biography', e.target.value)}
-                placeholder="Write a custom biography..."
+                value={form.biographies?.[selectedBioLang] || ''}
+                onChange={e => {
+                  const val = e.target.value;
+                  setForm(prev => ({
+                    ...prev,
+                    biographies: {
+                      ...prev.biographies,
+                      [selectedBioLang]: val
+                    }
+                  }));
+                }}
+                placeholder={`Write a custom biography in ${TARGET_LANGUAGE_OPTIONS.find(o => o.value === selectedBioLang)?.label || selectedBioLang}...`}
               />
             </div>
             <div className="custom-values-card__grid-2">

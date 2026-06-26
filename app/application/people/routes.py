@@ -721,14 +721,25 @@ def save_custom_fields(
 
     source_data = dict(manual_link.source_data or {})
     for k, v in payload.fields.items():
-        if v == "" or v is None:
+        if v == "" or v is None or v == {}:
             source_data.pop(k, None)
-            if k == "biography":
+            if k == "biography" or k == "biographies":
+                source_data.pop("biography", None)
                 source_data.pop("biographies", None)
         else:
-            source_data[k] = v
-            if k == "biography":
-                source_data["biographies"] = {"en": v, "hu": v}
+            if k == "biographies":
+                source_data["biographies"] = v
+                source_data["biography"] = v.get("en") or next(iter(v.values()), None)
+            elif k == "biography":
+                if isinstance(v, dict):
+                    source_data["biographies"] = v
+                    source_data["biography"] = v.get("en") or next(iter(v.values()), None)
+                else:
+                    source_data["biography"] = v
+                    if "biographies" not in source_data:
+                        source_data["biographies"] = {"en": v, "hu": v}
+            else:
+                source_data[k] = v
 
     manual_link.source_data = source_data
     person.recalculate_projection(db)
