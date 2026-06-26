@@ -175,12 +175,12 @@ class PlaybackService:
                 "media_item_id": item.id,
                 "watched_at": log.watched_at.isoformat(),
                 "title": title,
-                "type": item.item_type.value if hasattr(item.item_type, "value") else str(item.item_type),
+                "type": active_match.media_type.value if (active_match and hasattr(active_match.media_type, "value")) else (str(active_match.media_type) if active_match else "movie"),
                 "season_number": active_match.season_number if active_match else None,
                 "episode_number": active_match.episode_number if active_match else None,
                 "poster_path": self._resolve_img(loc.poster_path if loc else None, "posters"),
                 "resume_position": override.resume_position if override else 0,
-                "duration": item.duration or 0,
+                "duration": int(item.duration) if item.duration else 0,
                 "is_watched": override.is_watched if override else False,
             })
 

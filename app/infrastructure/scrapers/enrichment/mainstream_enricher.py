@@ -2,8 +2,6 @@ import logging
 import os
 import re
 from urllib.parse import urlparse
-import threading
-from datetime import datetime
 from typing import List, Optional, Dict, Any
 from sqlalchemy.orm import Session
 
@@ -11,45 +9,19 @@ from app.domains.library.models import MediaItem
 from app.domains.metadata.models import MetadataMatch, MetadataLocalization, Studio, MediaCollection
 from app.shared_kernel.enums import Provider, MediaType, RoleType
 from app.domains.people.models import MediaPersonLink
-from app.domains.people.services import PersonService
 from app.infrastructure.scrapers.providers.tmdb import TMDBScraper
 from app.infrastructure.scrapers.providers.omdb import OMDBScraper
 from app.shared_kernel.language import LanguageService
-from app.domains.media_assets.services.images import image_processing_service
 from app.shared_kernel.ports.metadata_repository_port import MetadataRepositoryPort
 from app.shared_kernel.ports.people_repository_port import PeopleRepositoryPort
 from app.shared_kernel.ports.settings_port import SettingsPort
 from app.shared_kernel.ports.image_download_port import ImageDownloadPort
 
+from app.shared_kernel.constants import DEFAULT_FALLBACK_LANGUAGE
+from app.infrastructure.scrapers.enrichment.tmdb_parser import TMDBEnrichmentParser
+from app.infrastructure.scrapers.enrichment.omdb_parser import OMDBEnrichmentParser
+
 logger = logging.getLogger(__name__)
-
-tv_enrich_lock = threading.Lock()
-
-from app.shared_kernel.constants import YOUTUBE_WATCH_BASE, DEFAULT_FALLBACK_LANGUAGE
-
-def _pick_trailer_key(raw_data, language: str = None, original_language: str = None) -> Optional[str]:
-    videos = (raw_data.get("videos") or {}).get("results") or []
-    if not videos:
-        return None
-    youtube_videos = [v for v in videos if v.get("site") == "YouTube" and v.get("type") == "Trailer" and v.get("key")]
-    if not youtube_videos:
-        youtube_videos = [v for v in videos if v.get("site") == "YouTube" and v.get("key")]
-    if not youtube_videos:
-        return None
-    lang_pref = [language, DEFAULT_FALLBACK_LANGUAGE, original_language]
-    def score(v):
-        v_lang = v.get("iso_639_1")
-        try:
-            lang_idx = lang_pref.index(v_lang)
-        except ValueError:
-            lang_idx = 999
-        return -lang_idx
-    sorted_v = sorted(youtube_videos, key=score, reverse=True)
-    key = sorted_v[0].get("key")
-    return f"{YOUTUBE_WATCH_BASE}{key}" if key else None
-
-from app.shared_kernel.genre_utils import split_genres as _split_genres
-
 
 class MainstreamEnricher:
     """
@@ -80,6 +52,9 @@ class MainstreamEnricher:
         self._details_cache: Dict[tuple[str, int, str], Dict[str, Any]] = {}
         self._episode_cache: Dict[tuple[int, int, int, str], Dict[str, Any]] = {}
         self._omdb_cache: Dict[str, Dict[str, Any]] = {}
+
+        self.tmdb_parser = TMDBEnrichmentParser(self)
+        self.omdb_parser = OMDBEnrichmentParser(self)
 
     def enrich_matched_item(
         self,
@@ -134,268 +109,14 @@ class MainstreamEnricher:
         for idx, lang in enumerate(unique_langs):
             inc_rat = include_ratings if idx == 0 else False
             if active_match.media_type == MediaType.MOVIE:
-                self._enrich_movie(active_match, lang, include_ratings=inc_rat)
+                self.tmdb_parser.enrich_movie(active_match, lang, include_ratings=inc_rat)
             elif active_match.media_type == MediaType.TV or active_match.media_type == MediaType.EPISODE:
-                self._enrich_tv(active_match, lang, include_ratings=inc_rat)
+                self.tmdb_parser.enrich_tv(active_match, lang, include_ratings=inc_rat)
 
         if commit:
             self.db.commit()
         else:
             self.db.flush()
-
-    def _enrich_movie(self, match: MetadataMatch, language: str, include_ratings: bool = True):
-        details = self._get_details_cached(int(match.external_id), "movie", language)
-        if not details:
-            return
-
-        self._update_match_common(match, details, include_ratings=include_ratings)
-        match.is_adult = details.get("adult", False)
-        match.release_status = details.get("status")
-        match.budget = details.get("budget")
-        match.revenue = details.get("revenue")
-
-        # Collection details
-        coll = details.get("belongs_to_collection")
-        if coll:
-            coll_id = str(coll["id"])
-            collection = self.metadata_repo.get_collection(Provider.TMDB, coll_id)
-            if not collection:
-                collection = self.metadata_repo.create_collection(
-                    provider=Provider.TMDB,
-                    external_id=coll_id,
-                    backdrop_path=coll.get("backdrop_path")
-                )
-                self.db.flush()
-            match.collection = collection
-
-            from app.domains.metadata.models import MediaCollectionLocalization
-            lang_code = language.split("-", 1)[0].lower()
-            loc = None
-            if collection.id is not None:
-                loc = self.metadata_repo.get_collection_localization(collection.id, lang_code)
-            if not loc:
-                loc = self.metadata_repo.create_collection_localization(
-                    collection_id=collection.id,
-                    locale=lang_code
-                )
-            loc.title = coll.get("name") or loc.title
-            loc.poster_path = coll.get("poster_path") or loc.poster_path
-
-            if loc.poster_path and not loc.local_poster_path:
-                asset_prefix = f"tmdb_{collection.external_id}"
-                loc.local_poster_path = self._queue_image(loc.poster_path, "posters", asset_prefix)
-            
-            if collection.backdrop_path and not collection.local_backdrop_path:
-                asset_prefix = f"tmdb_{collection.external_id}"
-                collection.local_backdrop_path = self._queue_image(collection.backdrop_path, "backdrops", asset_prefix)
-            
-        selected_backdrop_path = image_processing_service.pick_backdrop_path(details, preferred_language=language)
-        if selected_backdrop_path:
-            match.backdrop_path = selected_backdrop_path
-
-        # Localization
-        loc = self._get_or_create_loc(match, language)
-        loc.title = details.get("title") or details.get("original_title") or "Unknown"
-        loc.overview = details.get("overview")
-        loc.tagline = details.get("tagline")
-        loc.poster_path = image_processing_service.pick_poster_path(details, preferred_language=language)
-        loc.logo_path = image_processing_service.pick_logo_path(details, preferred_language=language)
-        localized_asset_prefix = f"tmdb_movie_{match.external_id}_{language}"
-        match.local_backdrop_path = self._queue_image(
-            match.backdrop_path,
-            "backdrops",
-            f"tmdb_movie_{match.external_id}",
-        )
-        loc.local_poster_path = self._queue_image(loc.poster_path, "posters", localized_asset_prefix)
-        loc.local_logo_path = self._queue_image(loc.logo_path, "logos", localized_asset_prefix)
-        loc.genres = _split_genres([g["name"] for g in details.get("genres") or []])
-        loc.original_language = details.get("original_language")
-
-        # Trailer
-        loc.trailer_url = _pick_trailer_key(details, language, details.get("original_language"))
-
-    def _enrich_tv(self, match: MetadataMatch, language: str, include_ratings: bool = True):
-        # A. TV SHOW LEVEL
-        tv_details = self._get_details_cached(int(match.external_id), "tv", language)
-        if not tv_details:
-            return
-
-        with tv_enrich_lock:
-            # Query or create the TV Show match (shared, so media_item_id is None)
-            tv_match = self.metadata_repo.get_tv_match(match.provider, match.external_id)
-            if not tv_match:
-                try:
-                    with self.db.begin_nested():
-                        tv_match = self.metadata_repo.create_match(
-                            provider=match.provider,
-                            external_id=match.external_id,
-                            media_type=MediaType.TV,
-                            media_item_id=None
-                        )
-                        tv_match.confidence_score = 1.0
-                        self.metadata_repo.flush()
-                except Exception:
-                    tv_match = self.metadata_repo.get_tv_match(match.provider, match.external_id)
-
-            self._update_match_common(tv_match, tv_details, include_ratings=include_ratings)
-            tv_match.is_adult = tv_details.get("adult", False)
-            tv_match.release_status = tv_details.get("status")
-            tv_match.tv_type = tv_details.get("type")
-            tv_match.number_of_seasons = tv_details.get("number_of_seasons")
-            tv_match.number_of_episodes = tv_details.get("number_of_episodes")
-
-            tv_first_air_date = tv_details.get("first_air_date")
-            if tv_first_air_date:
-                try:
-                    tv_match.first_air_date = datetime.strptime(tv_first_air_date, "%Y-%m-%d")
-                except:
-                    pass
-            tv_last_air_date = tv_details.get("last_air_date")
-            if tv_last_air_date:
-                try:
-                    tv_match.last_air_date = datetime.strptime(tv_last_air_date, "%Y-%m-%d")
-                except:
-                    pass
-
-            selected_backdrop_path = image_processing_service.pick_backdrop_path(tv_details, preferred_language=language)
-            if selected_backdrop_path:
-                tv_match.backdrop_path = selected_backdrop_path
-            
-            tv_loc = self._get_or_create_loc(tv_match, language)
-            tv_loc.title = tv_details.get("name") or tv_details.get("original_name") or "Unknown"
-            tv_loc.overview = tv_details.get("overview")
-            tv_loc.poster_path = image_processing_service.pick_poster_path(tv_details, preferred_language=language)
-            tv_loc.logo_path = image_processing_service.pick_logo_path(tv_details, preferred_language=language)
-            tv_loc.genres = _split_genres([g["name"] for g in tv_details.get("genres") or []])
-            tv_loc.original_language = tv_details.get("original_language")
-            tv_loc.trailer_url = _pick_trailer_key(tv_details, language, tv_details.get("original_language"))
-
-            localized_asset_prefix = f"tmdb_tv_{tv_match.external_id}_{language}"
-            tv_match.local_backdrop_path = self._queue_image(
-                tv_match.backdrop_path,
-                "backdrops",
-                f"tmdb_tv_{tv_match.external_id}",
-            )
-            tv_loc.local_poster_path = self._queue_image(tv_loc.poster_path, "posters", localized_asset_prefix)
-            tv_loc.local_logo_path = self._queue_image(tv_loc.logo_path, "logos", localized_asset_prefix)
-
-        # B. SEASON LEVEL
-        season_match = None
-        if match.season_number is not None:
-            # Make sure tv_match has an ID populated
-            if tv_match.id is None:
-                self.metadata_repo.flush()
-            with tv_enrich_lock:
-                season_match = self.metadata_repo.get_season_match(match.provider, tv_match.id, match.season_number)
-                if not season_match:
-                    try:
-                        with self.db.begin_nested():
-                            season_match = self.metadata_repo.create_match(
-                                provider=match.provider,
-                                external_id=f"{match.external_id}-s{match.season_number}",
-                                media_type=MediaType.SEASON,
-                                media_item_id=None
-                            )
-                            season_match.season_number = match.season_number
-                            season_match.parent = tv_match
-                            season_match.parent_id = tv_match.id
-                            season_match.confidence_score = 1.0
-                            self.metadata_repo.flush()
-                    except Exception:
-                        season_match = self.metadata_repo.get_season_match(match.provider, tv_match.id, match.season_number)
-
-                seasons = tv_details.get("seasons", [])
-                season_data = next((s for s in seasons if s.get("season_number") is not None and int(s.get("season_number")) == int(match.season_number)), None)
-                
-                if season_data:
-                    season_match.number_of_episodes = season_data.get("episode_count")
-                    season_loc = self._get_or_create_loc(season_match, language)
-                    season_loc.title = season_data.get("name") or f"Season {match.season_number}"
-                    season_loc.overview = season_data.get("overview")
-                    if season_data.get("poster_path"):
-                        season_loc.poster_path = season_data.get("poster_path")
-                    season_loc.local_poster_path = self._queue_image(
-                        season_loc.poster_path,
-                        "posters",
-                        f"tmdb_tv_{match.external_id}_s{match.season_number}_{language}",
-                    )
-                    if tv_match.release_date:
-                        season_match.release_date = tv_match.release_date
-
-        # C. EPISODE LEVEL
-        if match.season_number is not None and match.episode_number is not None:
-            if season_match:
-                if season_match.id is None:
-                    self.metadata_repo.flush()
-                match.parent = season_match
-                match.parent_id = season_match.id
-            else:
-                if tv_match.id is None:
-                    self.metadata_repo.flush()
-                match.parent = tv_match
-                match.parent_id = tv_match.id
-
-            ep_nums = []
-            raw_ep = match.episode_number
-            if isinstance(raw_ep, list):
-                ep_nums = raw_ep
-            else:
-                ep_nums = [raw_ep]
-
-            titles = []
-            overviews = []
-            all_stills = []
-            first_still = None
-            first_air_date = None
-            
-            for ename in ep_nums:
-                try:
-                    ep_details = self._get_episode_details_cached(
-                        int(match.external_id), match.season_number, int(ename), language=language
-                    )
-                    if ep_details:
-                        titles.append(ep_details.get("name") or f"Episode {ename}")
-                        if ep_details.get("overview"):
-                            overviews.append(ep_details.get("overview"))
-                        
-                        s_path = ep_details.get("still_path")
-                        if s_path:
-                            all_stills.append(s_path)
-                            if not first_still:
-                                first_still = s_path
-                                
-                        if not first_air_date:
-                            first_air_date = ep_details.get("air_date")
-                            
-                        if ename == ep_nums[0]:
-                            match.rating_tmdb = ep_details.get("vote_average")
-                            match.vote_count_tmdb = ep_details.get("vote_count")
-                            match.runtime = ep_details.get("runtime") or match.runtime
-                except Exception as e:
-                    logger.warning(f"Failed to fetch metadata for episode {ename}: {e}")
-
-            loc = self._get_or_create_loc(match, language)
-            if titles:
-                loc.title = " / ".join(titles)
-                match.still_path = first_still
-                match.stills = all_stills
-                still_prefix = f"tmdb_tv_{match.external_id}_s{match.season_number}_e{ep_nums[0]}"
-                match.local_stills = [
-                    local_path
-                    for index, still_path in enumerate(all_stills)
-                    if (local_path := self._queue_image(still_path, "stills", f"{still_prefix}_{index}"))
-                ]
-                match.local_still_path = match.local_stills[0] if match.local_stills else None
-                if overviews:
-                    loc.overview = "\n\n".join(overviews)
-                
-                if first_air_date:
-                    try:
-                        match.release_date = datetime.strptime(first_air_date, "%Y-%m-%d")
-                    except:
-                        pass
-                
-                match.media_type = MediaType.EPISODE
 
     def _queue_image(self, path: Optional[str], subfolder: str, prefix: str) -> Optional[str]:
         if not path:
@@ -433,129 +154,6 @@ class MainstreamEnricher:
         filename = f"{safe_prefix}_{basename}"
         self.image_downloader.enqueue_download(url, subfolder, filename)
         return f"{subfolder}/{filename}"
-
-    def _update_match_common(self, match: MetadataMatch, details: Dict[str, Any], include_ratings: bool = True):
-        runtimes = details.get("episode_run_time", [])
-        match.runtime = details.get("runtime") or (runtimes[0] if runtimes else None)
-        match.popularity = details.get("popularity")
-        match.rating_tmdb = details.get("vote_average")
-        match.vote_count_tmdb = details.get("vote_count")
-        
-        release_date = details.get("release_date") or details.get("first_air_date")
-        if release_date:
-            try:
-                match.release_date = datetime.strptime(release_date, "%Y-%m-%d")
-            except Exception:
-                pass
-        
-        ext_ids = details.get("external_ids", {})
-        imdb_id = ext_ids.get("imdb_id") or match.imdb_id
-        match.imdb_id = imdb_id
-
-        match.original_language = details.get("original_language")
-        match.origin_country = details.get("origin_country")
-        spoken = details.get("spoken_languages", [])
-        if spoken:
-            match.spoken_languages = [s["iso_639_1"] for s in spoken]
-
-        # Studios mapping
-        for comp in details.get("production_companies") or []:
-            s_name = comp.get("name")
-            if s_name:
-                studio = self.metadata_repo.get_studio_by_name(s_name)
-                if not studio:
-                    studio = self.metadata_repo.create_studio(name=s_name, logo_path=comp.get("logo_path"))
-
-                if studio.logo_path and not studio.logo_path.startswith("logos/"):
-                    local_logo = self._queue_image(studio.logo_path, "logos", f"studio_{studio.name}")
-                    if local_logo:
-                        studio.logo_path = local_logo
-
-                if studio not in match.studios:
-                    match.studios.append(studio)
-
-        # OMDb Ratings
-        if include_ratings and imdb_id:
-            omdb_data = self._get_omdb_ratings_cached(imdb_id)
-            if omdb_data:
-                self.omdb.update_omdb_ratings(match, omdb_data)
-
-        # Cast/Crew processing
-        self._process_people(match, details)
-
-    def _process_people(self, match: MetadataMatch, details: Dict[str, Any]):
-        credits = details.get("aggregate_credits", {}) if match.media_type != MediaType.MOVIE else details.get("credits", {})
-        if not credits or not credits.get("cast"):
-            credits = details.get("credits", {})
-            
-        cast = credits.get("cast", [])[:15]
-        crew = credits.get("crew", [])
-        
-        person_service = PersonService(self.db)
-        
-        # Link Actors
-        for idx, cast_member in enumerate(cast):
-            person = person_service.update_or_create_person(
-                name=cast_member["name"],
-                profile_path=cast_member.get("profile_path"),
-                gender=cast_member.get("gender"),
-                is_adult=cast_member.get("adult", False),
-                tmdb_id=str(cast_member["id"]),
-                known_for_department=cast_member.get("known_for_department")
-            )
-            
-            link = self.people_repo.get_media_person_link(match.id, person.id, RoleType.ACTOR)
-            
-            if not link:
-                link = self.people_repo.create_media_person_link(
-                    role=RoleType.ACTOR,
-                    character_name=cast_member.get("character") or (cast_member.get("roles", [{}])[0].get("character") if "roles" in cast_member else None),
-                    order=idx,
-                    match_id=match.id,
-                    person_id=person.id
-                )
-
-        # Link Directors
-        directors = [p for p in crew if p.get("job") == "Director"][:2]
-        for idx, dir_member in enumerate(directors):
-            person = person_service.update_or_create_person(
-                name=dir_member["name"],
-                profile_path=dir_member.get("profile_path"),
-                gender=dir_member.get("gender"),
-                is_adult=dir_member.get("adult", False),
-                tmdb_id=str(dir_member["id"]),
-                known_for_department=dir_member.get("known_for_department")
-            )
-            
-            link = self.people_repo.get_media_person_link(match.id, person.id, RoleType.DIRECTOR)
-            
-            if not link:
-                link = self.people_repo.create_media_person_link(
-                    role=RoleType.DIRECTOR,
-                    order=idx,
-                    match_id=match.id,
-                    person_id=person.id
-                )
-
-    def _get_or_create_loc(self, match: MetadataMatch, language: str) -> MetadataLocalization:
-        language = LanguageService.resolve_request_locale(Provider.TMDB, language) or DEFAULT_FALLBACK_LANGUAGE
-        equivalent_localizations = [
-            loc for loc in match.localizations
-            if LanguageService.resolve_request_locale(Provider.TMDB, loc.locale) == language
-        ]
-        if equivalent_localizations:
-            loc = next((item for item in equivalent_localizations if item.locale == language), equivalent_localizations[0])
-            loc.locale = language
-            for duplicate in equivalent_localizations:
-                if duplicate is not loc:
-                    match.localizations.remove(duplicate)
-            return loc
-        loc = self.metadata_repo.get_localization(match.id, language)
-        if not loc:
-            loc = self.metadata_repo.create_localization(match.id, language)
-            if loc not in match.localizations:
-                match.localizations.append(loc)
-        return loc
 
     def _get_details_cached(self, tmdb_id: int, item_type: str, language: str) -> Dict[str, Any]:
         cache_key = (item_type, tmdb_id, language)

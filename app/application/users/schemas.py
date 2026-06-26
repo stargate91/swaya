@@ -121,6 +121,18 @@ class CustomListRead(BaseSchema):
 
 # --- UserOverride Action Schemas (Legacy Endpoints) ---
 
+def _unpack_nested_updates(data):
+    """Merge nested 'updates' dict into top-level fields."""
+    if not isinstance(data, dict):
+        return data
+    nested = data.get("updates")
+    if not isinstance(nested, dict):
+        return data
+    for key, value in nested.items():
+        if data.get(key) is None:
+            data[key] = value
+    return data
+
 class ItemOverridesUpdate(BaseSchema):
     item_id: Optional[Union[str, int]] = None
     id: Optional[Union[str, int]] = None
@@ -146,6 +158,11 @@ class ItemOverridesUpdate(BaseSchema):
     resume_position: Optional[int] = None
     tags: Optional[List[Any]] = None
     media_type: Optional[str] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _unpack_updates(cls, data):
+        return _unpack_nested_updates(data)
 
     @model_validator(mode="after")
     def _normalize_ids(self):
@@ -195,6 +212,11 @@ class BulkOverridesUpdate(BaseSchema):
     subtype: Optional[str] = None
     language: Optional[str] = None
     item_updates: Optional[List[dict[str, Any]]] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _unpack_updates(cls, data):
+        return _unpack_nested_updates(data)
 
     @model_validator(mode="after")
     def _normalize_ids(self):

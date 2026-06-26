@@ -1,66 +1,149 @@
-# Swaya Backend
+# Swaya
 
-Swaya is a high-performance, domain-driven media identification, metadata enrichment, and library organization backend. It serves as the refined, next-generation backend engine for the Swaya application, offering clean database schemas, unified variable structures, and optimized asynchronous processing.
+Swaya is a media library management application consisting of an Electron + React frontend and a FastAPI backend, both hosted in this repository.
 
-## Key Enhancements over Legacy Backend
+The application scans local directories, identifies media files, resolves metadata from external services, and tracks playback state.
 
-* **Clean Domain-Driven Design (DDD):** Organized into distinct layers (`core`, `domains`, `infrastructure`) to eliminate circular imports and enforce a strict separation of concerns.
-* **Unified Relational Database Schema:** Fully relational SQLite database managed via SQLAlchemy 2.0 and Alembic migrations, utilizing unified identifiers (e.g. mapping legacy namespaces to `tv`, and SFW/NSFW to unified tracking flags).
-* **Asynchronous Background Task Manager:** Built-in task queue supporting concurrent execution, progress tracking, and thread-safe abort/cancellation mechanisms.
-* **Aggressive API Caching:** Centralized SQLite-based caching layer for external API queries (TMDB, OMDb, StashDB, PornDB, FansDB) with configurable TTL policies and negative cache support.
-* **Robust Image Processing:** On-the-fly local download, format verification, aspect-ratio preserved downscaling, and thumbnail generation for media assets.
+## Repository structure
 
-## Architectural Layers
+- **frontend/**: React + Electron client application
+- **app/**: FastAPI backend engine (business logic, DB adapters, scrapers)
 
-The backend codebase is organized as follows:
+---
 
-* **`app/core/`**: Core utilities, database sessions, global enums, file system utilities, and the background task coordinator.
-* **`app/domains/`**: Domain-specific models, validation schemas, and service layers:
-  * `media`: Handles physical files, library definitions, and metadata matching.
-  * `people`: Manages cast, crew, performers, and localizations.
-  * `users`: Controls user preferences, custom playlists, ratings, and overrides.
-  * `history`: Tracks user playback sessions and audit logs for file operations.
-  * `settings`: Stores global system and per-user configuration states.
-* **`app/infrastructure/`**: Infrastructure integrations, including scrapers and external API normalization layers.
+## Backend
 
-## Technical Stack
+The backend follows a DDD (Domain-Driven Design) layered structure:
 
-* **Web Framework:** FastAPI (Uvicorn)
-* **Validation & Serialization:** Pydantic v2
-* **ORM & Database:** SQLAlchemy 2.0 (SQLite)
-* **Database Migrations:** Alembic
-* **Image Manipulation:** Pillow
-* **Testing:** PyTest (AnyIO)
+```
+app/
+  application/       -- HTTP layer: routes, Pydantic schemas, validation
+    catalog/           organizer/discovery API
+    history/           watch history queries
+    library/           library endpoints (listing, filtering, details)
+    media/             media playback and preview
+    metadata/          metadata queries (TMDB search, details)
+    organizer/         organizer page API (discovery, override, rename)
+    people/            people (actors, directors) endpoints
+    recommendations/   recommendation API
+    settings/          application settings
+    tasks/             background task control and status
+    users/             user management, overrides, custom lists
 
-## Getting Started
+  domains/            -- business logic: models, domain services
+    history/           watch and audit log models
+    library/           library, media item, extra file models; scanner, renamer, formatter
+    media/             media access and playback logic
+    media_assets/      image processing (download, crop, thumbnails)
+    metadata/          metadata match models
+    people/            person models, enrichment logic
+    recommendations/   recommendation algorithm
+    settings/          system settings models
+    tasks/             background task manager (manager, worker, queue)
+    users/             user, UserOverride, custom lists, tags
+
+  infrastructure/     -- external system integrations
+    cache/             SQLite-based API cache (TTL, negative cache)
+    filesystem/        file system operations, watchdog
+    media/             DB adapters, resolver, media item port implementation
+    playback/          playback monitoring (player detector, monitor)
+    repositories/      generic repository pattern
+    scrapers/          API providers (TMDB, OMDb, StashDB, PornDB, FansDB),
+                       resolve pipelines, enrichment and parser modules
+    settings/          settings persistence
+    tasks/             task-specific adapters (image download)
+
+  shared_kernel/      -- shared elements: enums, constants, DB session, ports
+```
+
+### Tech stack
+
+| Category            | Tool                      |
+|---------------------|---------------------------|
+| Web framework       | FastAPI + Uvicorn          |
+| Validation          | Pydantic v2                |
+| ORM                 | SQLAlchemy 2.0             |
+| Database            | SQLite                     |
+| Migrations          | Alembic                    |
+| Image processing    | Pillow                     |
+| File identification | guessit                    |
+| File watching       | watchdog                   |
+| Testing             | pytest + anyio             |
+| Platform            | Windows (pywin32)          |
 
 ### Prerequisites
 
-* Python 3.10+
-* FFmpeg and FFprobe installed and available in the system path.
+- Python 3.10+
+- FFmpeg and FFprobe available on PATH
 
-### Installation
+### Setup and running
 
-1. Install Python dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-2. Initialize the databases and apply migrations:
-   ```bash
-   python run.py
-   ```
+Start the server:
+```bash
+python run.py
+```
 
-### Running the Application
-
-Start the development server using:
+Or directly via Uvicorn:
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
 
-### Running Tests
+Databases and directories are created automatically on first run.
 
-Execute the unit and integration test suite:
+### Migrations
+
+Managing Alembic migrations:
+```bash
+# Apply current schema
+alembic upgrade head
+
+# Generate a new migration after model changes
+alembic revision --autogenerate -m "description"
+```
+
+### Tests
+
 ```bash
 python -m pytest
 ```
+
+---
+
+## Frontend
+
+The frontend is built with React 19, Vite, and runs inside Electron.
+
+### Tech stack
+
+| Category            | Tool                      |
+|---------------------|---------------------------|
+| Shell/Runtime       | Electron                  |
+| Bundler/Dev server  | Vite                      |
+| UI Library          | React 19                  |
+| State management    | Zustand                   |
+| Data fetching       | TanStack Query (v5)       |
+| Routing             | React Router 7            |
+
+### Setup and running
+
+Go to the frontend directory:
+```bash
+cd frontend
+```
+
+Install dependencies:
+```bash
+npm install
+```
+
+Start in development mode (launches Vite dev server and Electron window):
+```bash
+npm run dev
+```
+
+Build and package instructions are defined in the `package.json` scripts.

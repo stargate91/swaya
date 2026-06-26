@@ -1,24 +1,33 @@
 import logging
-from datetime import datetime
 from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 
-from app.shared_kernel.enums import Provider, MediaType, ItemStatus
+from app.shared_kernel.enums import Provider, MediaType
 from app.domains.library.models import MediaItem
-from app.domains.metadata.models import MetadataMatch, MetadataLocalization
+from app.domains.metadata.models import MetadataMatch
 from app.shared_kernel.ports.scrapers import ScraperGatewayPort
 
 from app.application.metadata.schemas import MetadataResolveRequest, BulkResolveRequest
-
 from app.shared_kernel.constants import DEFAULT_FALLBACK_LANGUAGE
 
+# Import sub-services
+from app.domains.metadata.services.metadata_resolver import MetadataResolver
+from app.domains.metadata.services.metadata_sync_service import MetadataSyncService
+
 logger = logging.getLogger(__name__)
+
+PORNDB_API_BASE = "https://api.theporndb.net"
+SCRAPER_REQUEST_TIMEOUT = 15
 
 class MetadataService:
     def __init__(self, db: Session, scrapers: ScraperGatewayPort):
         self.db = db
         self.scrapers = scrapers
         self.tmdb = scrapers.tmdb(db)
+        
+        # Instantiate sub-services
+        self.resolver = MetadataResolver(db, scrapers, self.tmdb)
+        self.sync_service = MetadataSyncService()
 
     def search_metadata(self, query: str, item_type: str = "movie", year: Optional[int] = None, language: Optional[str] = None, provider: Optional[str] = None, include_adult: bool = False, season: Optional[int] = None, episode: Optional[int] = None) -> List[Dict[str, Any]]:
         # Resolve provider
@@ -257,130 +266,10 @@ class MetadataService:
         return formatted
 
     def resolve_item(self, request: MetadataResolveRequest) -> Dict[str, Any]:
-        item_id = request.item_id
-        external_id = request.tmdb_id or request.external_id
-        media_type_str = request.type or request.media_type or "movie"
-        season_number = request.season_number
-        episode_number = request.episode_number
-        provider_str = request.provider or "tmdb"
-
-        if not item_id or not external_id:
-            from app.shared_kernel.exceptions import BadRequestException
-            raise BadRequestException("item_id and external_id (tmdb_id) are required")
-
-        item = self.db.query(MediaItem).filter(MediaItem.id == int(item_id)).first()
-        if not item:
-            from app.shared_kernel.exceptions import NotFoundException
-            raise NotFoundException("Media item not found")
-
-        # Delete any existing metadata match mappings for this physical item
-        self.db.query(MetadataMatch).filter(MetadataMatch.media_item_id == item.id).delete()
-        self.db.flush()
-
-        # Parse provider and media type
-        try:
-            provider = Provider(provider_str.lower())
-        except ValueError:
-            provider = Provider.TMDB
-
-        try:
-            mtype = MediaType(media_type_str.lower())
-        except ValueError:
-            mtype = MediaType.MOVIE
-
-        if provider in (Provider.STASHDB, Provider.PORNDB, Provider.FANSDB):
-            scraper = None
-            if provider == Provider.STASHDB:
-                scraper = self.scrapers.adult(Provider.STASHDB, self.db)
-            elif provider == Provider.PORNDB:
-                scraper = self.scrapers.adult(Provider.PORNDB, self.db)
-            elif provider == Provider.FANSDB:
-                scraper = self.scrapers.adult(Provider.FANSDB, self.db)
-
-            if not scraper:
-                from app.shared_kernel.exceptions import BadRequestException
-                raise BadRequestException("Selected adult scraper is not configured")
-
-            if provider == Provider.PORNDB and mtype == MediaType.MOVIE:
-                movie_data = scraper.fetch_movie(str(external_id))
-                if not movie_data:
-                    from app.shared_kernel.exceptions import BadRequestException
-                    raise BadRequestException(f"Failed to fetch movie details from {provider.value}")
-
-                from app.infrastructure.scrapers.support.normalizer import ScraperNormalizer
-                normalized = ScraperNormalizer.normalize_porndb_movie(movie_data)
-                match = self.scrapers.persist_adult_scene(
-                    self.db, provider, str(movie_data["id"]), normalized, media_type=MediaType.MOVIE, media_item_id=item.id
-                )
-                item.status = ItemStatus.MATCHED
-                self.db.commit()
-                return {"status": "success", "item_id": item.id, "match_id": match.id}
-
-            scene_data = scraper.fetch_scene(str(external_id))
-            if not scene_data:
-                from app.shared_kernel.exceptions import BadRequestException
-                raise BadRequestException(f"Failed to fetch scene details from {provider.value}")
-
-            normalized = self.scrapers.normalize_adult_scene(provider, scene_data)
-            match = self.scrapers.persist_adult_scene(self.db, provider, str(scene_data["id"]), normalized, media_item_id=item.id)
-            item.status = ItemStatus.MATCHED
-            self.db.commit()
-            return {"status": "success", "item_id": item.id, "match_id": match.id}
-
-        # Otherwise standard TMDB resolution
-        # Check if match with same provider, external_id, and media_type already exists
-        match = self.db.query(MetadataMatch).filter(
-            MetadataMatch.media_item_id == item.id,
-            MetadataMatch.provider == provider,
-            MetadataMatch.external_id == str(external_id),
-            MetadataMatch.media_type == mtype
-        ).first()
-
-        if match:
-            match.is_active = True
-            if request.is_adult:
-                match.is_adult = True
-            if season_number is not None:
-                match.season_number = season_number
-            if episode_number is not None:
-                match.episode_number = episode_number
-        else:
-            match = MetadataMatch(
-                media_item_id=item.id,
-                provider=provider,
-                external_id=str(external_id),
-                media_type=mtype,
-                season_number=season_number,
-                episode_number=episode_number,
-                confidence_score=1.0,
-                is_active=True,
-                is_adult=bool(request.is_adult)
-            )
-            self.db.add(match)
-        self.db.flush()
-
-        item.status = ItemStatus.MATCHED
-
-        # Enrich item metadata
-        try:
-            self.scrapers.enrich_mainstream(self.db, item, DEFAULT_FALLBACK_LANGUAGE, commit=True)
-        except Exception as e:
-            logger.error(f"Enrichment failed during manual resolve: {e}")
-            self.db.commit()
-
-        return {"status": "success", "item_id": item.id, "match_id": match.id}
+        return self.resolver.resolve_item(request)
 
     def bulk_resolve(self, request: BulkResolveRequest) -> Dict[str, Any]:
-        resolutions = request.resolutions or []
-        count = 0
-        for res in resolutions:
-            try:
-                ret = self.resolve_item(res)
-                if "error" not in ret:
-                    count += 1
-            except Exception as e:
-                logger.error(f"Bulk resolve error for item {res.item_id}: {e}")
-        return {"status": "success", "resolved_count": count}
+        return self.resolver.bulk_resolve(request)
 
     def get_full_metadata(self, item_id: str, media_type: str = None, language: str = None) -> Dict[str, Any]:
         is_tmdb_direct = False
@@ -474,15 +363,7 @@ class MetadataService:
         }
 
     def get_sync_status(self) -> Dict[str, Any]:
-        return {
-            "active": False,
-            "progress": 100,
-            "phase": "idle",
-            "status": "success"
-        }
+        return self.sync_service.get_sync_status()
 
     def trigger_sync(self, payload: Dict[str, Any] = None) -> Dict[str, Any]:
-        return {
-            "status": "success",
-            "message": "Metadata language sync completed successfully"
-        }
+        return self.sync_service.trigger_sync(payload)

@@ -58,18 +58,26 @@ class DbMediaItemAdapter(MediaItemPort):
             if main_type in ("movie", "episode", "scene"):
                 parent_media = extra.media_item
                 if parent_media:
+                    parsed_data = {"type": main_type}
+                    if main_type == "episode":
+                        parsed_data["season"] = season
+                        parsed_data["episode"] = episode
                     new_item = MediaItem(
                         library_id=parent_media.library_id,
                         relative_path=extra.relative_path,
                         filename=extra.filename,
                         extension=extra.extension,
                         status=ItemStatus.NEW,
-                        parsed_info={"season": season, "episode": episode} if main_type == "episode" else {}
+                        parsed_info=parsed_data,
+                        custom_edition=MovieEdition.NONE if (custom_edition == "none" or not custom_edition) else MovieEdition(custom_edition.lower()) if custom_edition else MovieEdition.NONE,
+                        custom_source=MediaSource.NONE if (custom_source == "none" or not custom_source) else MediaSource(custom_source.lower()) if custom_source else MediaSource.NONE,
+                        custom_audio_type=MediaAudioType.NONE if (custom_audio_type == "none" or not custom_audio_type) else MediaAudioType(custom_audio_type.lower()) if custom_audio_type else MediaAudioType.NONE,
                     )
                     self.db.add(new_item)
                     self.db.delete(extra)
+                    self.db.flush()
                     self.db.commit()
-                    return {"status": "success", "item_id": item_id, "converted": True}
+                    return {"status": "success", "item_id": item_id, "new_item_id": new_item.id, "converted": True}
 
             if parent_id is not None:
                 extra.media_item_id = int(parent_id)
@@ -109,7 +117,8 @@ class DbMediaItemAdapter(MediaItemPort):
                 filename=item.filename,
                 extension=item.extension,
                 category=ExtraCategory.VIDEO,
-                subtype=None
+                subtype=ExtraSubtype(subtype.lower()) if (subtype and subtype != "none") else None,
+                language=language
             )
             self.db.add(new_extra)
             self.db.delete(item)
@@ -117,7 +126,7 @@ class DbMediaItemAdapter(MediaItemPort):
             return {"status": "success", "item_id": item_id, "converted": True}
 
         # Handle conversion between movie and episode
-        if main_type in ("movie", "episode"):
+        if main_type in ("movie", "episode", "scene"):
             parsed = dict(item.parsed_info) if item.parsed_info else {}
             old_type = parsed.get("type")
             if not old_type:
@@ -233,20 +242,35 @@ class DbMediaItemAdapter(MediaItemPort):
                         MetadataMatch.episode_number == ne_num
                     ).first()
                     if not episode_match:
-                        episode_match = MetadataMatch(
-                            provider=tv_match.provider,
-                            external_id=tv_match.external_id,
-                            media_type=MediaType.EPISODE,
-                            season_number=ns_num,
-                            episode_number=ne_num,
-                            parent_id=season_match.id,
-                            confidence_score=1.0,
-                            media_item_id=item.id,
-                            is_active=True,
-                            is_adult=tv_match.is_adult
-                        )
-                        self.db.add(episode_match)
-                        self.db.flush()
+                        # Check if there is already an EPISODE match for this media item under the same TV show
+                        episode_match = self.db.query(MetadataMatch).filter(
+                            MetadataMatch.media_item_id == item.id,
+                            MetadataMatch.provider == tv_match.provider,
+                            MetadataMatch.external_id == tv_match.external_id,
+                            MetadataMatch.media_type == MediaType.EPISODE
+                        ).first()
+                        
+                        if episode_match:
+                            episode_match.parent_id = season_match.id
+                            episode_match.season_number = ns_num
+                            episode_match.episode_number = ne_num
+                            episode_match.is_active = True
+                            episode_match.is_adult = tv_match.is_adult
+                        else:
+                            episode_match = MetadataMatch(
+                                provider=tv_match.provider,
+                                external_id=tv_match.external_id,
+                                media_type=MediaType.EPISODE,
+                                season_number=ns_num,
+                                episode_number=ne_num,
+                                parent_id=season_match.id,
+                                confidence_score=1.0,
+                                media_item_id=item.id,
+                                is_active=True,
+                                is_adult=tv_match.is_adult
+                            )
+                            self.db.add(episode_match)
+                            self.db.flush()
                     else:
                         episode_match.media_item_id = item.id
                         episode_match.is_active = True
@@ -298,13 +322,20 @@ class DbMediaItemAdapter(MediaItemPort):
                     if main_type in ("movie", "episode", "scene"):
                         parent_media = extra.media_item
                         if parent_media:
+                            parsed_data = {"type": main_type}
+                            if main_type == "episode":
+                                parsed_data["season"] = season
+                                parsed_data["episode"] = episode
                             new_item = MediaItem(
                                 library_id=parent_media.library_id,
                                 relative_path=extra.relative_path,
                                 filename=extra.filename,
                                 extension=extra.extension,
                                 status=ItemStatus.NEW,
-                                parsed_info={"season": season, "episode": episode} if main_type == "episode" else {}
+                                parsed_info=parsed_data,
+                                custom_edition=MovieEdition.NONE if (custom_edition == "none" or not custom_edition) else MovieEdition(custom_edition.lower()) if custom_edition else MovieEdition.NONE,
+                                custom_source=MediaSource.NONE if (custom_source == "none" or not custom_source) else MediaSource(custom_source.lower()) if custom_source else MediaSource.NONE,
+                                custom_audio_type=MediaAudioType.NONE if (custom_audio_type == "none" or not custom_audio_type) else MediaAudioType(custom_audio_type.lower()) if custom_audio_type else MediaAudioType.NONE,
                             )
                             self.db.add(new_item)
                             self.db.delete(extra)
@@ -325,11 +356,48 @@ class DbMediaItemAdapter(MediaItemPort):
                             filename=item.filename,
                             extension=item.extension,
                             category=ExtraCategory.VIDEO,
-                            subtype=ExtraSubtype.OTHER
+                            subtype=ExtraSubtype(subtype.lower()) if (subtype and subtype != "none") else ExtraSubtype.OTHER,
+                            language=language
                         )
                         self.db.add(new_extra)
                         self.db.delete(item)
                     else:
+                        # Handle conversion between movie/episode/scene
+                        if main_type in ("movie", "episode", "scene"):
+                            parsed = dict(item.parsed_info) if item.parsed_info else {}
+                            old_type = parsed.get("type")
+                            if not old_type:
+                                active_m = next((m for m in item.matches if m.is_active), None) or next((m for m in item.matches), None)
+                                if active_m:
+                                    old_type = active_m.media_type.value
+                                else:
+                                    fn_data = parsed.get("fn") or {}
+                                    it_data = parsed.get("it") or {}
+                                    fd_data = parsed.get("fd") or {}
+                                    old_type = fn_data.get("type") or it_data.get("type") or fd_data.get("type") or "movie"
+
+                            if str(old_type).lower() != main_type.lower():
+                                item.status = ItemStatus.NEW
+                                parsed["type"] = main_type
+                                for match in item.matches:
+                                    match.is_active = False
+                                    match.media_item_id = None
+
+                                if main_type == "movie":
+                                    parsed.pop("season", None)
+                                    parsed.pop("episode", None)
+                                    for k in ["fn", "it", "fd"]:
+                                        if k in parsed and isinstance(parsed[k], dict):
+                                            parsed[k].pop("season", None)
+                                            parsed[k].pop("episode", None)
+                                            parsed[k]["type"] = "movie"
+                                elif main_type == "episode":
+                                    for k in ["fn", "it", "fd"]:
+                                        if k in parsed and isinstance(parsed[k], dict):
+                                            parsed[k]["type"] = "episode"
+
+                            item.parsed_info = parsed
+
                         if custom_edition is not None:
                             item.custom_edition = MovieEdition.NONE if (custom_edition == "none" or not custom_edition) else MovieEdition(custom_edition.lower())
                         if custom_audio_type is not None:

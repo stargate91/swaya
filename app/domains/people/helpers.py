@@ -239,3 +239,26 @@ def resolve_person_known_for_backdrop(
 
     candidates.sort(key=lambda item: item[0], reverse=True)
     return candidates[0][1]
+
+
+def merge_images(existing: Optional[list[str]], new_images: list[str]) -> list[str]:
+    if not existing:
+        existing = []
+    seen = set()
+    res_list = []
+    for img in existing:
+        if not img:
+            continue
+        norm = img.split("/")[-1].split("?")[0].lower()
+        if norm not in seen:
+            seen.add(norm)
+            res_list.append(img)
+    for img in new_images:
+        if not img:
+            continue
+        norm = img.split("/")[-1].split("?")[0].lower()
+        if norm not in seen:
+            seen.add(norm)
+            res_list.append(img)
+    return res_list
+

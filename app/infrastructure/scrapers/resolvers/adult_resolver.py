@@ -1,6 +1,6 @@
 import difflib
 import logging
-from typing import Optional
+from typing import Optional, List, Dict, Any, Tuple
 
 from sqlalchemy.orm import Session
 
@@ -11,10 +11,13 @@ from app.shared_kernel.enums import ItemStatus, MediaType, Provider, ScanMode
 
 from app.shared_kernel.ports.scrapers import ScraperGatewayPort
 
+from app.infrastructure.scrapers.resolvers.adult.stashdb_resolver import StashDbResolver
+from app.infrastructure.scrapers.resolvers.adult.porndb_resolver import PornDbResolver
+from app.infrastructure.scrapers.resolvers.adult.fansdb_resolver import FansDbResolver
+from app.infrastructure.scrapers.resolvers.adult.scorer import validate_hash_match
+from app.infrastructure.scrapers.resolvers.adult.persister import persist_scene_match
+
 logger = logging.getLogger(__name__)
-
-from app.shared_kernel.constants import PORNDB_API_BASE, SCRAPER_REQUEST_TIMEOUT
-
 
 class AdultResolver:
     """Handles resolving adult scene items against StashDB, PornDB, and FansDB APIs."""
@@ -72,13 +75,17 @@ class AdultResolver:
         stash_scraper = self.scraper_gateway.adult(Provider.STASHDB, self.db)
         porndb_scraper = self.scraper_gateway.adult(Provider.PORNDB, self.db)
         fans_scraper = self.scraper_gateway.adult(Provider.FANSDB, self.db)
+
+        resolvers = {
+            Provider.STASHDB: (StashDbResolver(stash_scraper), Provider.STASHDB),
+            Provider.PORNDB: (PornDbResolver(porndb_scraper), Provider.PORNDB),
+            Provider.FANSDB: (FansDbResolver(fans_scraper), Provider.FANSDB),
+        }
+
         available = {}
-        if stash_scraper.get_setting('stashdb_api_key'):
-            available[Provider.STASHDB] = (stash_scraper, Provider.STASHDB)
-        if porndb_scraper.get_setting('porndb_api_key') or porndb_scraper.get_setting('porndb_api_token'):
-            available[Provider.PORNDB] = (porndb_scraper, Provider.PORNDB)
-        if fans_scraper.get_setting('fansdb_api_key'):
-            available[Provider.FANSDB] = (fans_scraper, Provider.FANSDB)
+        for provider, (res_obj, _) in resolvers.items():
+            if res_obj.is_configured():
+                available[provider] = (res_obj, provider)
 
         if preferred_provider:
             selected = [available[preferred_provider]] if preferred_provider in available else []
@@ -112,75 +119,21 @@ class AdultResolver:
         status: ItemStatus = ItemStatus.MATCHED,
         media_item_id: Optional[int] = None,
     ):
-        if clear_existing:
-            self.db.query(MetadataMatch).filter(MetadataMatch.media_item_id == item.id).delete()
-
-        from app.infrastructure.scrapers.support.normalizer import ScraperNormalizer
-        from app.infrastructure.scrapers.support.persistence import ScraperPersister
-
-        if provider == Provider.PORNDB:
-            scene_data = scraper.enrich_scene_ratings(scene_data)
-        normalized = ScraperNormalizer.normalize_adult_scene(provider.value, scene_data)
-        persister = ScraperPersister(self.db)
-        match = persister.persist_normalized_scene(provider, str(scene_data['id']), normalized, media_type=MediaType.SCENE, media_item_id=item.id)
-        match.is_active = is_active
-        match.confidence_score = confidence
-        item.status = status
-        return match
+        return persist_scene_match(
+            self.db,
+            item=item,
+            provider=provider,
+            scraper=scraper,
+            scene_data=scene_data,
+            confidence=confidence,
+            is_active=is_active,
+            clear_existing=clear_existing,
+            status=status,
+            media_item_id=media_item_id
+        )
 
     def _validate_hash_match(self, item: MediaItem, candidate: dict, current_status: ItemStatus) -> ItemStatus:
-        if current_status != ItemStatus.MATCHED:
-            return current_status
-
-        parsed = item.parsed_info or {}
-        parsed_titles = []
-        for key in ["fn", "fd", "it"]:
-            data = parsed.get(key) or {}
-            parsed_titles.extend([
-                data.get("alternative_title"),
-                data.get("episode_title"),
-                data.get("title")
-            ])
-        parsed_titles = [t for t in parsed_titles if t]
-        if not parsed_titles:
-            return current_status
-
-        cand_title = candidate.get("title") or ""
-        norm_cand = normalize_title(cand_title)
-        cand_words_str = normalize_title_words(cand_title)
-        cand_words = set(w for w in cand_words_str.split() if len(w) > 3)
-        best_ratio = 0.0
-        for t in parsed_titles:
-            norm_t = normalize_title(t)
-            if not norm_cand or not norm_t:
-                continue
-
-            # Substring match (e.g. "Hunger" inside "Valentina Nappi - Hunger")
-            if norm_cand in norm_t or norm_t in norm_cand:
-                return current_status
-
-            # Word intersection check for words of length > 3
-            t_words_str = normalize_title_words(t)
-            t_words = set(w for w in t_words_str.split() if len(w) > 3)
-            if cand_words & t_words:
-                best_ratio = max(best_ratio, 0.6)
-
-            ratio = difflib.SequenceMatcher(None, norm_cand, norm_t).ratio()
-            if ratio > best_ratio:
-                best_ratio = ratio
-
-        if best_ratio < 0.5:
-            norm_filename = normalize_title(item.filename)
-            if norm_cand and norm_cand in norm_filename:
-                return current_status
-
-            logger.warning(
-                'Hash match title similarity validation failed (best ratio %.2f < 0.5) for %s -> %s. Downgrading to UNCERTAIN.',
-                best_ratio, item.filename, cand_title
-            )
-            return ItemStatus.UNCERTAIN
-
-        return current_status
+        return validate_hash_match(item, candidate, current_status)
 
     def _resolve_adult_item(self, item: MediaItem, mode: ScanMode = ScanMode.SCENES, task_id: Optional[int] = None, preferred_provider: Optional[Provider] = None):
         existing_match = self.db.query(MetadataMatch).filter(
@@ -191,7 +144,7 @@ class AdultResolver:
 
         scrapers_to_try = self._build_scrapers_to_try(preferred_provider)
         logger.info('[adult:%s] Resolving %s | file=%s | oshash=%s | phash=%s', mode.value, item.id, item.filename, (item.hash_oshash or '')[:12], (item.hash_phash or '')[:12])
-        logger.info('[adult:%s] Providers to try: %s', mode.value, [provider.value for _scraper, provider in scrapers_to_try])
+        logger.info('[adult:%s] Providers to try: %s', mode.value, [provider.value for _resolver, provider in scrapers_to_try])
 
         if not scrapers_to_try:
             logger.warning('No adult metadata provider API key configured.')
@@ -199,121 +152,33 @@ class AdultResolver:
             self.db.flush()
             return
 
-        for scraper, provider in scrapers_to_try:
+        for resolver, provider in scrapers_to_try:
             scene_data = None
             matched_hash_type = None
             hash_status = None
 
             if provider in (Provider.STASHDB, Provider.FANSDB):
-                hash_query = """
-                query FindSceneByHash($hash: String!) {
-                  queryScenes(input: { fingerprints: { value: [$hash], modifier: EQUALS }, page: 1, per_page: 1 }) {
-                    scenes {
-                      id
-                      title
-                      details
-                      duration
-                      date
-                      tags { name }
-                      studio { id name images { url } }
-                      performers {
-                        performer {
-                          id name gender scene_count birth_date images { url } ethnicity hair_color eye_color height
-                          measurements { band_size cup_size waist hip }
-                        }
-                      }
-                      images { url }
-                    }
-                  }
-                }
-                """
                 for hash_type, hash_value in [('oshash', item.hash_oshash), ('phash', item.hash_phash)]:
                     if scene_data or not hash_value:
                         continue
                     logger.info('[adult:%s] Trying %s %s lookup for %s', mode.value, provider.value, hash_type.upper(), item.filename)
-                    cache_key = f'{provider.value}/hash/v4/{hash_type}/{hash_value}'
-                    cached = scraper.cache.get(provider, cache_key)
-                    if cached is not None:
-                        if cached and cached.get("scene"):
-                            scene_data = cached["scene"]
-                            matched_hash_type = hash_type
-                            hash_status = self._validate_hash_match(item, scene_data, ItemStatus(cached["status"]))
-                        continue
-                    try:
-                        res = scraper.execute_query(hash_query, {'hash': hash_value})
-                        scenes = res.get('queryScenes', {}).get('scenes') if res else []
-                        candidate = scenes[0] if scenes else None
-                        if candidate:
-                            if hash_type == 'oshash':
-                                status = ItemStatus.MATCHED
-                            else:  # phash
-                                if item.duration and candidate.get("duration"):
-                                    diff = abs(float(item.duration) - float(candidate["duration"]))
-                                    if diff <= 15:
-                                        status = ItemStatus.MATCHED
-                                    elif diff <= 300:
-                                        status = ItemStatus.UNCERTAIN
-                                    else:
-                                        status = None
-                                else:
-                                    status = ItemStatus.MATCHED
-                            
-                            status = self._validate_hash_match(item, candidate, status)
-                            if status:
-                                scene_data = candidate
-                                matched_hash_type = hash_type
-                                hash_status = status
-                                scraper.cache.set(provider, cache_key, {"scene": candidate, "status": status.value})
-                            else:
-                                scraper.cache.set(provider, cache_key, {})
-                        else:
-                            scraper.cache.set(provider, cache_key, {})
-                    except Exception as exc:
-                        logger.error('%s %s hash query failed: %s', provider.value, hash_type.upper(), exc)
+                    scene_data, hash_status = resolver.resolve_by_hash(item, hash_type, hash_value, self._validate_hash_match)
+                    if scene_data:
+                        matched_hash_type = hash_type
             elif provider == Provider.PORNDB:
-                api_token = scraper.get_setting('porndb_api_key') or scraper.get_setting('porndb_api_token')
-                headers = {
-                    'Authorization': f'Bearer {api_token}',
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                }
                 for hash_type, hash_value in [('oshash', item.hash_oshash)]:
                     if scene_data or not hash_value:
                         continue
-                    cache_key = f'porndb/scenes/hash/v4/{hash_type.lower()}/{hash_value}'
-                    cached = scraper.cache.get(provider, cache_key)
-                    if cached is not None:
-                        if cached and cached.get("scene"):
-                            scene_data = cached["scene"]
-                            matched_hash_type = hash_type
-                            hash_status = self._validate_hash_match(item, scene_data, ItemStatus(cached["status"]))
-                        continue
-                    url = f'{PORNDB_API_BASE}/scenes/hash/{hash_value}?type={hash_type.upper()}'
-                    try:
-                        resp = scraper.session.get(url, headers=headers, timeout=SCRAPER_REQUEST_TIMEOUT)
-                        logger.info('[adult:%s] PornDB GET %s -> status %s', mode.value, url, resp.status_code)
-                        if resp.status_code == 200:
-                            res_json = resp.json()
-                            candidate = (res_json or {}).get('data')
-                            if candidate:
-                                status = self._validate_hash_match(item, candidate, ItemStatus.MATCHED)
-                                scene_data = candidate
-                                matched_hash_type = hash_type
-                                hash_status = status
-                                scraper.cache.set(provider, cache_key, {"scene": candidate, "status": status.value})
-                            else:
-                                scraper.cache.set(provider, cache_key, {})
-                        else:
-                            scraper.cache.set(provider, cache_key, {})
-                    except Exception as exc:
-                        logger.error('PornDB %s query failed for scenes: %s', hash_type.upper(), exc)
+                    scene_data, hash_status = resolver.resolve_by_hash(item, hash_type, hash_value, self._validate_hash_match)
+                    if scene_data:
+                        matched_hash_type = hash_type
 
             if scene_data and hash_status:
                 logger.info('[adult:%s] Hash lookup matched %s -> provider=%s external_id=%s title=%s status=%s', mode.value, item.filename, provider.value, scene_data.get('id'), scene_data.get('title'), hash_status.value)
                 self._persist_scene_match(
                     item=item,
                     provider=provider,
-                    scraper=scraper,
+                    scraper=resolver.scraper,
                     scene_data=scene_data,
                     confidence=1.0,
                     status=hash_status,
@@ -342,39 +207,7 @@ class AdultResolver:
 
             all_candidates = []
             for search_title in search_queries:
-                cache_key_search = f'{provider.value}/{mode.value}/search/v4/{search_title.strip().lower()}'
-                cached_search = scraper.cache.get(provider, cache_key_search)
-                if cached_search is not None:
-                    scenes = cached_search
-                else:
-                    search_query = """
-                    query SearchScenes($q: String!) {
-                      searchScene(term: $q) {
-                        id
-                        title
-                        details
-                        date
-                        duration
-                        tags { name }
-                        studio { id name images { url } }
-                        performers {
-                          performer {
-                            id name gender scene_count birth_date images { url } ethnicity hair_color eye_color height
-                            measurements { band_size cup_size waist hip }
-                          }
-                        }
-                        images { url }
-                      }
-                    }
-                    """
-                    try:
-                        res = scraper.execute_query(search_query, {'q': search_title})
-                        scenes = res.get('searchScene', []) if res else []
-                        scraper.cache.set(provider, cache_key_search, scenes or [])
-                    except Exception as exc:
-                        logger.error('Text query failed for provider %s: %s', provider.value, exc)
-                        scenes = []
-
+                scenes = resolver.search_by_text(search_title)
                 for scene in scenes:
                     score = difflib.SequenceMatcher(None, normalize_title(search_title), normalize_title(scene.get('title') or '')).ratio()
                     if score >= 0.5:
@@ -387,7 +220,6 @@ class AdultResolver:
             uncertain_candidates = []
 
             for score, scene, q, s in all_candidates:
-                # Handle PornDB duration mappings (might be length or duration)
                 s_duration = scene.get("duration") or scene.get("length")
                 scene_sec = None
                 if s_duration not in (None, ""):
@@ -413,14 +245,12 @@ class AdultResolver:
 
             # 1. Check matched candidates
             if matched_candidates:
-                # If multiple matched candidates are found, but only one has matching duration (or if all have matching duration)
-                # Since we already filtered by diff <= 10, they all have matched durations.
                 if len(matched_candidates) == 1:
                     score, best_scene, best_query, best_scenes = matched_candidates[0]
                     self._persist_scene_match(
                         item=item,
                         provider=provider,
-                        scraper=scraper,
+                        scraper=resolver.scraper,
                         scene_data=best_scene,
                         confidence=score,
                         status=ItemStatus.MATCHED,
@@ -452,7 +282,7 @@ class AdultResolver:
                         self._persist_scene_match(
                             item=item,
                             provider=provider,
-                            scraper=scraper,
+                            scraper=resolver.scraper,
                             scene_data=scene,
                             confidence=score,
                             is_active=False,
@@ -484,7 +314,7 @@ class AdultResolver:
                     self._persist_scene_match(
                         item=item,
                         provider=provider,
-                        scraper=scraper,
+                        scraper=resolver.scraper,
                         scene_data=best_scene,
                         confidence=score,
                         status=ItemStatus.UNCERTAIN,
@@ -516,7 +346,7 @@ class AdultResolver:
                         self._persist_scene_match(
                             item=item,
                             provider=provider,
-                            scraper=scraper,
+                            scraper=resolver.scraper,
                             scene_data=scene,
                             confidence=score,
                             is_active=False,

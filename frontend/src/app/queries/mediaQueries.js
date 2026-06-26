@@ -79,17 +79,42 @@ const prettifyOrganizerLanguage = (value) => String(value || '')
   .replace(/[_-]+/g, ' ')
   .replace(/\b\w/g, (char) => char.toUpperCase());
 
-const applyOrganizerLanguageUpdate = (item, nextLanguage) => {
+const applyOrganizerItemUpdates = (item, variables) => {
   if (!item || typeof item !== 'object') return item;
-  return {
-    ...item,
-    target_language: nextLanguage,
-    language: prettifyOrganizerLanguage(nextLanguage),
-  };
+  
+  const nextItem = { ...item };
+  
+  if (variables.custom_language !== undefined) {
+    nextItem.target_language = variables.custom_language;
+    nextItem.language = prettifyOrganizerLanguage(variables.custom_language);
+  }
+  if (variables.custom_audio_type !== undefined) {
+    nextItem.custom_audio_type = variables.custom_audio_type;
+  }
+  if (variables.custom_source !== undefined) {
+    nextItem.custom_source = variables.custom_source;
+  }
+  if (variables.custom_edition !== undefined) {
+    nextItem.custom_edition = variables.custom_edition;
+  }
+  if (variables.main_type !== undefined) {
+    nextItem.type = variables.main_type;
+  }
+  if (variables.season !== undefined) {
+    nextItem.season = variables.season != null ? String(variables.season) : null;
+  }
+  if (variables.episode !== undefined) {
+    nextItem.episode = variables.episode != null ? String(variables.episode) : null;
+  }
+  if (variables.parent_id !== undefined) {
+    nextItem.parent_id = variables.parent_id;
+  }
+  
+  return nextItem;
 };
 
-const updateOrganizerItemsLanguage = (organizerData, itemIds, nextLanguage) => {
-  if (!organizerData || typeof organizerData !== 'object' || !nextLanguage) return organizerData;
+const updateOrganizerItemsOptimistic = (organizerData, itemIds, variables) => {
+  if (!organizerData || typeof organizerData !== 'object' || !variables) return organizerData;
 
   const targetIds = new Set((itemIds || []).map((itemId) => String(itemId)));
   let changed = false;
@@ -97,7 +122,7 @@ const updateOrganizerItemsLanguage = (organizerData, itemIds, nextLanguage) => {
   const updateList = (items = []) => items.map((item) => {
     if (!targetIds.has(String(item?.id))) return item;
     changed = true;
-    return applyOrganizerLanguageUpdate(item, nextLanguage);
+    return applyOrganizerItemUpdates(item, variables);
   });
 
   const nextData = {
@@ -145,15 +170,14 @@ export const useUpdateMediaMutation = () => {
     onMutate: async (variables) => {
       const scanMode = variables?.scanMode;
       const sessionMode = variables?.sessionMode;
-      const nextLanguage = variables?.custom_language;
-      if (nextLanguage == null || (scanMode === undefined && sessionMode === undefined)) {
+      if (scanMode === undefined && sessionMode === undefined) {
         return {};
       }
 
       const organizerKey = getOrganizerQueryKey(scanMode, sessionMode);
       await queryClient.cancelQueries({ queryKey: organizerKey });
       const previousOrganizer = queryClient.getQueryData(organizerKey);
-      queryClient.setQueryData(organizerKey, (oldData) => updateOrganizerItemsLanguage(oldData, [variables?.id], nextLanguage));
+      queryClient.setQueryData(organizerKey, (oldData) => updateOrganizerItemsOptimistic(oldData, [variables?.id], variables));
       return { organizerKey, previousOrganizer };
     },
     onError: (err, variables, context) => {
@@ -183,16 +207,15 @@ export const useBulkUpdateMediaMutation = () => {
     onMutate: async (variables) => {
       const scanMode = variables?.scanMode;
       const sessionMode = variables?.sessionMode;
-      const nextLanguage = variables?.custom_language;
       const itemIds = variables?.ids || variables?.item_ids || [];
-      if (nextLanguage == null || (scanMode === undefined && sessionMode === undefined) || itemIds.length === 0) {
+      if ((scanMode === undefined && sessionMode === undefined) || itemIds.length === 0) {
         return {};
       }
 
       const organizerKey = getOrganizerQueryKey(scanMode, sessionMode);
       await queryClient.cancelQueries({ queryKey: organizerKey });
       const previousOrganizer = queryClient.getQueryData(organizerKey);
-      queryClient.setQueryData(organizerKey, (oldData) => updateOrganizerItemsLanguage(oldData, itemIds, nextLanguage));
+      queryClient.setQueryData(organizerKey, (oldData) => updateOrganizerItemsOptimistic(oldData, itemIds, variables));
       return { organizerKey, previousOrganizer };
     },
     onError: (err, variables, context) => {
