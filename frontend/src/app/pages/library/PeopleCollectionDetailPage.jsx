@@ -12,6 +12,7 @@ import CollectionDetailSections from './components/entityDetail/CollectionDetail
 import usePeopleCollectionDetailController from './usePeopleCollectionDetailController.jsx';
 import UniversalImagePickerModal from './modals/UniversalImagePickerModal';
 import LinkSourceModalContent from './modals/LinkSourceModalContent';
+import DataMixerEditor from './modals/DataMixerEditor';
 import './PeopleCollectionDetailPage.css';
 import './components/detail/UserRatingSection.css';
 import './components/detail/panels/BackdropsPanel.css';
@@ -82,6 +83,21 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
     });
   };
 
+  const handleOpenDataMixerModal = () => {
+    if (!item?.id) return;
+    openModal({
+      title: t('library.details.dataMixer') || 'Performer Data Mixer',
+      variant: 'extra-wide',
+      className: 'data-mixer-modal-override',
+      content: (
+        <DataMixerEditor
+          person={item}
+          onBack={closeModal}
+        />
+      ),
+    });
+  };
+
   const handleOpenImagePickerModal = () => {
     const idToUse = isPeople ? item?.id : `collection_${item?.tmdb_id}`;
     if (!idToUse) return;
@@ -122,6 +138,7 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
           handleOpenPeopleBackdropModal={handleOpenPeopleBackdropModal}
           handleOpenCollectionBackdropModal={handleOpenCollectionBackdropModal}
           handleOpenLinkSourceModal={handleOpenLinkSourceModal}
+          handleOpenDataMixerModal={handleOpenDataMixerModal}
           extraLinks={extraLinks}
           socialLinks={socialLinks}
         />

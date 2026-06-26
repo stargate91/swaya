@@ -1,4 +1,4 @@
-import { Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
+import { Image as ImageIcon, Link as LinkIcon, Sparkles } from 'lucide-react';
 import PeopleTagPopover from './PeopleTagPopover';
 
 export default function EntityDetailTopControls({
@@ -11,6 +11,7 @@ export default function EntityDetailTopControls({
   handleOpenPeopleBackdropModal,
   handleOpenCollectionBackdropModal,
   handleOpenLinkSourceModal,
+  handleOpenDataMixerModal,
   extraLinks,
   socialLinks = [],
 }) {
@@ -23,14 +24,26 @@ export default function EntityDetailTopControls({
           updatePersonStatusMutation={updatePersonStatusMutation}
         />
         {item?.is_adult ? (
-          <button
-            type="button"
-            onClick={handleOpenLinkSourceModal}
-            className="media-detail-page__side-nav-toggle"
-            title={t('library.details.linkSource') || 'Link External Source'}
-          >
-            <LinkIcon size={18} />
-          </button>
+          <>
+            {item?.external_links && item.external_links.length > 0 ? (
+              <button
+                type="button"
+                onClick={handleOpenDataMixerModal}
+                className="media-detail-page__side-nav-toggle"
+                title={t('library.details.dataMixer') || 'Performer Data Mixer'}
+              >
+                <Sparkles size={18} />
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={handleOpenLinkSourceModal}
+              className="media-detail-page__side-nav-toggle"
+              title={t('library.details.linkSource') || 'Link External Source'}
+            >
+              <LinkIcon size={18} />
+            </button>
+          </>
         ) : null}
         {canChoosePeopleBackdrop ? (
           <button

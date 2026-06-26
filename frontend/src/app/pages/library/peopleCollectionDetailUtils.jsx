@@ -701,7 +701,11 @@ const formatListAttribute = (list) => {
     if (locations.length === 0) return 'Yes';
     return toTitleCase(locations.join(', '));
   }
-  if (typeof list === 'string') return toTitleCase(list);
+  if (typeof list === 'string') {
+    const formatted = toTitleCase(list);
+    if (formatted === 'No Piercings' || formatted === 'No Tattoos') return 'No';
+    return formatted;
+  }
   return null;
 };
 

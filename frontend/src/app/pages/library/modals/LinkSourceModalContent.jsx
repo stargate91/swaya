@@ -11,7 +11,8 @@ import Tooltip from '@/ui/Tooltip';
 import EmptyState from '@/ui/EmptyState';
 import NavButton from '@/ui/NavButton';
 import { resolveMediaImageUrl } from '@/lib/imageUrls';
-import { Search, Link as LinkIcon, User, ArrowLeft, Trash2, GitFork, Star } from 'lucide-react';
+import { Search, Link as LinkIcon, User, ArrowLeft, Trash2, GitFork, Star, Sparkles } from 'lucide-react';
+import DataMixerEditor from './DataMixerEditor';
 import './LinkSourceModalContent.css';
 
 const FemaleSilhouette = () => (

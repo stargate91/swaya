@@ -145,6 +145,7 @@ class BaseScraper:
             id
             name
             gender
+            breast_type
             scene_count
             birth_date
             ethnicity
@@ -198,10 +199,11 @@ class BaseScraper:
                 res["urls"] = [u.get("url") for u in res["urls"] if u and u.get("url")]
 
             # Map measurements
-            res["measurements"] = {
-                "band_size": res.get("band_size"),
-                "cup_size": res.get("cup_size"),
-                "waist": res.get("waist_size"),
-                "hip": res.get("hip_size"),
-            }
+            if is_stash:
+                res["measurements"] = {
+                    "band_size": res.get("band_size"),
+                    "cup_size": res.get("cup_size"),
+                    "waist": res.get("waist_size"),
+                    "hip": res.get("hip_size"),
+                }
         return res

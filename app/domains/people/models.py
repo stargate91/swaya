@@ -33,6 +33,7 @@ class Person(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=False, index=True) # True if the person has local files or user interaction
     is_adult: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
     primary_provider: Mapped[Optional[Provider]] = mapped_column(SQLEnum(Provider), nullable=True)
+    field_routing: Mapped[Optional[dict[str, str]]] = mapped_column(JSON, nullable=True)
     
     # Extended/Adult Performer attributes (allows structured filtering)
     hair_color: Mapped[Optional[str]] = mapped_column(String, index=True)
@@ -42,6 +43,10 @@ class Person(Base):
     weight: Mapped[Optional[int]] = mapped_column(Integer) # in kg
     measurements: Mapped[Optional[str]] = mapped_column(String) # e.g., "34B-24-34"
     cup_size: Mapped[Optional[str]] = mapped_column(String, index=True)
+    band_size: Mapped[Optional[int]] = mapped_column(Integer)
+    waist: Mapped[Optional[int]] = mapped_column(Integer)
+    hip: Mapped[Optional[int]] = mapped_column(Integer)
+    breast_type: Mapped[Optional[str]] = mapped_column(String, index=True)
     tattoos: Mapped[Optional[str]] = mapped_column(String)
     piercings: Mapped[Optional[str]] = mapped_column(String)
     orientation: Mapped[Optional[str]] = mapped_column(String, index=True)
@@ -70,78 +75,90 @@ class Person(Base):
             key=lambda l: priority_map.get(l.provider, 0)
         )
         
-        birthday = None
-        deathday = None
-        place_of_birth = None
-        gender = None
-        known_for_department = self.known_for_department or ("Acting" if self.is_adult else None)
-        popularity = None
-        rating_porndb = None
-        scene_count = None
-        profile_path = self.profile_path
-        homepage = None
+        routing = dict(self.field_routing or {})
+
+        def get_val(field_name, default_val=None):
+            routed_provider = routing.get(field_name)
+            if routed_provider:
+                for link in self.external_links:
+                    if link.provider.value == routed_provider and link.source_data:
+                        val = link.source_data.get(field_name)
+                        if val is not None and val != "":
+                            return val
+            # Fallback to priority loop (highest priority link overwrites lower)
+            for link in sorted_links:
+                data = link.source_data
+                if not data:
+                    continue
+                val = data.get(field_name)
+                if val is not None and val != "":
+                    default_val = val
+            return default_val
+
+        birthday = get_val("birthday")
+        deathday = get_val("deathday")
+        place_of_birth = get_val("place_of_birth")
+        gender = get_val("gender")
+        known_for_department = get_val("known_for_department", self.known_for_department or ("Acting" if self.is_adult else None))
+        popularity = get_val("popularity")
+        rating_porndb = get_val("rating_porndb")
+        scene_count = get_val("scene_count")
+        profile_path = get_val("profile_path", self.profile_path)
+        homepage = get_val("homepage")
+        
+        hair_color = get_val("hair_color")
+        eye_color = get_val("eye_color")
+        ethnicity = get_val("ethnicity")
+        height = get_val("height")
+        weight = get_val("weight")
+        measurements = get_val("measurements")
+        cup_size = get_val("cup_size")
+        band_size = get_val("band_size")
+        waist = get_val("waist")
+        hip = get_val("hip")
+        tattoos = get_val("tattoos")
+        piercings = get_val("piercings")
+        orientation = get_val("orientation")
+        breast_type = get_val("breast_type")
+        career_start_year = get_val("career_start_year")
+        career_end_year = get_val("career_end_year")
+        
         images = []
         aliases = []
         socials = {}
         
-        hair_color = None
-        eye_color = None
-        ethnicity = None
-        height = None
-        weight = None
-        measurements = None
-        cup_size = None
-        tattoos = None
-        piercings = None
-        orientation = None
-        career_start_year = None
-        career_end_year = None
-        
-        biographies = {}
-        
+        # Merge multi-value structures from all providers
         for link in sorted_links:
             data = link.source_data
             if not data:
                 continue
-                
-            if data.get("birthday"): birthday = data["birthday"]
-            if data.get("deathday"): deathday = data["deathday"]
-            if data.get("place_of_birth"): place_of_birth = data["place_of_birth"]
-            if data.get("gender") is not None: gender = data["gender"]
-            if data.get("known_for_department"): known_for_department = data["known_for_department"]
-            if data.get("popularity") is not None: popularity = data["popularity"]
-            if data.get("rating_porndb") is not None: rating_porndb = data["rating_porndb"]
-            if data.get("scene_count") is not None: scene_count = data["scene_count"]
-            if data.get("profile_path"): profile_path = data["profile_path"]
-            if data.get("homepage"): homepage = data["homepage"]
-            
             if data.get("images"):
                 for img in data["images"]:
                     if img not in images:
                         images.append(img)
-                        
             if data.get("aliases"):
                 for alias in data["aliases"]:
                     if alias not in aliases:
                         aliases.append(alias)
-                        
             if data.get("socials"):
                 socials.update(data["socials"])
-                
-            if data.get("hair_color"): hair_color = data["hair_color"]
-            if data.get("eye_color"): eye_color = data["eye_color"]
-            if data.get("ethnicity"): ethnicity = data["ethnicity"]
-            if data.get("height") is not None: height = data["height"]
-            if data.get("weight") is not None: weight = data["weight"]
-            if data.get("measurements"): measurements = data["measurements"]
-            if data.get("cup_size"): cup_size = data["cup_size"]
-            if data.get("tattoos"): tattoos = data["tattoos"]
-            if data.get("piercings"): piercings = data["piercings"]
-            if data.get("orientation"): orientation = data["orientation"]
-            if data.get("career_start_year") is not None: career_start_year = data["career_start_year"]
-            if data.get("career_end_year") is not None: career_end_year = data["career_end_year"]
-            
-            if data.get("biographies"):
+
+        # Resolve biography locales
+        biographies = {}
+        routed_bio_provider = routing.get("biography")
+        if routed_bio_provider:
+            for link in self.external_links:
+                if link.provider.value == routed_bio_provider and link.source_data:
+                    data = link.source_data
+                    if data.get("biographies"):
+                        for loc, bio_text in data["biographies"].items():
+                            if bio_text:
+                                biographies[loc] = bio_text
+        if not biographies:
+            for link in sorted_links:
+                data = link.source_data
+                if not data or not data.get("biographies"):
+                    continue
                 for loc, bio_text in data["biographies"].items():
                     if bio_text:
                         biographies[loc] = bio_text
@@ -167,9 +184,13 @@ class Person(Base):
         if weight is not None: self.weight = weight
         if measurements: self.measurements = measurements
         if cup_size: self.cup_size = cup_size
+        if band_size is not None: self.band_size = band_size
+        if waist is not None: self.waist = waist
+        if hip is not None: self.hip = hip
         if tattoos: self.tattoos = tattoos
         if piercings: self.piercings = piercings
         if orientation: self.orientation = orientation
+        if breast_type: self.breast_type = breast_type
         if career_start_year is not None: self.career_start_year = career_start_year
         if career_end_year is not None: self.career_end_year = career_end_year
         

@@ -624,4 +624,34 @@ export const useSetPrimaryPersonSourceMutation = () => {
   });
 };
 
+export const useSetPersonFieldRoutingMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ personId, routing }) => api.people.setFieldRouting(personId, routing),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['person-detail', variables.personId] });
+      queryClient.invalidateQueries({ queryKey: ['person-detail', String(variables.personId)] });
+      queryClient.invalidateQueries({ queryKey: ['person-detail'] });
+      queryClient.invalidateQueries({ queryKey: ['people'] });
+      queryClient.invalidateQueries({ queryKey: ['people-infinite'] });
+      queryClient.invalidateQueries({ queryKey: ['library'] });
+    },
+  });
+};
+
+export const useSavePersonCustomFieldsMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ personId, fields }) => api.people.saveCustomFields(personId, fields),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['person-detail', variables.personId] });
+      queryClient.invalidateQueries({ queryKey: ['person-detail', String(variables.personId)] });
+      queryClient.invalidateQueries({ queryKey: ['person-detail'] });
+      queryClient.invalidateQueries({ queryKey: ['people'] });
+      queryClient.invalidateQueries({ queryKey: ['people-infinite'] });
+      queryClient.invalidateQueries({ queryKey: ['library'] });
+    },
+  });
+};
+
 

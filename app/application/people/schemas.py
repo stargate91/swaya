@@ -30,10 +30,15 @@ class PersonRead(BaseSchema):
     weight: Optional[int] = None
     measurements: Optional[str] = None
     cup_size: Optional[str] = None
+    band_size: Optional[int] = None
+    waist: Optional[int] = None
+    hip: Optional[int] = None
     tattoos: Optional[str] = None
     piercings: Optional[str] = None
     orientation: Optional[str] = None
+    breast_type: Optional[str] = None
     primary_provider: Optional[str] = None
+    field_routing: Optional[dict[str, str]] = None
 
 class PeopleGroupItem(BaseModel):
     id: int
@@ -104,6 +109,7 @@ class ExternalLinkDetail(BaseModel):
     provider: str
     external_id: str
     profile_url: Optional[str] = None
+    source_data: Optional[dict[str, Any]] = None
 
 class PersonDetailResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
@@ -137,6 +143,7 @@ class PersonDetailResponse(BaseModel):
     initial_scene_credits_page: PersonFilmographyResponse
     external_links: Optional[List[ExternalLinkDetail]] = None
     primary_provider: Optional[str] = None
+    field_routing: Optional[dict[str, str]] = None
 
 
 

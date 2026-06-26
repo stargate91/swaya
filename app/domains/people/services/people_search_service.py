@@ -303,7 +303,7 @@ class PeopleSearchService:
                 name=tmdb_details.get("name"),
                 profile_path=tmdb_details.get("profile_path"),
                 gender=tmdb_details.get("gender"),
-                is_adult=False,
+                is_adult=bool(is_adult),
                 tmdb_id=str(tmdb_id),
                 known_for_department=tmdb_details.get("known_for_department") or "Acting"
             )

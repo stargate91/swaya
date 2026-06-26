@@ -246,6 +246,10 @@ class PerformerDetailReader:
                 "weight": person.weight,
                 "measurements": person.measurements,
                 "cup_size": person.cup_size,
+                "band_size": person.band_size,
+                "waist": person.waist,
+                "hip": person.hip,
+                "breast_type": person.breast_type,
                 "tattoos": person.tattoos,
                 "piercings": person.piercings,
                 "orientation": person.orientation,
@@ -286,6 +290,10 @@ class PerformerDetailReader:
             "weight": person.weight,
             "measurements": person.measurements,
             "cup_size": person.cup_size,
+            "band_size": person.band_size,
+            "waist": person.waist,
+            "hip": person.hip,
+            "breast_type": person.breast_type,
             "tattoos": person.tattoos,
             "piercings": person.piercings,
             "orientation": person.orientation,
@@ -310,11 +318,13 @@ class PerformerDetailReader:
                 {
                     "provider": link.provider.value,
                     "external_id": link.external_id,
-                    "profile_url": link.profile_url
+                    "profile_url": link.profile_url,
+                    "source_data": link.source_data
                 }
                 for link in person.external_links
             ],
-            "primary_provider": person.primary_provider.value if person.primary_provider else None
+            "primary_provider": person.primary_provider.value if person.primary_provider else None,
+            "field_routing": person.field_routing
         }
         return PersonDetailResponse(**result)
 

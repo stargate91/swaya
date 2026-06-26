@@ -95,6 +95,32 @@ class PornDBScraper(BaseScraper):
         details = super().get_performer_details(performer_id)
         if details:
             details["rating_porndb"] = self.fetch_performer_rating(performer_id)
+            api_token = self.get_setting("porndb_api_key") or self.get_setting("porndb_api_token")
+            if api_token:
+                try:
+                    response = self.session.get(
+                        f"{PORNDB_API_BASE}/performers/{performer_id}",
+                        headers={"Authorization": f"Bearer {api_token}", "Accept": "application/json"},
+                        timeout=SCRAPER_REQUEST_TIMEOUT,
+                    )
+                    if response.status_code == 200:
+                        rest_data = response.json().get("data")
+                        if rest_data:
+                            if rest_data.get("bio"):
+                                details["details"] = rest_data["bio"]
+                            rest_extras = rest_data.get("extras") or {}
+                            if rest_extras and "same_sex_only" in rest_extras:
+                                is_same_sex = rest_extras.get("same_sex_only")
+                                details["orientation"] = "Same-Sex Only" if is_same_sex else "All"
+                            if rest_extras and rest_extras.get("tattoos"):
+                                details["tattoos"] = rest_extras["tattoos"]
+                            if rest_extras and rest_extras.get("piercings"):
+                                details["piercings"] = rest_extras["piercings"]
+                            if rest_extras and "fake_boobs" in rest_extras:
+                                is_fake = rest_extras.get("fake_boobs")
+                                details["breast_type"] = "FAKE" if is_fake else "NATURAL"
+                except Exception as exc:
+                    logger.error(f"Error fetching PornDB performer bio/extras: {exc}")
         return details
 
     def find_movie_by_hash(self, file_hash: str, hash_type: str = "OSHASH", force_refresh: bool = False) -> Optional[dict]:

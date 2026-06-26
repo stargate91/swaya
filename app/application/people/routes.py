@@ -671,3 +671,68 @@ def set_primary_person_source(
     person.recalculate_projection(db)
     db.commit()
     return {"status": "success", "person_id": person.id, "primary_provider": source}
+
+
+class PersonFieldRoutingPayload(BaseModel):
+    routing: dict[str, str]
+
+@router.post("/{person_id}/field-routing")
+def set_person_field_routing(
+    person_id: str,
+    payload: PersonFieldRoutingPayload,
+    db: Session = Depends(get_db)
+):
+    person = resolve_person(person_id, db)
+    if not person:
+        raise HTTPException(status_code=404, detail="Person not found")
+
+    person.field_routing = payload.routing
+    person.recalculate_projection(db)
+    db.commit()
+    return {"status": "success", "person_id": person.id, "field_routing": person.field_routing}
+
+
+class SaveCustomFieldsPayload(BaseModel):
+    fields: dict[str, Any]
+
+@router.post("/{person_id}/custom-fields")
+def save_custom_fields(
+    person_id: str,
+    payload: SaveCustomFieldsPayload,
+    db: Session = Depends(get_db)
+):
+    person = resolve_person(person_id, db)
+    if not person:
+        raise HTTPException(status_code=404, detail="Person not found")
+
+    from app.domains.people.models import ExternalSourceLink
+    from app.shared_kernel.enums import Provider
+
+    manual_link = next((l for l in person.external_links if l.provider == Provider.MANUAL), None)
+    if not manual_link:
+        manual_link = ExternalSourceLink(
+            person_id=person.id,
+            provider=Provider.MANUAL,
+            external_id=f"manual_{person.id}",
+            source_data={}
+        )
+        db.add(manual_link)
+        person.external_links.append(manual_link)
+
+    source_data = dict(manual_link.source_data or {})
+    for k, v in payload.fields.items():
+        if v == "" or v is None:
+            source_data.pop(k, None)
+            if k == "biography":
+                source_data.pop("biographies", None)
+        else:
+            source_data[k] = v
+            if k == "biography":
+                source_data["biographies"] = {"en": v, "hu": v}
+
+    manual_link.source_data = source_data
+    person.recalculate_projection(db)
+    db.commit()
+
+    return {"status": "success", "source_data": manual_link.source_data}
+

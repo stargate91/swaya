@@ -70,14 +70,37 @@ class AdultEnricher:
 
             measurements_val = None
             cup_val = None
+            band_val = None
+            waist_val = None
+            hip_val = None
             m = perf.get("measurements")
             if m and isinstance(m, dict):
                 band = m.get("band_size")
                 cup = m.get("cup_size")
                 waist = m.get("waist")
                 hip = m.get("hip")
-                if band and cup and waist and hip:
-                    measurements_val = f"{band}{cup}-{waist}-{hip}"
+                
+                if band is not None:
+                    try: band_val = int(band)
+                    except (ValueError, TypeError): pass
+                if waist is not None:
+                    try: waist_val = int(waist)
+                    except (ValueError, TypeError): pass
+                if hip is not None:
+                    try: hip_val = int(hip)
+                    except (ValueError, TypeError): pass
+                
+                parts = []
+                if band and cup:
+                    parts.append(f"{band}{cup}")
+                elif cup:
+                    parts.append(str(cup))
+                
+                if waist and hip:
+                    parts.append(f"{waist}-{hip}")
+                
+                if parts:
+                    measurements_val = "-".join(parts)
                 if cup:
                     cup_val = str(cup)
 
@@ -106,6 +129,10 @@ class AdultEnricher:
                 "gender": g_val,
                 "measurements": measurements_val,
                 "cup_size": cup_val,
+                "band_size": band_val,
+                "waist": waist_val,
+                "hip": hip_val,
+                "breast_type": perf.get("breast_type"),
                 "biographies": {DEFAULT_FALLBACK_LANGUAGE: bio} if bio else {},
                 "images": urls_list,
                 "profile_path": urls_list[0] if urls_list else None,
