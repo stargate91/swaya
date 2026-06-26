@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react';
 import MediaCard from './MediaCard';
 import Pill from './Pill';
 import IconButton from './IconButton';
@@ -36,6 +36,12 @@ const PosterCard = memo(function PosterCard({
   const DefaultComponent = Component || (isInteractive ? 'button' : 'div');
   const isOverlayTitle = variant === 'overlay-title';
 
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [imageUrl]);
+
   const cardClassName = `ui-poster-card ${isOverlayTitle ? 'ui-poster-card--overlay-title' : ''} ${active ? 'is-active' : ''} ${className}`.trim();
 
   return (
@@ -50,8 +56,13 @@ const PosterCard = memo(function PosterCard({
           {...props}
         >
           <MediaCard className="ui-poster-card__media">
-            {imageUrl ? (
-              <img src={imageUrl} alt="" className="ui-poster-card__image" />
+            {imageUrl && !imageError ? (
+              <img
+                src={imageUrl}
+                alt=""
+                className="ui-poster-card__image"
+                onError={() => setImageError(true)}
+              />
             ) : (
               <div
                 className="ui-poster-card__placeholder"

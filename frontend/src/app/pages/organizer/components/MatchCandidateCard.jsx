@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Clapperboard } from 'lucide-react';
 import Badge from '@/ui/Badge';
 import MetaRow from '@/ui/MetaRow';
@@ -5,6 +6,7 @@ import PosterCard from '@/ui/PosterCard';
 import BackdropCard from '@/ui/BackdropCard';
 import { buildTmdbImageUrl, TMDB_IMAGE_SIZES } from '@/lib/imageUrls';
 import { MEDIA_TYPES, isTvLikeMediaType, toMetadataMediaType } from '@/lib/mediaTypes';
+import { API_BASE } from '@/lib/backend';
 
 const getDisplayTitle = (candidate, mediaType, t) => (
   candidate?.title
@@ -21,7 +23,14 @@ const getDisplayYear = (candidate, mediaType) => {
   return rawDate ? String(rawDate).slice(0, 4) : null;
 };
 
-const getImageUrl = (path, size = TMDB_IMAGE_SIZES.posterThumb) => (!path ? '' : buildTmdbImageUrl(path, size));
+const getImageUrl = (path, size = TMDB_IMAGE_SIZES.posterThumb) => {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('//')) {
+    const url = path.startsWith('//') ? `https:${path}` : path;
+    return `${API_BASE}/api/v1/media/image-proxy?url=${encodeURIComponent(url)}`;
+  }
+  return buildTmdbImageUrl(path, size);
+};
 
 export default function MatchCandidateCard({
   candidate,
@@ -39,7 +48,12 @@ export default function MatchCandidateCard({
   const displayYear = getDisplayYear(candidate, mediaType);
   const candidateId = candidate.tmdb_id || candidate.id;
   const posterUrl = getImageUrl(candidate.poster_path, TMDB_IMAGE_SIZES.posterThumb);
+  const [imageError, setImageError] = useState(false);
   const isDisabled = isResolvingId === candidateId || isBrowserLoading;
+
+  useEffect(() => {
+    setImageError(false);
+  }, [posterUrl]);
 
   if (variant === 'poster') {
     if (mediaType === 'scene') {
@@ -115,8 +129,13 @@ export default function MatchCandidateCard({
       disabled={isDisabled}
     >
       <div className="organizer-match-modal__poster">
-        {posterUrl ? (
-          <img src={posterUrl} alt="" className="organizer-match-modal__poster-image" />
+        {posterUrl && !imageError ? (
+          <img
+            src={posterUrl}
+            alt=""
+            className="organizer-match-modal__poster-image"
+            onError={() => setImageError(true)}
+          />
         ) : (
           <div className="organizer-match-modal__poster-placeholder">
             <Clapperboard size={18} />

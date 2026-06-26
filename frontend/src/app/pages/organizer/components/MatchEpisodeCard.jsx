@@ -1,12 +1,20 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Clapperboard, Check } from 'lucide-react';
 import Badge from '../../../ui/Badge';
 import MediaCard from '../../../ui/MediaCard';
 import MetaRow from '../../../ui/MetaRow';
 import Button from '../../../ui/Button';
 import { buildTmdbImageUrl, TMDB_IMAGE_SIZES } from '@/lib/imageUrls';
+import { API_BASE } from '@/lib/backend';
 
-const getImageUrl = (path, size = TMDB_IMAGE_SIZES.thumbnail) => (!path ? '' : buildTmdbImageUrl(path, size));
+const getImageUrl = (path, size = TMDB_IMAGE_SIZES.thumbnail) => {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('//')) {
+    const url = path.startsWith('//') ? `https:${path}` : path;
+    return `${API_BASE}/api/v1/media/image-proxy?url=${encodeURIComponent(url)}`;
+  }
+  return buildTmdbImageUrl(path, size);
+};
 
 export default function MatchEpisodeCard({
   episodeEntry,
@@ -20,6 +28,11 @@ export default function MatchEpisodeCard({
 }) {
   const stillUrl = getImageUrl(episodeEntry.still_path, TMDB_IMAGE_SIZES.thumbnail);
   const cardRef = useRef();
+  const [stillError, setStillError] = useState(false);
+
+  useEffect(() => {
+    setStillError(false);
+  }, [stillUrl]);
 
   useEffect(() => {
     if (isHighlighted && cardRef.current) {
@@ -43,8 +56,13 @@ export default function MatchEpisodeCard({
         onClick={() => onToggle(episodeEntry.episode_number)}
       >
         <MediaCard>
-          {stillUrl ? (
-            <img src={stillUrl} alt="" className="organizer-match-modal__poster-image" />
+          {stillUrl && !stillError ? (
+            <img
+              src={stillUrl}
+              alt=""
+              className="organizer-match-modal__poster-image"
+              onError={() => setStillError(true)}
+            />
           ) : (
             <div className="organizer-match-modal__poster-placeholder">
               <Clapperboard size={18} />

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Check } from 'lucide-react';
 import './BackdropCard.css';
 
@@ -23,6 +24,12 @@ export default function BackdropCard({
     .filter(Boolean)
     .join(' ');
 
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [imageUrl]);
+
   return (
     <button
       type="button"
@@ -31,7 +38,7 @@ export default function BackdropCard({
       disabled={isPending || disabled}
       {...props}
     >
-      {imageUrl && (
+      {imageUrl && !imageError ? (
         <img
           src={imageUrl}
           alt={alt}
@@ -39,7 +46,12 @@ export default function BackdropCard({
           loading="lazy"
           decoding="async"
           draggable="false"
+          onError={() => setImageError(true)}
         />
+      ) : (
+        <div className="ui-backdrop-card__placeholder">
+          {alt || 'No Image'}
+        </div>
       )}
       {isPending && (
         <div className="ui-backdrop-card__spinner-overlay">

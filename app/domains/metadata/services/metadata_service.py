@@ -115,6 +115,36 @@ class MetadataService:
                         formatted = []
                         for s in scenes:
                             site_data = s.get("site") or {}
+                            posters = s.get("posters")
+                            poster = None
+                            if isinstance(posters, dict):
+                                poster = (
+                                    posters.get("medium")
+                                    or posters.get("small")
+                                    or posters.get("large")
+                                    or posters.get("full")
+                                )
+                            if not poster:
+                                poster = s.get("poster") or s.get("image") or s.get("face") or s.get("thumbnail")
+
+                            backgrounds = s.get("backgrounds")
+                            background = s.get("background")
+                            backdrop = None
+                            if isinstance(backgrounds, dict):
+                                backdrop = (
+                                    backgrounds.get("large")
+                                    or backgrounds.get("full")
+                                    or backgrounds.get("medium")
+                                )
+                            if not backdrop and isinstance(background, dict):
+                                backdrop = (
+                                    background.get("large")
+                                    or background.get("full")
+                                    or background.get("medium")
+                                )
+                            if not backdrop:
+                                backdrop = s.get("image") or poster
+
                             formatted.append({
                                 "id": s.get("id"),
                                 "title": s.get("title"),
@@ -122,8 +152,8 @@ class MetadataService:
                                 "release_date": s.get("date"),
                                 "year": int(str(s["date"]).split("-")[0]) if s.get("date") else None,
                                 "overview": s.get("description") or s.get("details"),
-                                "poster_path": s.get("image") or s.get("face") or s.get("thumbnail"),
-                                "backdrop_path": s.get("image"),
+                                "poster_path": poster,
+                                "backdrop_path": backdrop,
                                 "rating": s.get("rating") or 0.0,
                                 "media_type": "scene",
                                 "provider": prov_enum.value,

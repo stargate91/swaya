@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from pydantic import BaseModel
@@ -79,4 +79,39 @@ def get_history(page: int = 1, limit: int = 20, db: Session = Depends(get_db)):
 @router.post("/rename/undo/{batch_id}")
 def undo_rename(batch_id: int, db: Session = Depends(get_db)):
     return ScannerService(db).start_undo(batch_id)
+
+
+@router.get("/media/image-proxy")
+def image_proxy(url: str = Query(..., description="The remote image URL to proxy")):
+    import requests
+    from fastapi import HTTPException
+    from fastapi.responses import StreamingResponse
+    from urllib.parse import urlparse
+    import logging
+    import traceback
+    import urllib3
+    
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    logger = logging.getLogger("app.media.image_proxy")
+    
+    if url.startswith("//"):
+        url = "https:" + url
+        
+    parsed = urlparse(url)
+    if not parsed.scheme or not parsed.netloc:
+        raise HTTPException(status_code=400, detail="Invalid URL")
+        
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Referer": f"{parsed.scheme}://{parsed.netloc}/"
+        }
+        response = requests.get(url, headers=headers, stream=True, timeout=10, verify=False)
+        response.raise_for_status()
+        
+        content_type = response.headers.get("Content-Type", "image/jpeg")
+        return StreamingResponse(response.iter_content(chunk_size=4096), media_type=content_type)
+    except Exception as e:
+        logger.exception(f"Image proxy failed for URL {url}")
+        raise HTTPException(status_code=502, detail=f"Failed to fetch remote image: {e}")
 
