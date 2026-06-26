@@ -56,7 +56,7 @@ class RemoteCreditsFetcher:
         mapped_items = []
         total_items = 0
         
-        remote_per_page = 1000
+        remote_per_page = 5000
         
         if source.lower() in ("stashdb", "fansdb"):
             if media_type != "scene":
@@ -138,74 +138,96 @@ class RemoteCreditsFetcher:
                     headers = {"Authorization": f"Bearer {api_token}", "Accept": "application/json"}
                     
                     if media_type == "movie":
-                        url = f"https://api.theporndb.net/performers/{ext_id}/movies?page=1&per_page={remote_per_page}"
-                        resp = requests.get(url, headers=headers, timeout=10)
-                        if resp.status_code == 200:
-                            data_list = resp.json().get("data") or []
-                            total_items = len(data_list)
-                            for x in data_list:
-                                xid = x.get("id")
-                                title = x.get("title") or "Unknown"
-                                date_str = x.get("date")
-                                year = None
-                                if date_str:
-                                    try:
-                                        year = int(date_str.split("-")[0])
-                                    except:
-                                        pass
-                                studio_name = x.get("site", {}).get("name") if x.get("site") else None
-                                poster_url = x.get("poster")
-                                rating = x.get("rating")
-                                
-                                mapped_items.append({
-                                    "id": xid,
-                                    "title": title,
-                                    "type": "movie",
-                                    "media_type": "movie",
-                                    "year": year,
-                                    "studio": studio_name,
-                                    "poster_path": poster_url,
-                                    "rating": 0.0,
-                                    "rating_porndb": rating,
-                                    "in_library": False,
-                                    "stash_id": xid,
-                                    "source": "porndb",
-                                })
-                                
+                        data_list = []
+                        current_page = 1
+                        while len(data_list) < 5000:
+                            url = f"https://api.theporndb.net/performers/{ext_id}/movies?page={current_page}&per_page=100"
+                            resp = requests.get(url, headers=headers, timeout=10)
+                            if resp.status_code != 200:
+                                break
+                            page_data = resp.json().get("data") or []
+                            if not page_data:
+                                break
+                            data_list.extend(page_data)
+                            if len(page_data) < 100:
+                                break
+                            current_page += 1
+
+                        total_items = len(data_list)
+                        for x in data_list:
+                            xid = x.get("id")
+                            title = x.get("title") or "Unknown"
+                            date_str = x.get("date")
+                            year = None
+                            if date_str:
+                                try:
+                                    year = int(date_str.split("-")[0])
+                                except:
+                                    pass
+                            studio_name = x.get("site", {}).get("name") if x.get("site") else None
+                            poster_url = x.get("poster")
+                            rating = x.get("rating")
+                            
+                            mapped_items.append({
+                                "id": xid,
+                                "title": title,
+                                "type": "movie",
+                                "media_type": "movie",
+                                "year": year,
+                                "studio": studio_name,
+                                "poster_path": poster_url,
+                                "rating": 0.0,
+                                "rating_porndb": rating,
+                                "in_library": False,
+                                "stash_id": xid,
+                                "source": "porndb",
+                            })
+                            
                     elif media_type == "scene":
-                        url = f"https://api.theporndb.net/performers/{ext_id}/scenes?page=1&per_page={remote_per_page}"
-                        resp = requests.get(url, headers=headers, timeout=10)
-                        if resp.status_code == 200:
-                            data_list = resp.json().get("data") or []
-                            total_items = len(data_list)
-                            for x in data_list:
-                                xid = x.get("id")
-                                title = x.get("title") or "Unknown"
-                                date_str = x.get("date")
-                                year = None
-                                if date_str:
-                                    try:
-                                        year = int(date_str.split("-")[0])
-                                    except:
-                                        pass
-                                studio_name = x.get("site", {}).get("name") if x.get("site") else None
-                                poster_url = x.get("poster")
-                                rating = x.get("rating")
-                                
-                                mapped_items.append({
-                                    "id": xid,
-                                    "title": title,
-                                    "type": "scene",
-                                    "media_type": "scene",
-                                    "year": year,
-                                    "studio": studio_name,
-                                    "poster_path": poster_url,
-                                    "rating": 0.0,
-                                    "rating_porndb": rating,
-                                    "in_library": False,
-                                    "stash_id": xid,
-                                    "source": "porndb",
-                                })
+                        data_list = []
+                        current_page = 1
+                        while len(data_list) < 5000:
+                            url = f"https://api.theporndb.net/performers/{ext_id}/scenes?page={current_page}&per_page=100"
+                            resp = requests.get(url, headers=headers, timeout=10)
+                            if resp.status_code != 200:
+                                break
+                            page_data = resp.json().get("data") or []
+                            if not page_data:
+                                break
+                            data_list.extend(page_data)
+                            if len(page_data) < 100:
+                                break
+                            current_page += 1
+
+                        total_items = len(data_list)
+                        for x in data_list:
+                            xid = x.get("id")
+                            title = x.get("title") or "Unknown"
+                            date_str = x.get("date")
+                            year = None
+                            if date_str:
+                                try:
+                                    year = int(date_str.split("-")[0])
+                                except:
+                                    pass
+                            studio_name = x.get("site", {}).get("name") if x.get("site") else None
+                            poster_url = x.get("poster")
+                            rating = x.get("rating")
+                            
+                            mapped_items.append({
+                                "id": xid,
+                                "title": title,
+                                "type": "scene",
+                                "media_type": "scene",
+                                "year": year,
+                                "studio": studio_name,
+                                "poster_path": poster_url,
+                                "rating": 0.0,
+                                "rating_porndb": rating,
+                                "in_library": False,
+                                "stash_id": xid,
+                                "source": "porndb",
+                            })
             except Exception as e:
                 logger.error(f"Error querying PornDB REST API for performer {person_id}: {e}")
                 

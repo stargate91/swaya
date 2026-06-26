@@ -65,9 +65,24 @@ export default function TMDBImageGrid({
       if (!personDetail?.images) return [];
       let list = personDetail.images;
       if (selectedSource && selectedSource !== 'all') {
-        const isPornDB = (img) => img.includes('theporndb') || img.includes('metadataapi') || img.includes('porndb');
-        const isStashDB = (img) => img.includes('stashdb');
-        const isFansDB = (img) => img.includes('fansdb');
+        const getDomain = (img) => {
+          try { return new URL(img).hostname; } catch { return ''; }
+        };
+        const isPornDB = (img) => {
+          const d = getDomain(img);
+          if (d) return d.includes('theporndb') || d.includes('metadataapi') || d.includes('porndb');
+          return img.includes('/porndb_') || img.includes('/theporndb_');
+        };
+        const isStashDB = (img) => {
+          const d = getDomain(img);
+          if (d) return d.includes('stashdb');
+          return img.includes('/stashdb_') || img.includes('/stash_');
+        };
+        const isFansDB = (img) => {
+          const d = getDomain(img);
+          if (d) return d.includes('fansdb');
+          return img.includes('/fansdb_');
+        };
         const isTMDB = (img) => img.includes('tmdb') || (!isPornDB(img) && !isStashDB(img) && !isFansDB(img));
 
         if (selectedSource === 'tmdb') {
@@ -81,25 +96,43 @@ export default function TMDBImageGrid({
         }
       }
       // Deduplicate local vs remote duplicates
-      const seenNames = new Set();
+      // For remote URLs, use full URL path as key (different PornDB images share filenames like riley-reid.jpg)
+      // For local files, use cleaned filename to match local copies against their remote originals
+      const seenKeys = new Map(); // key -> index in filteredList
       const filteredList = [];
       for (const img of list) {
         if (!img) continue;
         const lowerImg = img.toLowerCase();
-        const filename = lowerImg.split('/').pop().split('?')[0];
-        const cleanName = filename
-          .replace(/\.[^/.]+$/, "")
-          .replace('tmdb_', '')
-          .replace('stashdb_', '')
-          .replace('stash_', '')
-          .replace('fansdb_', '')
-          .replace('porndb_', '')
-          .replace('theporndb_', '');
+        const isRemote = lowerImg.startsWith('http://') || lowerImg.startsWith('https://');
 
-        if (seenNames.has(cleanName)) {
-          const existingIdx = filteredList.findIndex(x => {
-            const xFile = x.toLowerCase().split('/').pop().split('?')[0];
-            const xClean = xFile
+        let dedupKey;
+        if (isRemote) {
+          // Remote URLs: use full path (strip query params) as key
+          dedupKey = lowerImg.split('?')[0];
+        } else {
+          // Local files: use cleaned filename to detect local copies of remote images
+          const filename = lowerImg.split('/').pop().split('?')[0];
+          dedupKey = 'local:' + filename
+            .replace(/\.[^/.]+$/, "")
+            .replace('tmdb_', '')
+            .replace('stashdb_', '')
+            .replace('stash_', '')
+            .replace('fansdb_', '')
+            .replace('porndb_', '')
+            .replace('theporndb_', '');
+        }
+
+        if (seenKeys.has(dedupKey)) {
+          // Exact duplicate URL or local filename collision — prefer local
+          if (!isRemote) {
+            const existingIdx = seenKeys.get(dedupKey);
+            filteredList[existingIdx] = img;
+          }
+        } else {
+          // For local files, also check if a remote image with the same clean name exists
+          if (!isRemote) {
+            const filename = lowerImg.split('/').pop().split('?')[0];
+            const cleanName = 'local:' + filename
               .replace(/\.[^/.]+$/, "")
               .replace('tmdb_', '')
               .replace('stashdb_', '')
@@ -107,14 +140,35 @@ export default function TMDBImageGrid({
               .replace('fansdb_', '')
               .replace('porndb_', '')
               .replace('theporndb_', '');
-            return xClean === cleanName;
-          });
-          if (existingIdx !== -1 && lowerImg.startsWith('/')) {
-            filteredList[existingIdx] = img;
+            // Check if any existing remote entry has a matching filename
+            let replaced = false;
+            for (let i = 0; i < filteredList.length; i++) {
+              const existing = filteredList[i].toLowerCase();
+              if (existing.startsWith('http://') || existing.startsWith('https://')) {
+                const existingFilename = existing.split('/').pop().split('?')[0];
+                const existingClean = 'local:' + existingFilename
+                  .replace(/\.[^/.]+$/, "")
+                  .replace('tmdb_', '')
+                  .replace('stashdb_', '')
+                  .replace('stash_', '')
+                  .replace('fansdb_', '')
+                  .replace('porndb_', '')
+                  .replace('theporndb_', '');
+                if (existingClean === cleanName) {
+                  filteredList[i] = img; // Replace remote with local
+                  replaced = true;
+                  break;
+                }
+              }
+            }
+            if (!replaced) {
+              seenKeys.set(dedupKey, filteredList.length);
+              filteredList.push(img);
+            }
+          } else {
+            seenKeys.set(dedupKey, filteredList.length);
+            filteredList.push(img);
           }
-        } else {
-          seenNames.add(cleanName);
-          filteredList.push(img);
         }
       }
       list = filteredList;
