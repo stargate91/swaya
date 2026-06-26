@@ -252,7 +252,7 @@ class PerformerDetailReader:
                 "breast_type": person.breast_type,
                 "tattoos": person.tattoos,
                 "piercings": person.piercings,
-                "orientation": person.orientation,
+                "same_sex_only": person.same_sex_only,
             }),
         }
         external_ids["attributes"] = {
@@ -296,7 +296,7 @@ class PerformerDetailReader:
             "breast_type": person.breast_type,
             "tattoos": person.tattoos,
             "piercings": person.piercings,
-            "orientation": person.orientation,
+            "same_sex_only": person.same_sex_only,
             "socials": person.socials or {},
             "career_start_year": person.career_start_year,
             "career_end_year": person.career_end_year,

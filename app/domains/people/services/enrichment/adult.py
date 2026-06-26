@@ -121,7 +121,7 @@ class AdultEnricher:
                 "aliases": perf.get("aliases") or [],
                 "tattoos": tats_val,
                 "piercings": piers_val,
-                "orientation": perf.get("orientation"),
+                "same_sex_only": perf.get("same_sex_only"),
                 "place_of_birth": perf.get("country") or perf.get("place_of_birth"),
                 "deathday": perf.get("death_date") or perf.get("deathday"),
                 "career_start_year": int(perf["career_start_year"]) if perf.get("career_start_year") is not None else None,
@@ -159,8 +159,8 @@ class AdultEnricher:
                 result["tattoos"] = source_data["tattoos"]
             if source_data["piercings"]:
                 result["piercings"] = source_data["piercings"]
-            if source_data["orientation"]:
-                result["orientation"] = source_data["orientation"]
+            if source_data["same_sex_only"]:
+                result["same_sex_only"] = source_data["same_sex_only"]
             result["place_of_birth"] = source_data["place_of_birth"] or result["place_of_birth"]
             result["deathday"] = source_data["deathday"] or result["deathday"]
             if source_data["career_start_year"] is not None:

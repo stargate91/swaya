@@ -49,7 +49,7 @@ class Person(Base):
     breast_type: Mapped[Optional[str]] = mapped_column(String, index=True)
     tattoos: Mapped[Optional[str]] = mapped_column(String)
     piercings: Mapped[Optional[str]] = mapped_column(String)
-    orientation: Mapped[Optional[str]] = mapped_column(String, index=True)
+    same_sex_only: Mapped[Optional[str]] = mapped_column(String, index=True)
     
     # Career & Origin details
     career_start_year: Mapped[Optional[int]] = mapped_column(Integer)
@@ -118,7 +118,7 @@ class Person(Base):
         hip = get_val("hip")
         tattoos = get_val("tattoos")
         piercings = get_val("piercings")
-        orientation = get_val("orientation")
+        same_sex_only = get_val("same_sex_only")
         breast_type = get_val("breast_type")
         career_start_year = get_val("career_start_year")
         career_end_year = get_val("career_end_year")
@@ -189,7 +189,7 @@ class Person(Base):
         if hip is not None: self.hip = hip
         if tattoos: self.tattoos = tattoos
         if piercings: self.piercings = piercings
-        if orientation: self.orientation = orientation
+        if same_sex_only: self.same_sex_only = same_sex_only
         if breast_type: self.breast_type = breast_type
         if career_start_year is not None: self.career_start_year = career_start_year
         if career_end_year is not None: self.career_end_year = career_end_year

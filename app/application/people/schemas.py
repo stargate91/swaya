@@ -35,7 +35,7 @@ class PersonRead(BaseSchema):
     hip: Optional[int] = None
     tattoos: Optional[str] = None
     piercings: Optional[str] = None
-    orientation: Optional[str] = None
+    same_sex_only: Optional[str] = None
     breast_type: Optional[str] = None
     primary_provider: Optional[str] = None
     field_routing: Optional[dict[str, str]] = None

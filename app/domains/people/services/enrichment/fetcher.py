@@ -14,7 +14,7 @@ class PrioritizedResultDict(dict):
         single_val_fields = {
             "birthday", "deathday", "place_of_birth", "gender", "profile_path",
             "ethnicity", "hair_color", "eye_color", "height", "weight",
-            "measurements", "cup_size", "tattoos", "piercings", "orientation",
+            "measurements", "cup_size", "tattoos", "piercings", "same_sex_only",
             "career_start_year", "career_end_year", "known_for_department", "popularity", "homepage"
         }
         if key in single_val_fields:
@@ -94,7 +94,7 @@ def fetch_external_details(
         "weight": None,
         "tattoos": None,
         "piercings": None,
-        "orientation": None,
+        "same_sex_only": None,
         "socials": {},
         "urls": [],
         "known_for_department": None,

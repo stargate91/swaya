@@ -87,6 +87,36 @@
   color: var(--color-ink);
 }
 
+.ui-input--has-right-element {
+  padding-right: 2.75rem;
+}
+
+.ui-input__right-element {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  pointer-events: none;
+}
+
+/* Hide native calendar icon and make entire input clickable for date picker */
+.ui-input[type="date"]::-webkit-calendar-picker-indicator {
+  background: transparent;
+  bottom: 0;
+  color: transparent;
+  cursor: pointer;
+  height: auto;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: auto;
+}
+
 .ui-field__error {
   margin-top: var(--space-2);
   font-size: var(--font-size-xs);

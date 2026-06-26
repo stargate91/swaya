@@ -1,4 +1,5 @@
-import { Image as ImageIcon, Link as LinkIcon, Sparkles } from 'lucide-react';
+import { Image as ImageIcon, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import PeopleTagPopover from './PeopleTagPopover';
 
 export default function EntityDetailTopControls({
@@ -10,11 +11,11 @@ export default function EntityDetailTopControls({
   updatePersonStatusMutation,
   handleOpenPeopleBackdropModal,
   handleOpenCollectionBackdropModal,
-  handleOpenLinkSourceModal,
-  handleOpenDataMixerModal,
   extraLinks,
   socialLinks = [],
 }) {
+  const navigate = useNavigate();
+
   if (isPeople) {
     return (
       <div className="entity-detail-page__top-controls">
@@ -24,26 +25,14 @@ export default function EntityDetailTopControls({
           updatePersonStatusMutation={updatePersonStatusMutation}
         />
         {item?.is_adult ? (
-          <>
-            {item?.external_links && item.external_links.length > 0 ? (
-              <button
-                type="button"
-                onClick={handleOpenDataMixerModal}
-                className="media-detail-page__side-nav-toggle"
-                title={t('library.details.dataMixer') || 'Performer Data Mixer'}
-              >
-                <Sparkles size={18} />
-              </button>
-            ) : null}
-            <button
-              type="button"
-              onClick={handleOpenLinkSourceModal}
-              className="media-detail-page__side-nav-toggle"
-              title={t('library.details.linkSource') || 'Link External Source'}
-            >
-              <LinkIcon size={18} />
-            </button>
-          </>
+          <button
+            type="button"
+            onClick={() => navigate(`/library/people/${item.id}/edit`)}
+            className="media-detail-page__side-nav-toggle"
+            title="Edit Performer"
+          >
+            <Settings size={18} />
+          </button>
         ) : null}
         {canChoosePeopleBackdrop ? (
           <button

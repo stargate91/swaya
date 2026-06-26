@@ -3,13 +3,14 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from '../providers/LanguageContext';
 import './Input.css';
 
-export default function Input({ label, hint, error, type, className = '', inputRef, ...props }) {
+export default function Input({ label, hint, error, type, className = '', inputRef, rightElement, ...props }) {
   const [showPassword, setShowPassword] = useState(false);
   const hintId = useId();
   const errorId = useId();
 
   const isPassword = type === 'password';
   const inputType = isPassword ? (showPassword ? 'text' : 'password') : type;
+  const hasRightElement = isPassword || rightElement;
 
   const { t } = useTranslation();
 
@@ -20,7 +21,7 @@ export default function Input({ label, hint, error, type, className = '', inputR
       <div className="ui-input__wrapper">
         <input
           ref={inputRef}
-          className={`ui-input${isPassword ? ' ui-input--password' : ''}${error ? ' ui-input--error' : ''}`}
+          className={`ui-input${hasRightElement ? ' ui-input--has-right-element' : ''}${error ? ' ui-input--error' : ''}`}
           type={inputType}
           aria-invalid={error ? 'true' : undefined}
           aria-describedby={[
@@ -39,6 +40,11 @@ export default function Input({ label, hint, error, type, className = '', inputR
           >
             {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
+        )}
+        {!isPassword && rightElement && (
+          <div className="ui-input__right-element">
+            {rightElement}
+          </div>
         )}
       </div>
       {hint ? <span id={hintId} className="ui-field__sr-only">{hint}</span> : null}

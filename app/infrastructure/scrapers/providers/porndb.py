@@ -111,7 +111,7 @@ class PornDBScraper(BaseScraper):
                             rest_extras = rest_data.get("extras") or {}
                             if rest_extras and "same_sex_only" in rest_extras:
                                 is_same_sex = rest_extras.get("same_sex_only")
-                                details["orientation"] = "Same-Sex Only" if is_same_sex else "All"
+                                details["same_sex_only"] = "Yes" if is_same_sex else "No"
                             if rest_extras and rest_extras.get("tattoos"):
                                 details["tattoos"] = rest_extras["tattoos"]
                             if rest_extras and rest_extras.get("piercings"):

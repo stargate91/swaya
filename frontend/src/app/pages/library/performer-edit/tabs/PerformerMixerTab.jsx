@@ -1,23 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/providers/LanguageContext';
 import { useUi } from '@/providers/UiProvider';
-import { useSetPersonFieldRoutingMutation, useSavePersonCustomFieldsMutation } from '@/queries/libraryQueries';
+import { useSetPersonFieldRoutingMutation } from '@/queries/libraryQueries';
 import { usePersonDetailQuery } from '@/queries/metadataQueries';
-import { Check, Pencil } from 'lucide-react';
-import './LinkSourceModalContent.css'; // Reuse basic styles and override
+import { Check } from 'lucide-react';
 
-export default function DataMixerEditor({ person: initialPerson, onBack }) {
+export default function PerformerMixerTab({ person: initialPerson, onBack }) {
   const { t } = useTranslation();
   const { toast } = useUi();
   const routingMutation = useSetPersonFieldRoutingMutation();
-  const saveCustomFieldsMutation = useSavePersonCustomFieldsMutation();
 
   const { data: fetchedPerson } = usePersonDetailQuery(initialPerson?.id);
   const person = fetchedPerson || initialPerson;
 
   const [localRouting, setLocalRouting] = useState(null);
-  const [editingField, setEditingField] = useState(null);
-  const [editValue, setEditValue] = useState('');
 
   useEffect(() => {
     if (person?.field_routing) {
@@ -46,7 +42,7 @@ export default function DataMixerEditor({ person: initialPerson, onBack }) {
     { key: 'tattoos', label: 'Tattoos', type: 'string' },
     { key: 'piercings', label: 'Piercings', type: 'string' },
     { key: 'breast_type', label: 'Breast Type', type: 'string' },
-    { key: 'orientation', label: 'Orientation', type: 'string' },
+    { key: 'same_sex_only', label: 'Same Sex Only', type: 'same_sex_only' },
   ];
 
   const PROVIDERS = [
@@ -60,6 +56,11 @@ export default function DataMixerEditor({ person: initialPerson, onBack }) {
   // Helper to format values nicely in the grid
   const formatValue = (val, type) => {
     if (val === undefined || val === null || val === '') return '-';
+    if (type === 'same_sex_only') {
+      if (val === 'Same-Sex Only') return 'Yes';
+      if (val === 'All') return 'No';
+      return val;
+    }
     if (type === 'gender') {
       if (val === 1 || val === '1') return 'Female';
       if (val === 2 || val === '2') return 'Male';
@@ -86,7 +87,11 @@ export default function DataMixerEditor({ person: initialPerson, onBack }) {
 
   // Helper to get raw value of a field from a specific provider
   const getProviderValue = (providerKey, fieldKey) => {
-    const link = person?.external_links?.find(l => l.provider === providerKey);
+    const keys = [providerKey];
+    if (providerKey === 'porndb') keys.push('theporndb');
+    if (providerKey === 'theporndb') keys.push('porndb');
+
+    const link = person?.external_links?.find(l => keys.includes(l.provider));
     if (!link || !link.source_data) return null;
     if (fieldKey === 'biography') {
       return link.source_data.biographies || link.source_data.biography;
@@ -116,27 +121,17 @@ export default function DataMixerEditor({ person: initialPerson, onBack }) {
     }
   };
 
-  const handleSaveCustomValue = async (fieldKey) => {
-    setEditingField(null);
-    try {
-      await saveCustomFieldsMutation.mutateAsync({
-        personId: person.id,
-        fields: { [fieldKey]: editValue },
-      });
-      await handleSelectRoute(fieldKey, 'manual');
-    } catch (err) {
-      toast(err.message || 'Failed to save custom value', 'danger');
-    }
-  };
-
   // Check if a specific source is linked
   const isSourceLinked = (providerKey) => {
     if (providerKey === 'manual') return true;
-    return person?.external_links?.some(l => l.provider === providerKey);
+    const keys = [providerKey];
+    if (providerKey === 'porndb') keys.push('theporndb');
+    if (providerKey === 'theporndb') keys.push('porndb');
+    return person?.external_links?.some(l => keys.includes(l.provider));
   };
 
   return (
-    <div className="link-source-modal link-source-modal--mixer-view">
+    <div className="link-source-modal link-source-modal--mixer-view link-source-modal--embedded">
       <div className="data-mixer-grid-container">
         <table className="data-mixer-table">
           <thead>
@@ -153,14 +148,14 @@ export default function DataMixerEditor({ person: initialPerson, onBack }) {
           <tbody>
             {FIELDS.map(field => {
               const activeRoute = currentRouting[field.key] || 'auto';
-              
+
               return (
                 <tr key={field.key} className="mixer-row">
                   <td className="mixer-td-field-label">
                     {field.label}
                   </td>
                   {/* Auto routing option */}
-                  <td 
+                  <td
                     onClick={() => handleSelectRoute(field.key, 'auto')}
                     className={`mixer-td-cell mixer-td-cell--auto ${activeRoute === 'auto' ? 'mixer-td-cell--active' : ''}`}
                   >
@@ -169,16 +164,13 @@ export default function DataMixerEditor({ person: initialPerson, onBack }) {
                       {activeRoute === 'auto' && <Check size={14} className="mixer-check-icon" />}
                     </div>
                   </td>
-                  {/* Provider options */}
                   {PROVIDERS.map(p => {
                     const isLinked = isSourceLinked(p.key);
                     const rawVal = getProviderValue(p.key, field.key);
                     const formatted = formatValue(rawVal, field.type);
                     const isSelected = activeRoute === p.key;
-                    const isEditing = p.key === 'manual' && editingField === field.key;
 
                     const hasValue = (() => {
-                      if (p.key === 'manual') return true;
                       if (rawVal === null || rawVal === undefined || rawVal === '') return false;
                       if (formatted === '-') return false;
                       if (typeof rawVal === 'object') {
@@ -190,85 +182,17 @@ export default function DataMixerEditor({ person: initialPerson, onBack }) {
                       return true;
                     })();
 
-                    const handleCellClick = () => {
-                      if (p.key === 'manual') {
-                        setEditingField(field.key);
-                        setEditValue(rawVal !== null && rawVal !== undefined ? String(rawVal) : '');
-                      } else {
-                        if (isLinked && hasValue) {
-                          handleSelectRoute(field.key, p.key);
-                        }
-                      }
-                    };
-
                     return (
                       <td
                         key={p.key}
-                        onClick={handleCellClick}
-                        className={`mixer-td-cell ${!isLinked || !hasValue ? 'mixer-td-cell--disabled' : ''} ${isSelected ? 'mixer-td-cell--active' : ''} ${p.key === 'manual' ? 'mixer-td-cell--manual' : ''} ${isEditing ? 'mixer-td-cell--editing' : ''}`}
+                        onClick={() => isLinked && hasValue && handleSelectRoute(field.key, p.key)}
+                        className={`mixer-td-cell ${!isLinked || !hasValue ? 'mixer-td-cell--disabled' : ''} ${isSelected ? 'mixer-td-cell--active' : ''} ${p.key === 'manual' ? 'mixer-td-cell--manual' : ''}`}
                       >
                         <div className="mixer-cell-content">
-                          {isEditing ? (
-                            field.type === 'gender' ? (
-                              <select
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                onBlur={() => handleSaveCustomValue(field.key)}
-                                autoFocus
-                                className="mixer-custom-select"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <option value="">- Select -</option>
-                                <option value="1">Female</option>
-                                <option value="2">Male</option>
-                                <option value="0">Other</option>
-                              </select>
-                            ) : field.type === 'text' ? (
-                              <textarea
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                onBlur={() => handleSaveCustomValue(field.key)}
-                                autoFocus
-                                className="mixer-custom-textarea"
-                                onClick={(e) => e.stopPropagation()}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    handleSaveCustomValue(field.key);
-                                  }
-                                  if (e.key === 'Escape') {
-                                    setEditingField(null);
-                                  }
-                                }}
-                              />
-                            ) : (
-                              <input
-                                type={field.key === 'height' || field.key === 'waist' || field.key === 'hip' || field.key === 'band_size' ? 'number' : 'text'}
-                                value={editValue}
-                                onChange={(e) => setEditValue(e.target.value)}
-                                onBlur={() => handleSaveCustomValue(field.key)}
-                                autoFocus
-                                className="mixer-custom-input"
-                                onClick={(e) => e.stopPropagation()}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    handleSaveCustomValue(field.key);
-                                  }
-                                  if (e.key === 'Escape') {
-                                    setEditingField(null);
-                                  }
-                                }}
-                              />
-                            )
-                          ) : (
-                            <>
-                              <span className="mixer-cell-value" title={rawVal && typeof rawVal === 'string' ? rawVal : ''}>
-                                {rawVal === null || rawVal === undefined || rawVal === '' ? (p.key === 'manual' ? 'Set custom...' : '-') : formatted}
-                              </span>
-                              {p.key === 'manual' && <Pencil size={12} className="mixer-edit-icon" />}
-                              {isSelected && <Check size={14} className="mixer-check-icon" />}
-                            </>
-                          )}
+                          <span className="mixer-cell-value" title={rawVal && typeof rawVal === 'string' ? rawVal : ''}>
+                            {formatted}
+                          </span>
+                          {isSelected && <Check size={14} className="mixer-check-icon" />}
                         </div>
                       </td>
                     );

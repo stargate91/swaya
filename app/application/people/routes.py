@@ -736,3 +736,13 @@ def save_custom_fields(
 
     return {"status": "success", "source_data": manual_link.source_data}
 
+
+@router.delete("/{person_id}")
+def delete_person(person_id: str, db: Session = Depends(get_db)):
+    person = resolve_person(person_id, db)
+    if not person:
+        raise HTTPException(status_code=404, detail="Person not found")
+    db.delete(person)
+    db.commit()
+    return {"status": "success"}
+

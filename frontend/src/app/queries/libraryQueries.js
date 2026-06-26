@@ -592,11 +592,97 @@ export const useLinkPersonSourceMutation = () => {
   });
 };
 
+export const useDeletePersonMutation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (personId) => api.people.delete(personId),
+    onSuccess: (data, personId) => {
+      queryClient.invalidateQueries({ queryKey: ['people'] });
+      queryClient.invalidateQueries({ queryKey: ['people-infinite'] });
+      queryClient.invalidateQueries({ queryKey: ['library'] });
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
+      queryClient.removeQueries({ queryKey: ['person-detail', personId] });
+      queryClient.removeQueries({ queryKey: ['person-detail', String(personId)] });
+      queryClient.removeQueries({ queryKey: ['person-credits', personId] });
+      queryClient.removeQueries({ queryKey: ['person-credits', String(personId)] });
+    },
+  });
+};
+
 export const useUnlinkPersonSourceMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ personId, source, action }) => api.people.unlinkSource(personId, source, action),
+    onMutate: async ({ personId, source }) => {
+      const idStr = String(personId);
+      const idNum = Number(personId);
+      const isNumValid = !isNaN(idNum);
+
+      const personKeys = [
+        ['person-detail', personId],
+        ['person-detail', idStr],
+      ];
+      if (isNumValid) {
+        personKeys.push(['person-detail', idNum]);
+      }
+
+      for (const key of personKeys) {
+        await queryClient.cancelQueries({ queryKey: key });
+      }
+
+      const previousPersonDetail = queryClient.getQueryData(['person-detail', idStr]) || queryClient.getQueryData(['person-detail', personId]);
+
+      const dbNames = [source];
+      if (source === 'theporndb') dbNames.push('porndb');
+      if (source === 'porndb') dbNames.push('theporndb');
+
+      const updateData = (oldData) => {
+        if (!oldData) return oldData;
+        const newExternalLinks = (oldData.external_links || []).filter(
+          (l) => !dbNames.includes(l.provider)
+        );
+        const newExternalIds = { ...(oldData.external_ids || {}) };
+        dbNames.forEach((dbName) => {
+          delete newExternalIds[dbName];
+          delete newExternalIds[`${dbName}_id`];
+        });
+        
+        let newPrimaryProvider = oldData.primary_provider;
+        if (dbNames.includes(oldData.primary_provider)) {
+          newPrimaryProvider = null;
+        }
+
+        return {
+          ...oldData,
+          external_links: newExternalLinks,
+          external_ids: newExternalIds,
+          primary_provider: newPrimaryProvider,
+        };
+      };
+
+      personKeys.forEach((key) => {
+        queryClient.setQueryData(key, updateData);
+      });
+
+      return { previousPersonDetail, personId };
+    },
+    onError: (err, variables, context) => {
+      if (context && 'previousPersonDetail' in context) {
+        const idStr = String(context.personId);
+        const idNum = Number(context.personId);
+        const isNumValid = !isNaN(idNum);
+
+        queryClient.setQueryData(['person-detail', context.personId], context.previousPersonDetail);
+        queryClient.setQueryData(['person-detail', idStr], context.previousPersonDetail);
+        if (isNumValid) {
+          queryClient.setQueryData(['person-detail', idNum], context.previousPersonDetail);
+        }
+      }
+    },
     onSuccess: (data, variables) => {
+      // onSuccess can still fire, but the actual invalidation happens in onSettled
+    },
+    onSettled: (data, error, variables) => {
       queryClient.invalidateQueries({ queryKey: ['person-detail', variables.personId] });
       queryClient.invalidateQueries({ queryKey: ['person-detail', String(variables.personId)] });
       queryClient.invalidateQueries({ queryKey: ['person-detail'] });
@@ -614,6 +700,28 @@ export const useSetPrimaryPersonSourceMutation = () => {
   return useMutation({
     mutationFn: ({ personId, source }) => api.people.setPrimarySource(personId, source),
     onSuccess: (data, variables) => {
+      const idStr = String(variables.personId);
+      const idNum = Number(variables.personId);
+      const isNumValid = !isNaN(idNum);
+
+      const personKeys = [
+        ['person-detail', variables.personId],
+        ['person-detail', idStr],
+      ];
+      if (isNumValid) {
+        personKeys.push(['person-detail', idNum]);
+      }
+
+      personKeys.forEach((key) => {
+        queryClient.setQueryData(key, (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            primary_provider: variables.source,
+          };
+        });
+      });
+
       queryClient.invalidateQueries({ queryKey: ['person-detail', variables.personId] });
       queryClient.invalidateQueries({ queryKey: ['person-detail', String(variables.personId)] });
       queryClient.invalidateQueries({ queryKey: ['person-detail'] });
@@ -629,6 +737,28 @@ export const useSetPersonFieldRoutingMutation = () => {
   return useMutation({
     mutationFn: ({ personId, routing }) => api.people.setFieldRouting(personId, routing),
     onSuccess: (data, variables) => {
+      const idStr = String(variables.personId);
+      const idNum = Number(variables.personId);
+      const isNumValid = !isNaN(idNum);
+
+      const personKeys = [
+        ['person-detail', variables.personId],
+        ['person-detail', idStr],
+      ];
+      if (isNumValid) {
+        personKeys.push(['person-detail', idNum]);
+      }
+
+      personKeys.forEach((key) => {
+        queryClient.setQueryData(key, (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            field_routing: variables.routing,
+          };
+        });
+      });
+
       queryClient.invalidateQueries({ queryKey: ['person-detail', variables.personId] });
       queryClient.invalidateQueries({ queryKey: ['person-detail', String(variables.personId)] });
       queryClient.invalidateQueries({ queryKey: ['person-detail'] });
@@ -644,6 +774,51 @@ export const useSavePersonCustomFieldsMutation = () => {
   return useMutation({
     mutationFn: ({ personId, fields }) => api.people.saveCustomFields(personId, fields),
     onSuccess: (data, variables) => {
+      const idStr = String(variables.personId);
+      const idNum = Number(variables.personId);
+      const isNumValid = !isNaN(idNum);
+
+      const personKeys = [
+        ['person-detail', variables.personId],
+        ['person-detail', idStr],
+      ];
+      if (isNumValid) {
+        personKeys.push(['person-detail', idNum]);
+      }
+
+      personKeys.forEach((key) => {
+        queryClient.setQueryData(key, (oldData) => {
+          if (!oldData) return oldData;
+          
+          let externalLinks = oldData.external_links ? [...oldData.external_links] : [];
+          const manualLinkIndex = externalLinks.findIndex(l => l.provider === 'manual');
+          
+          const updatedManualData = {
+            ...(manualLinkIndex > -1 ? externalLinks[manualLinkIndex].source_data : {}),
+            ...variables.fields,
+          };
+
+          const newManualLink = {
+            provider: 'manual',
+            external_id: 'manual',
+            profile_url: null,
+            ...(manualLinkIndex > -1 ? externalLinks[manualLinkIndex] : {}),
+            source_data: updatedManualData,
+          };
+
+          if (manualLinkIndex > -1) {
+            externalLinks[manualLinkIndex] = newManualLink;
+          } else {
+            externalLinks.push(newManualLink);
+          }
+
+          return {
+            ...oldData,
+            external_links: externalLinks,
+          };
+        });
+      });
+
       queryClient.invalidateQueries({ queryKey: ['person-detail', variables.personId] });
       queryClient.invalidateQueries({ queryKey: ['person-detail', String(variables.personId)] });
       queryClient.invalidateQueries({ queryKey: ['person-detail'] });
