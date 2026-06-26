@@ -111,13 +111,25 @@ export default function usePeopleCollectionDetailController({
   );
   const socialLinks = useMemo(() => {
     if (!isPeople || !item) return [];
-    const excludeKeys = ['tmdb', 'stashdb', 'theporndb', 'fansdb', 'wikidata'];
-    const allLinks = externalLinks.filter(link => 
-      !excludeKeys.includes(link.key) && 
-      link.iconSrc && 
-      link.iconSrc !== '/links/website.svg'
+    // Only show links that have a real icon file in /links/
+    const knownIcons = new Set([
+      '/links/tmdb.png', '/links/stashdb.png', '/links/fansdb.webp', '/links/theporndb.png',
+      '/links/imdb.png', '/links/instagram.ico', '/links/instagram.svg',
+      '/links/facebook.ico', '/links/facebook.svg', '/links/x.svg',
+      '/links/tiktok.png', '/links/tiktok.svg', '/links/youtube.ico', '/links/youtube.svg',
+      '/links/onylfans.ico', '/links/fansly.png', '/links/pornhub.ico',
+      '/links/manyvids.ico', '/links/patreon.ico', '/links/linktree.png',
+      '/links/threads.png', '/links/twitch.jpg', '/links/kick.ico',
+      '/links/bluesky.png', '/links/clip4sale.ico', '/links/allmylinks.ico',
+      '/links/beacons.png', '/links/iafd.ico', '/links/babepedia.ico',
+      '/links/freeones.png', '/links/data18.ico', '/links/homepage.png',
+      '/links/twitter.png',
+    ]);
+    const allLinks = externalLinks.filter(link =>
+      link.iconSrc && knownIcons.has(link.iconSrc)
     );
-    const order = ['imdb', 'website', 'instagram', 'facebook', 'x', 'tiktok', 'youtube'];
+    // Source links first (reversed: porndb → fansdb → stashdb → tmdb), then social/industry links
+    const order = ['theporndb', 'fansdb', 'stashdb', 'tmdb', 'imdb', 'website', 'instagram', 'facebook', 'x', 'tiktok', 'youtube'];
     const ordered = [];
     for (const key of order) {
       const found = allLinks.find(l => l.key === key);

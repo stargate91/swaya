@@ -46,11 +46,14 @@ export const useSyncLanguageMutation = () => useMutation({
   mutationFn: () => api.metadata.syncLanguage(),
 });
 
-export const useLibraryItemDetailQuery = (itemId, options = {}) => useQuery({
-  queryKey: ['library-item-detail', itemId],
-  queryFn: () => api.library.getItemDetail(itemId),
-  ...options,
-});
+export const useLibraryItemDetailQuery = (itemId, options = {}) => {
+  const { mediaType, ...queryOptions } = options;
+  return useQuery({
+    queryKey: ['library-item-detail', itemId, mediaType || null],
+    queryFn: () => api.library.getItemDetail(itemId, { mediaType }),
+    ...queryOptions,
+  });
+};
 
 export const useLibraryTvDetailQuery = (tvId, options = {}) => {
   const { seasonsLimit = 5, initialEpisodesLimit = 4, language, ...queryOptions } = options;

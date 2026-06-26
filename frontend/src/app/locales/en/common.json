@@ -12,7 +12,9 @@
     "noData": "No data available",
     "uploading": "Uploading...",
     "showDetails": "Show Details",
-    "hideDetails": "Hide Details"
+    "hideDetails": "Hide Details",
+    "more": "Show More",
+    "less": "Show Less"
   },
   "dropzone": {
     "label": "Drop files or folders here",

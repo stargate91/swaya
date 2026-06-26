@@ -62,7 +62,7 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
 
   const [isSocialExpanded, setIsSocialExpanded] = useState(false);
 
-  const hasExtraSocials = socialLinks.length > 5;
+  const hasExtraSocials = socialLinks.length > 4;
   const mainSocialLinks = hasExtraSocials ? socialLinks.slice(0, 4) : socialLinks;
   const extraSocialLinks = hasExtraSocials ? socialLinks.slice(4) : [];
 

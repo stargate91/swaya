@@ -144,14 +144,23 @@ class DbMediaResolver(
                     self.db.flush()
                 metadata_match_id = match.id
                 media_item_id = match.media_item_id
-        elif isinstance(item_id, str) and item_id.startswith("stash_"):
-            stash_id = item_id.split("_")[1]
+        elif isinstance(item_id, str) and "_" in item_id and item_id.split("_", 1)[0].lower() in ("stash", "stashdb", "fansdb", "porndb", "theporndb"):
+            parts = item_id.split("_", 1)
+            provider_prefix = parts[0].lower()
+            scene_id = parts[1]
+            
+            provider = Provider.STASHDB
+            if provider_prefix == "fansdb":
+                provider = Provider.FANSDB
+            elif provider_prefix in ("porndb", "theporndb"):
+                provider = Provider.PORNDB
+                
             match = self.db.query(MetadataMatch).filter(
-                MetadataMatch.provider == Provider.STASHDB,
-                MetadataMatch.external_id == stash_id
+                MetadataMatch.provider == provider,
+                MetadataMatch.external_id == scene_id
             ).first()
             if not match:
-                match = MetadataMatch(provider=Provider.STASHDB, external_id=stash_id, media_type=MediaType.SCENE)
+                match = MetadataMatch(provider=provider, external_id=scene_id, media_type=MediaType.SCENE)
                 self.db.add(match)
                 self.db.flush()
             metadata_match_id = match.id

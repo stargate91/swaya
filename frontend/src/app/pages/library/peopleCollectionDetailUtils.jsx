@@ -538,11 +538,11 @@ export function buildPersonExternalLinks(item, t) {
     try {
       const hostname = new URL(url).hostname.replace('www.', '').toLowerCase();
       if (hostname.includes('twitter.com') || hostname.includes('x.com')) return '/links/x.svg';
-      if (hostname.includes('instagram.com')) return '/links/instagram.svg';
+      if (hostname.includes('instagram.com')) return '/links/instagram.ico';
       if (hostname.includes('tiktok.com')) return '/links/tiktok.png';
       if (hostname.includes('wikidata.org')) return '/links/wikidata.svg';
-      if (hostname.includes('facebook.com')) return '/links/facebook.svg';
-      if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return '/links/youtube.svg';
+      if (hostname.includes('facebook.com')) return '/links/facebook.ico';
+      if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return '/links/youtube.ico';
       if (hostname.includes('onlyfans.com')) return '/links/onylfans.ico';
       if (hostname.includes('fansly.com')) return '/links/fansly.png';
       if (hostname.includes('patreon.com')) return '/links/patreon.ico';

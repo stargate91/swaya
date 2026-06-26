@@ -66,23 +66,6 @@ export default function EntityDetailHeroSection({
             <PenLine size={14} />
           </button>
         </div>
-
-
-        {isPeople && profileLinks.length > 0 && (
-          <div className="entity-detail-page__profile-links">
-            {profileLinks.map((link) => (
-              <a
-                key={link.key}
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`entity-detail-page__profile-link ${link.fullWidth ? 'entity-detail-page__profile-link--full-width' : ''}`}
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="entity-detail-page__summary">

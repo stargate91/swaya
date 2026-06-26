@@ -47,7 +47,7 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
   const playMutation = usePlayMediaMutation();
   const bulkUpdateWatchedMutation = useBulkUpdateWatchedMutation();
 
-  const { data: movieDetail, isLoading: isMovieLoading } = useLibraryItemDetailQuery(cleanId, { enabled: isSingleItem });
+  const { data: movieDetail, isLoading: isMovieLoading } = useLibraryItemDetailQuery(cleanId, { enabled: isSingleItem, mediaType: type });
   const { locale } = useTranslation();
   const metadataLanguage = locale === 'en' ? 'en-US' : locale;
   const { data: tvDetail, isLoading: isTvLoading } = useLibraryTvDetailQuery(cleanId, { enabled: !isSingleItem, seasonsLimit: 999, initialEpisodesLimit: 999, language: metadataLanguage });

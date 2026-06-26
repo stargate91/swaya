@@ -207,11 +207,25 @@ def get_scraper_gateway() -> ScraperGatewayPort:
 def get_library_item_detail(
     item_id: str,
     full_people: bool = False,
+    media_type: Optional[str] = None,
     db: Session = Depends(get_db),
     scrapers: ScraperGatewayPort = Depends(get_scraper_gateway)
 ):
-    if item_id.startswith("stash_"):
-        return SceneDetailService(db, scrapers).get_scene_detail(item_id)
+    if media_type:
+        if media_type.lower() == "scene":
+            return SceneDetailService(db, scrapers).get_scene_detail(item_id)
+        elif media_type.lower() == "movie":
+            return MovieDetailService(db, scrapers).get_library_item_detail(item_id, full_people=full_people)
+
+    if "_" in item_id:
+        prefix = item_id.split("_", 1)[0].lower()
+        if prefix in ("stash", "stashdb", "fansdb"):
+            return SceneDetailService(db, scrapers).get_scene_detail(item_id)
+        elif prefix in ("porndb", "theporndb"):
+            # If prefix is porndb but media_type is not specified, check if the scene exists
+            # to determine if it is a scene, otherwise fall back to movie
+            return MovieDetailService(db, scrapers).get_library_item_detail(item_id, full_people=full_people)
+
     return MovieDetailService(db, scrapers).get_library_item_detail(item_id, full_people=full_people)
 
 
