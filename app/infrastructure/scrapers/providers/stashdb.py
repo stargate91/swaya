@@ -17,6 +17,11 @@ class StashDBScraper(BaseScraper):
 
     def fetch_scene(self, scene_id: str, force_refresh: bool = False) -> Optional[dict]:
         """Queries StashDB GraphQL endpoint for scene info. Always mapped to English locale."""
+        import re
+        if not re.match(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", str(scene_id)):
+            logger.debug(f"Invalid UUID for StashDB fetch_scene: {scene_id}")
+            return None
+
         endpoint = self.get_setting("stashdb_endpoint", STASHDB_DEFAULT_ENDPOINT)
         api_key = self.get_setting("stashdb_api_key")
         if not api_key:

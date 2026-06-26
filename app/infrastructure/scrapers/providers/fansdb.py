@@ -17,6 +17,11 @@ class FansDBScraper(BaseScraper):
 
     def fetch_scene(self, scene_id: str, force_refresh: bool = False) -> Optional[dict]:
         """Queries FansDB GraphQL endpoint for scene info. Always mapped to English locale."""
+        import re
+        if not re.match(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", str(scene_id)):
+            logger.debug(f"Invalid UUID for FansDB fetch_scene: {scene_id}")
+            return None
+
         endpoint = self.get_setting("fansdb_endpoint", FANSDB_DEFAULT_ENDPOINT)
         api_token = self.get_setting("fansdb_api_key")
         if not api_token:

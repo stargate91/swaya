@@ -6,7 +6,7 @@ class OrganizerItemImage(BaseModel):
 
 class OrganizerMatch(BaseModel):
     id: int
-    tmdb_id: Optional[int] = None
+    tmdb_id: Optional[Any] = None
     type: str
     title: str
     year: Optional[int] = None

@@ -20,16 +20,38 @@ class SceneDetailService(DetailFormatter):
     def get_scene_detail(self, item_id: str) -> SceneDetailResponse:
         from app.application.library.schemas import SceneDetailResponse
         db = self.db
-        scene_uuid = item_id.split("_")[1] if "_" in item_id else item_id
         
-        stash_scraper = self.scrapers.adult(Provider.STASHDB, db)
-        scene_data = stash_scraper.fetch_scene(scene_uuid)
-        if not scene_data:
+        provider_prefix = None
+        if "_" in item_id:
+            parts = item_id.split("_", 1)
+            provider_prefix = parts[0].lower()
+            scene_uuid = parts[1]
+        else:
+            scene_uuid = item_id
+
+        import re
+        is_uuid = bool(re.match(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", scene_uuid))
+        scene_data = None
+
+        if provider_prefix in ("stashdb", "stash"):
+            stash_scraper = self.scrapers.adult(Provider.STASHDB, db)
+            scene_data = stash_scraper.fetch_scene(scene_uuid)
+        elif provider_prefix == "fansdb":
             fans_scraper = self.scrapers.adult(Provider.FANSDB, db)
             scene_data = fans_scraper.fetch_scene(scene_uuid)
-        if not scene_data:
+        elif provider_prefix in ("porndb", "theporndb"):
             porndb_scraper = self.scrapers.adult(Provider.PORNDB, db)
             scene_data = porndb_scraper.fetch_scene(scene_uuid)
+        else:
+            if is_uuid:
+                stash_scraper = self.scrapers.adult(Provider.STASHDB, db)
+                scene_data = stash_scraper.fetch_scene(scene_uuid)
+                if not scene_data:
+                    fans_scraper = self.scrapers.adult(Provider.FANSDB, db)
+                    scene_data = fans_scraper.fetch_scene(scene_uuid)
+            else:
+                porndb_scraper = self.scrapers.adult(Provider.PORNDB, db)
+                scene_data = porndb_scraper.fetch_scene(scene_uuid)
         
         if not scene_data:
             return JSONResponse(status_code=404, content={"error": "Scene not found on StashDB/FansDB/PornDB"})

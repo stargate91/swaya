@@ -114,7 +114,7 @@ class OrganizerService:
                 loc = LanguageService.get_best_localization(m.localizations, pref_lang)
                 matches_dto.append({
                     "id": m.id,
-                    "tmdb_id": int(m.external_id) if m.external_id.isdigit() else None,
+                    "tmdb_id": int(m.external_id) if m.external_id.isdigit() else m.external_id,
                     "type": m.media_type.value,
                     "title": loc.title if loc else "",
                     "year": m.release_date.year if m.release_date else None,

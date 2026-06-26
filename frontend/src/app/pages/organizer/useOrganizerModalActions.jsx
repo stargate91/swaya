@@ -200,9 +200,9 @@ export function useOrganizerModalActions({
           t={t}
           toast={toast}
           scanMode={scanMode}
-          onResolved={(performMutationFn) => {
-            handleResolveOrganizerRows(targetRows, performMutationFn);
-          }}
+          onResolved={(performMutationFn) => 
+            handleResolveOrganizerRows(targetRows, performMutationFn)
+          }
         />
       ),
       footer: (
