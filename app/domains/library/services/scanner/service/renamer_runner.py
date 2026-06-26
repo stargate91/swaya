@@ -113,6 +113,8 @@ class RenamerRunner:
             def progress_cb(pct):
                 with StatusCoordinator.scan_status_lock:
                     StatusCoordinator.scan_status["current_file_progress"] = pct
+                smooth_pct = ((idx + pct) / len(previews)) * 100.0
+                self.task_manager.update_progress(task_id, smooth_pct)
 
             await asyncio.to_thread(engine.execute_single, preview, batch.id, progress_callback=progress_cb)
             self.db.commit()

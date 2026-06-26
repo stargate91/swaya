@@ -90,12 +90,17 @@ class MediaItem(Base):
     @property
     def current_path(self) -> str:
         import os
+        if os.path.isabs(self.relative_path):
+            return os.path.normpath(self.relative_path)
         return os.path.normpath(os.path.join(self.library.root_path, self.relative_path))
 
     @current_path.setter
     def current_path(self, val: str):
         import os
-        self.relative_path = os.path.relpath(val, self.library.root_path).replace("\\", "/")
+        try:
+            self.relative_path = os.path.relpath(val, self.library.root_path).replace("\\", "/")
+        except ValueError:
+            self.relative_path = os.path.normpath(val).replace("\\", "/")
 
 
 class ExtraFile(Base):
@@ -121,9 +126,14 @@ class ExtraFile(Base):
     @property
     def current_path(self) -> str:
         import os
+        if os.path.isabs(self.relative_path):
+            return os.path.normpath(self.relative_path)
         return os.path.normpath(os.path.join(self.media_item.library.root_path, self.relative_path))
 
     @current_path.setter
     def current_path(self, val: str):
         import os
-        self.relative_path = os.path.relpath(val, self.media_item.library.root_path).replace("\\", "/")
+        try:
+            self.relative_path = os.path.relpath(val, self.media_item.library.root_path).replace("\\", "/")
+        except ValueError:
+            self.relative_path = os.path.normpath(val).replace("\\", "/")
