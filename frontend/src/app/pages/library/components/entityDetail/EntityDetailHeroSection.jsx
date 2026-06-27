@@ -39,66 +39,39 @@ export default function EntityDetailHeroSection({
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isHoveringBar, setIsHoveringBar] = useState(false);
 
-  const aliasLimit = 4;
-  const hasMoreAliases = item?.alternate_names?.length > aliasLimit;
-  const displayedAliases = (isPeople && item?.alternate_names)
-    ? item.alternate_names.slice(0, aliasLimit)
-    : [];
-  const extraAliases = (isPeople && item?.alternate_names)
-    ? item.alternate_names.slice(aliasLimit)
-    : [];
+  const candidateAliases = (isPeople && item?.alternate_names) ? item.alternate_names.slice(0, 4) : [];
+  let accumulatedLength = 0;
+  const sidebarAliases = candidateAliases.map((alias, idx) => {
+    accumulatedLength += alias.length + (idx > 0 ? 2 : 0);
+    const isTruncated = accumulatedLength > 20 || idx >= 2;
+    return {
+      original: alias,
+      isTruncated
+    };
+  });
+
+  const drawerAliases = [
+    ...sidebarAliases.filter(a => a.isTruncated).map(a => a.original),
+    ...((isPeople && item?.alternate_names) ? item.alternate_names.slice(4) : [])
+  ];
 
   return (
     <div className="entity-detail-page__hero-section-wrapper">
       <section className="entity-detail-page__hero-grid">
         <div className="entity-detail-page__media-column">
-          {/* Headline block containing name and actions above the image */}
+          {/* 1. Elegant Header (Name & Aliases) */}
           <div className="entity-detail-page__headline-block">
-            <div className="entity-detail-page__title-row">
-              <h1 className="entity-detail-page__title">
-                {item?.name || item?.title || (isPeople ? 'Unknown Person' : 'Unknown Collection')}
-              </h1>
-              {isPeople && (
-                <div className="entity-detail-page__headline-actions">
-                  <button
-                    type="button"
-                    className={`entity-detail-page__headline-action entity-detail-page__headline-action--favorite ${item?.is_favorite ? 'is-active' : ''}`}
-                    onClick={handleToggleFavorite}
-                    title={t('library.details.favorite') || 'Favorite'}
-                  >
-                    <Heart size={15} fill={item?.is_favorite ? 'currentColor' : 'none'} />
-                  </button>
-                  <button
-                    type="button"
-                    className={`entity-detail-page__headline-action entity-detail-page__headline-action--activate ${item?.is_active ? 'is-active' : ''}`}
-                    onClick={handleToggleActive}
-                    onMouseEnter={() => setIsActivateHovered(true)}
-                    onMouseLeave={() => setIsActivateHovered(false)}
-                    title={t('library.people.addPeopleBtn') || 'Activate'}
-                  >
-                    {item?.is_active
-                      ? (isActivateHovered ? <Minus size={15} /> : <Check size={15} />)
-                      : <Plus size={15} />}
-                  </button>
-                  <button
-                    type="button"
-                    className="entity-detail-page__headline-action"
-                    onClick={handleOpenReviewModal}
-                    title={t('library.details.writeReview') || 'Write Review'}
-                  >
-                    <PenLine size={15} />
-                  </button>
-                  {displayRating !== undefined && displayRating !== null && (
-                    <div className="entity-detail-page__headline-rating-badge">
-                      <Star size={12} fill="currentColor" style={{ marginRight: '4px' }} />
-                      {displayRating.toFixed(1)}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+            <h1 className="entity-detail-page__title">
+              {item?.name || item?.title || (isPeople ? 'Unknown Person' : 'Unknown Collection')}
+            </h1>
+            {candidateAliases.length > 0 && (
+              <span className="entity-detail-page__sidebar-aliases">
+                {candidateAliases.join(', ')}
+              </span>
+            )}
           </div>
 
+          {/* 2. Visual Centerpiece (Profile Picture) */}
           {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
           <div
             className={`entity-detail-page__media-card ${isPeople ? 'entity-detail-page__media-card--profile' : ''} entity-detail-page__media-card--editable`}
@@ -131,6 +104,41 @@ export default function EntityDetailHeroSection({
             </button>
           </div>
 
+          {/* 3. Integrated Sidebar Action Toolbar (Clean 3-button row, no rating pill) */}
+          {isPeople && (
+            <div className="entity-detail-page__sidebar-actions">
+              <button
+                type="button"
+                className={`entity-detail-page__sidebar-action entity-detail-page__sidebar-action--favorite ${item?.is_favorite ? 'is-active' : ''}`}
+                onClick={handleToggleFavorite}
+                title={t('library.details.favorite') || 'Favorite'}
+              >
+                <Heart size={15} fill={item?.is_favorite ? 'currentColor' : 'none'} />
+              </button>
+              <button
+                type="button"
+                className={`entity-detail-page__sidebar-action entity-detail-page__sidebar-action--activate ${item?.is_active ? 'is-active' : ''}`}
+                onClick={handleToggleActive}
+                onMouseEnter={() => setIsActivateHovered(true)}
+                onMouseLeave={() => setIsActivateHovered(false)}
+                title={t('library.people.addPeopleBtn') || 'Activate'}
+              >
+                {item?.is_active
+                  ? (isActivateHovered ? <Minus size={15} /> : <Check size={15} />)
+                  : <Plus size={15} />}
+              </button>
+              <button
+                type="button"
+                className="entity-detail-page__sidebar-action"
+                onClick={handleOpenReviewModal}
+                title={t('library.details.writeReview') || 'Write Review'}
+              >
+                <PenLine size={15} />
+              </button>
+            </div>
+          )}
+
+          {/* 4. Interactive rating bar */}
           {isPeople && (
             <div className="entity-detail-page__segmented-rating-container">
               <div
@@ -160,8 +168,8 @@ export default function EntityDetailHeroSection({
                   }
                   return (
                     <div key={val} className="entity-detail-page__rating-segment">
-                      <div 
-                        className="entity-detail-page__rating-segment-fill" 
+                      <div
+                        className="entity-detail-page__rating-segment-fill"
                         style={{ width: `${fill}%` }}
                       />
                     </div>
@@ -178,38 +186,39 @@ export default function EntityDetailHeroSection({
             </div>
           )}
 
+          {/* 5. Basic Metadata Pills restored */}
           {metaPills.length > 0 && (() => {
             const placeOfBirthPill = metaPills.find(pill => pill.key === 'place-of-birth');
             const primaryMetaPills = metaPills.filter(pill => pill.key !== 'place-of-birth');
             return (
-              <>
+              <div className="entity-detail-page__sidebar-meta-section" style={{ marginTop: 'var(--space-md)', width: '100%' }}>
                 {primaryMetaPills.length > 0 && (
-                  <div className="entity-detail-page__meta-row">
+                  <div className="entity-detail-page__meta-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {primaryMetaPills.map((metaItem) => (
                       <Pill key={metaItem.key} variant="meta">{metaItem.content}</Pill>
                     ))}
                   </div>
                 )}
-                {(placeOfBirthPill || isPeople) && (
-                  <div className="entity-detail-page__meta-row entity-detail-page__meta-row--secondary">
-                    {placeOfBirthPill && (
-                      <Pill key={placeOfBirthPill.key} variant="meta">{placeOfBirthPill.content}</Pill>
-                    )}
-                    {isPeople && (
-                      <button
-                        type="button"
-                        className="entity-detail-page__more-details-btn"
-                        onClick={() => setIsDrawerOpen(true)}
-                      >
-                        <Sliders size={13} style={{ marginRight: '4px' }} />
-                        {t('library.details.needMoreBtn') || 'Need more?'}
-                      </button>
-                    )}
+                {placeOfBirthPill && (
+                  <div className="entity-detail-page__meta-row entity-detail-page__meta-row--secondary" style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    <Pill key={placeOfBirthPill.key} variant="meta">{placeOfBirthPill.content}</Pill>
                   </div>
                 )}
-              </>
+              </div>
             );
           })()}
+
+          {/* Need More / Biography Drawer Trigger */}
+          {isPeople && (
+            <button
+              type="button"
+              className="entity-detail-page__sidebar-more-btn"
+              onClick={() => setIsDrawerOpen(true)}
+            >
+              <Sliders size={13} style={{ marginRight: '6px' }} />
+              {t('library.details.needMoreBtn') || 'Biography & Details'}
+            </button>
+          )}
         </div>
 
         {/* Right column containing Known For aligned to the bottom */}
@@ -241,10 +250,10 @@ export default function EntityDetailHeroSection({
                       : (credit.source === 'porndb' ? `porndb_${credit.tmdb_id || credit.id}` : `tmdb_${credit.tmdb_id || credit.id}`);
                     navigate(`/library/movie/${movieId}`);
                   };
-                  
+
                   return (
-                    <div 
-                      key={`${credit.id}-${credit.type || 'movie'}`} 
+                    <div
+                      key={`${credit.id}-${credit.type || 'movie'}`}
                       className="entity-detail-page__known-for-card is-clickable"
                       onClick={handleCardClick}
                       title={creditTitle}
@@ -279,155 +288,155 @@ export default function EntityDetailHeroSection({
         </div>
       </section>
 
-        {isDrawerOpen && (() => {
-          const toTitleCase = (str) => {
-            if (!str) return '';
-            return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-          };
+      {isDrawerOpen && (() => {
+        const toTitleCase = (str) => {
+          if (!str) return '';
+          return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+        };
 
-          const formatListAttr = (val) => {
-            if (!val) return null;
-            if (Array.isArray(val)) {
-              if (val.length === 0) return null;
-              const locations = val.map(i => i.location || i.description).filter(Boolean);
-              if (locations.length === 0) return 'Yes';
-              return toTitleCase(locations.join(', '));
-            }
-            if (typeof val === 'string') {
-              const formatted = toTitleCase(val);
-              if (formatted === 'No Piercings' || formatted === 'No Tattoos') return 'No';
-              return formatted;
-            }
-            return null;
-          };
+        const formatListAttr = (val) => {
+          if (!val) return null;
+          if (Array.isArray(val)) {
+            if (val.length === 0) return null;
+            const locations = val.map(i => i.location || i.description).filter(Boolean);
+            if (locations.length === 0) return 'Yes';
+            return toTitleCase(locations.join(', '));
+          }
+          if (typeof val === 'string') {
+            const formatted = toTitleCase(val);
+            if (formatted === 'No Piercings' || formatted === 'No Tattoos') return 'No';
+            return formatted;
+          }
+          return null;
+        };
 
-          const tattooVal = formatListAttr(item.tattoos);
-          const piercingVal = formatListAttr(item.piercings);
-          const hasAnySpecs = item?.height || item?.weight || item?.measurements || item?.breast_type || item?.hair_color || item?.eye_color || item?.ethnicity || item?.tattoos || item?.piercings || item?.career_start_year;
+        const tattooVal = formatListAttr(item.tattoos);
+        const piercingVal = formatListAttr(item.piercings);
+        const hasAnySpecs = item?.height || item?.weight || item?.measurements || item?.breast_type || item?.hair_color || item?.eye_color || item?.ethnicity || item?.tattoos || item?.piercings || item?.career_start_year;
 
-          return createPortal(
-            <>
-              {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
-              <div 
-                className="entity-detail-page__drawer-backdrop" 
-                onClick={() => setIsDrawerOpen(false)}
-              />
-              <div className="entity-detail-page__drawer">
-                <div className="entity-detail-page__drawer-header">
-                  <h3 className="entity-detail-page__drawer-title">{item?.name || overviewTitle}</h3>
-                  <button 
-                    type="button" 
-                    className="entity-detail-page__drawer-close" 
-                    onClick={() => setIsDrawerOpen(false)}
-                  >
-                    &times;
-                  </button>
-                </div>
-                <div className="entity-detail-page__drawer-content">
-                  {/* Section 1: Alternate Names */}
-                  {item?.alternate_names?.length > 0 && (
-                    <div className="entity-detail-page__drawer-section">
-                      <h4 className="entity-detail-page__drawer-section-title">
-                        {t('library.details.alsoKnownAs') || 'Also known as'}
-                      </h4>
-                      <div className="entity-detail-page__drawer-aliases-text">
-                        {item.alternate_names.join(', ')}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Section 2: Physical Specs */}
-                  {hasAnySpecs && (
-                    <div className="entity-detail-page__drawer-section">
-                      <h4 className="entity-detail-page__drawer-section-title">
-                        {t('library.details.specsTitle') || 'Physical Specs'}
-                      </h4>
-                      <div className="entity-detail-page__drawer-specs-grid">
-                        {item.career_start_year && (
-                          <div className="entity-detail-page__specs-item">
-                            <span className="entity-detail-page__specs-label">Active Years</span>
-                            <span className="entity-detail-page__specs-value">
-                              {item.career_start_year} - {item.career_end_year || 'Present'}
-                            </span>
-                          </div>
-                        )}
-                        {item.height && (
-                          <div className="entity-detail-page__specs-item">
-                            <span className="entity-detail-page__specs-label">Height</span>
-                            <span className="entity-detail-page__specs-value">{item.height} cm</span>
-                          </div>
-                        )}
-                        {item.weight && (
-                          <div className="entity-detail-page__specs-item">
-                            <span className="entity-detail-page__specs-label">Weight</span>
-                            <span className="entity-detail-page__specs-value">{item.weight} kg</span>
-                          </div>
-                        )}
-                        {item.measurements && (
-                          <div className="entity-detail-page__specs-item">
-                            <span className="entity-detail-page__specs-label">Measurements</span>
-                            <span className="entity-detail-page__specs-value">{item.measurements}</span>
-                          </div>
-                        )}
-                        {item.breast_type && (
-                          <div className="entity-detail-page__specs-item">
-                            <span className="entity-detail-page__specs-label">Breast Type</span>
-                            <span className="entity-detail-page__specs-value">{toTitleCase(item.breast_type)}</span>
-                          </div>
-                        )}
-                        {item.hair_color && (
-                          <div className="entity-detail-page__specs-item">
-                            <span className="entity-detail-page__specs-label">Hair Color</span>
-                            <span className="entity-detail-page__specs-value">{toTitleCase(item.hair_color)}</span>
-                          </div>
-                        )}
-                        {item.eye_color && (
-                          <div className="entity-detail-page__specs-item">
-                            <span className="entity-detail-page__specs-label">Eye Color</span>
-                            <span className="entity-detail-page__specs-value">{toTitleCase(item.eye_color)}</span>
-                          </div>
-                        )}
-                        {item.ethnicity && (
-                          <div className="entity-detail-page__specs-item">
-                            <span className="entity-detail-page__specs-label">Ethnicity</span>
-                            <span className="entity-detail-page__specs-value">{toTitleCase(item.ethnicity)}</span>
-                          </div>
-                        )}
-                        {tattooVal && (
-                          <div className="entity-detail-page__specs-item entity-detail-page__specs-item--full">
-                            <span className="entity-detail-page__specs-label">Tattoos</span>
-                            <span className="entity-detail-page__specs-value">{tattooVal}</span>
-                          </div>
-                        )}
-                        {piercingVal && (
-                          <div className="entity-detail-page__specs-item entity-detail-page__specs-item--full">
-                            <span className="entity-detail-page__specs-label">Piercings</span>
-                            <span className="entity-detail-page__specs-value">{piercingVal}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Section 3: Biography */}
-                  {overviewText && (
-                    <div className="entity-detail-page__drawer-section">
-                      <h4 className="entity-detail-page__drawer-section-title">
-                        {t('library.details.biographyTitle') || 'Biography'}
-                      </h4>
-                      <div className="entity-detail-page__drawer-bio">
-                        {overviewText.split(/\n{2,}/).map((paragraph, index) => (
-                          <p key={index} className="entity-detail-page__drawer-paragraph">{paragraph}</p>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+        return createPortal(
+          <>
+            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+            <div
+              className="entity-detail-page__drawer-backdrop"
+              onClick={() => setIsDrawerOpen(false)}
+            />
+            <div className="entity-detail-page__drawer">
+              <div className="entity-detail-page__drawer-header">
+                <h3 className="entity-detail-page__drawer-title">{item?.name || overviewTitle}</h3>
+                <button
+                  type="button"
+                  className="entity-detail-page__drawer-close"
+                  onClick={() => setIsDrawerOpen(false)}
+                >
+                  &times;
+                </button>
               </div>
-            </>,
-            document.body
-          );
-        })()}
+              <div className="entity-detail-page__drawer-content">
+                {/* Section 1: Alternate Names */}
+                {drawerAliases.length > 0 && (
+                  <div className="entity-detail-page__drawer-section">
+                    <h4 className="entity-detail-page__drawer-section-title">
+                      {t('library.details.alsoKnownAs') || 'Also known as'}
+                    </h4>
+                    <div className="entity-detail-page__drawer-aliases-text">
+                      {drawerAliases.join(', ')}
+                    </div>
+                  </div>
+                )}
+
+                {/* Section 2: Physical Specs */}
+                {hasAnySpecs && (
+                  <div className="entity-detail-page__drawer-section">
+                    <h4 className="entity-detail-page__drawer-section-title">
+                      {t('library.details.specsTitle') || 'Physical Specs'}
+                    </h4>
+                    <div className="entity-detail-page__drawer-specs-grid">
+                      {item.career_start_year && (
+                        <div className="entity-detail-page__specs-item">
+                          <span className="entity-detail-page__specs-label">Active Years</span>
+                          <span className="entity-detail-page__specs-value">
+                            {item.career_start_year} - {item.career_end_year || 'Present'}
+                          </span>
+                        </div>
+                      )}
+                      {item.height && (
+                        <div className="entity-detail-page__specs-item">
+                          <span className="entity-detail-page__specs-label">Height</span>
+                          <span className="entity-detail-page__specs-value">{item.height} cm</span>
+                        </div>
+                      )}
+                      {item.weight && (
+                        <div className="entity-detail-page__specs-item">
+                          <span className="entity-detail-page__specs-label">Weight</span>
+                          <span className="entity-detail-page__specs-value">{item.weight} kg</span>
+                        </div>
+                      )}
+                      {item.measurements && (
+                        <div className="entity-detail-page__specs-item">
+                          <span className="entity-detail-page__specs-label">Measurements</span>
+                          <span className="entity-detail-page__specs-value">{item.measurements}</span>
+                        </div>
+                      )}
+                      {item.breast_type && (
+                        <div className="entity-detail-page__specs-item">
+                          <span className="entity-detail-page__specs-label">Breast Type</span>
+                          <span className="entity-detail-page__specs-value">{toTitleCase(item.breast_type)}</span>
+                        </div>
+                      )}
+                      {item.hair_color && (
+                        <div className="entity-detail-page__specs-item">
+                          <span className="entity-detail-page__specs-label">Hair Color</span>
+                          <span className="entity-detail-page__specs-value">{toTitleCase(item.hair_color)}</span>
+                        </div>
+                      )}
+                      {item.eye_color && (
+                        <div className="entity-detail-page__specs-item">
+                          <span className="entity-detail-page__specs-label">Eye Color</span>
+                          <span className="entity-detail-page__specs-value">{toTitleCase(item.eye_color)}</span>
+                        </div>
+                      )}
+                      {item.ethnicity && (
+                        <div className="entity-detail-page__specs-item">
+                          <span className="entity-detail-page__specs-label">Ethnicity</span>
+                          <span className="entity-detail-page__specs-value">{toTitleCase(item.ethnicity)}</span>
+                        </div>
+                      )}
+                      {tattooVal && (
+                        <div className="entity-detail-page__specs-item entity-detail-page__specs-item--full">
+                          <span className="entity-detail-page__specs-label">Tattoos</span>
+                          <span className="entity-detail-page__specs-value">{tattooVal}</span>
+                        </div>
+                      )}
+                      {piercingVal && (
+                        <div className="entity-detail-page__specs-item entity-detail-page__specs-item--full">
+                          <span className="entity-detail-page__specs-label">Piercings</span>
+                          <span className="entity-detail-page__specs-value">{piercingVal}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Section 3: Biography */}
+                {overviewText && (
+                  <div className="entity-detail-page__drawer-section">
+                    <h4 className="entity-detail-page__drawer-section-title">
+                      {t('library.details.biographyTitle') || 'Biography'}
+                    </h4>
+                    <div className="entity-detail-page__drawer-bio">
+                      {overviewText.split(/\n{2,}/).map((paragraph, index) => (
+                        <p key={index} className="entity-detail-page__drawer-paragraph">{paragraph}</p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </>,
+          document.body
+        );
+      })()}
     </div>
   );
 }
