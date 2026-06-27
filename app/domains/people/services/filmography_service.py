@@ -72,10 +72,15 @@ class FilmographyService:
             local_tv.sort(key=lambda x: x.get("year") or 0, reverse=True)
             local_scenes.sort(key=lambda x: x.get("year") or 0, reverse=True)
             from app.domains.people.helpers import select_known_for
+            
+            credits_pool = local_movies + local_tv
+            if is_adult and not credits_pool:
+                credits_pool = local_scenes
+                
             known_for = select_known_for(
-                local_movies + local_tv,
+                credits_pool,
                 known_for_department,
-                limit=4,
+                limit=8,
                 adult_only=is_adult,
                 person_name=person_name
             )

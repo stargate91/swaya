@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import Pill from '@/ui/Pill';
 import { Layers, User, PenLine, Sliders, Heart, Check, Minus, Plus, Star } from 'lucide-react';
@@ -31,6 +32,7 @@ export default function EntityDetailHeroSection({
   handlePeopleRatingClick,
   onMediaCardClick,
 }) {
+  const navigate = useNavigate();
   const [isAliasesExpanded, setIsAliasesExpanded] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isHoveringBar, setIsHoveringBar] = useState(false);
@@ -204,7 +206,72 @@ export default function EntityDetailHeroSection({
               </>
             );
           })()}
-        </div>
+          
+          {/* Known For Grid */}
+          {isPeople && item?.known_for?.length > 0 && (
+            <div className="entity-detail-page__known-for-section">
+              <div className="entity-detail-page__known-for-grid">
+              {item.known_for.map((credit) => {
+                const creditTitle = credit.title || credit.name || 'Unknown';
+                const isClickable = true;
+                const handleCardClick = () => {
+                  const isScene = credit.media_type === 'scene' || credit.type === 'scene';
+                  if (isScene) {
+                    const itemSource = credit.source || (credit.rating_porndb ? 'porndb' : (item?.external_ids?.stashdb_id ? 'stashdb' : 'fansdb'));
+                    const prefix = itemSource === 'porndb' || itemSource === 'theporndb' ? 'porndb' : (itemSource === 'fansdb' ? 'fansdb' : 'stash');
+                    const sceneId = credit.in_library ? (credit.library_item_id || credit.id) : `${prefix}_${credit.stash_id || credit.id}`;
+                    navigate(`/library/scene/${sceneId}`);
+                    return;
+                  }
+
+                  const isTv = credit.media_type === 'tv' || credit.type === 'tv';
+                  if (isTv) {
+                    const tvId = credit.library_tv_tmdb_id || credit.tv_tmdb_id || credit.tmdb_id || credit.id;
+                    navigate(`/library/tv/${tvId}`);
+                    return;
+                  }
+
+                  const movieId = credit.in_library
+                    ? (credit.library_item_id || credit.id)
+                    : (credit.source === 'porndb' ? `porndb_${credit.tmdb_id || credit.id}` : `tmdb_${credit.tmdb_id || credit.id}`);
+                  navigate(`/library/movie/${movieId}`);
+                };
+                
+                return (
+                  <div 
+                    key={`${credit.id}-${credit.type || 'movie'}`} 
+                    className="entity-detail-page__known-for-card is-clickable"
+                    onClick={handleCardClick}
+                    title={creditTitle}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        handleCardClick();
+                      }
+                    }}
+                  >
+                    <div className="entity-detail-page__known-for-poster-container">
+                      {credit.poster_path ? (
+                        <img
+                          src={credit.poster_path}
+                          alt={creditTitle}
+                          className="entity-detail-page__known-for-poster"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="entity-detail-page__known-for-placeholder">
+                          <Layers size={20} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
 
 
 
