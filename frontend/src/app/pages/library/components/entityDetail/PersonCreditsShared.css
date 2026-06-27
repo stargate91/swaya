@@ -87,6 +87,20 @@
   transition: padding var(--motion-base), margin var(--motion-base), background var(--motion-base);
 }
 
+/* Layout Alignment with Hero grid */
+.person-credits-section-container {
+  display: grid;
+  grid-template-columns: minmax(240px, 330px) minmax(0, 1fr);
+  gap: var(--space-4xl);
+  width: 100%;
+  margin-top: var(--space-3xl, 32px);
+}
+
+.person-credits-tabs,
+.person-credits-section-container .entity-detail-page__credits-list {
+  grid-column: 2;
+}
+
 .person-credits-section-container.is-scrolled .person-credits-tabs {
   background: transparent;
   backdrop-filter: none;
