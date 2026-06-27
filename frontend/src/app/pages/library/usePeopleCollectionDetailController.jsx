@@ -142,7 +142,17 @@ export default function usePeopleCollectionDetailController({
         ordered.push(link);
       }
     }
-    return ordered;
+    const seenIcons = new Set();
+    const uniqueLinks = [];
+    for (const link of ordered) {
+      if (!link.iconSrc) continue;
+      const isGeneric = link.iconSrc.includes('homepage') || link.iconSrc.includes('website');
+      if (isGeneric || !seenIcons.has(link.iconSrc)) {
+        seenIcons.add(link.iconSrc);
+        uniqueLinks.push(link);
+      }
+    }
+    return uniqueLinks;
   }, [isPeople, externalLinks, item]);
   const backdropUrl = resolveDetailsImageUrl(item?.backdrop_path, API_BASE, 'backdrop');
   const mediaUrl = resolveDetailsImageUrl(

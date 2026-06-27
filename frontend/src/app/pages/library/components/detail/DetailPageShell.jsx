@@ -23,6 +23,7 @@ export default function DetailPageShell({
   pageClassName = '',
   panelOpenClassName = 'media-detail-page__container--panel-open',
   isScene = false,
+  containerRef,
 }) {
   const navigate = useNavigate();
 
@@ -102,6 +103,7 @@ export default function DetailPageShell({
         ) : null}
 
         <div
+          ref={containerRef}
           className={`media-detail-page__container${activePanel ? ` ${panelOpenClassName}` : ''}`}
         >
           {children}

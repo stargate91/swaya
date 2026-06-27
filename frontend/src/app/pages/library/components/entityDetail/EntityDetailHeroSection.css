@@ -134,6 +134,9 @@
   font: var(--text-title);
   line-height: 0.94;
   letter-spacing: -0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .entity-detail-page__inline-links {
@@ -980,6 +983,48 @@
   filter: grayscale(0%);
 }
 
+/* Scroll Arrow Indicator */
+.entity-detail-page__scroll-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 16px auto 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
+  cursor: pointer;
+  transition: all 0.3s ease;
+  animation: bounceArrow 2s infinite;
+}
+
+.entity-detail-page__scroll-arrow:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  transform: translateY(2px);
+}
+
+.entity-detail-page__scroll-arrow.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+}
+
+@keyframes bounceArrow {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(6px);
+  }
+  60% {
+    transform: translateY(3px);
+  }
+}
+
+/* Morphing Header & Transitions */
 .entity-detail-page__known-for-placeholder {
   width: 100%;
   height: 100%;

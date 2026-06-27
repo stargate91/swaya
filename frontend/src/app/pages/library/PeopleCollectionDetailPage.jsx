@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from '@/providers/LanguageContext';
 import { useUi } from '@/providers/UiProvider';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
 import DetailPageShell from './components/detail/DetailPageShell';
 import EntityDetailTopControls from './components/entityDetail/EntityDetailTopControls';
 import EntityDetailStatusSection from './components/entityDetail/EntityDetailStatusSection';
@@ -60,6 +60,30 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
   });
 
   const [isSocialExpanded, setIsSocialExpanded] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const handleWheel = (e) => {
+      if (Math.abs(e.deltaY) > 5) {
+        if (e.deltaY > 0 && !isScrolled) {
+          setIsScrolled(true);
+        } else if (e.deltaY < 0 && isScrolled) {
+          setIsScrolled(false);
+        }
+      }
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: true });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [isScrolled]);
+
+  const handleScrollArrowClick = useCallback(() => {
+    setIsScrolled(true);
+  }, []);
 
   const hasExtraSocials = socialLinks.length > 4;
   const mainSocialLinks = hasExtraSocials ? socialLinks.slice(0, 4) : socialLinks;
@@ -74,26 +98,26 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
       content: (
         <UniversalImagePickerModal
           entityId={idToUse}
-          tmdbId={isPeople ? item.id : item.tmdb_id}
-          imageType={isPeople ? 'profile' : 'poster'}
           entityType={isPeople ? 'person' : 'collection'}
-          currentPath={isPeople ? item.profile_path : item.poster_path}
-          t={t}
-          toast={toast}
-          onClose={closeModal}
-          externalIds={item?.external_ids}
+          onImageSelected={() => {
+            closeModal();
+            toast.success(t('library.details.imageUpdatedSuccessfully') || 'Image updated successfully');
+          }}
         />
       ),
     });
   };
 
+
+
   return (
     <DetailPageShell
+      containerRef={containerRef}
       backdropUrl={backdropUrl}
       fallbackUrl={mediaUrl}
       backLabel={t('common.back') || 'Back'}
       isLoading={isLoading}
-      pageClassName={`entity-detail-page ${isPeople ? 'entity-detail-page--people' : 'entity-detail-page--collection'}`}
+      pageClassName={`entity-detail-page ${isPeople ? 'entity-detail-page--people' : 'entity-detail-page--collection'} ${isScrolled ? 'is-scrolled' : ''}`}
       topRightControls={
         <EntityDetailTopControls
           isPeople={isPeople}
@@ -124,49 +148,54 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
       )}
 
       {!hasError && (
-        <EntityDetailHeroSection
-          isPeople={isPeople}
-          item={item}
-          mediaUrl={mediaUrl}
-          profileLinks={profileLinks}
-          extraLinks={extraLinks}
-          socialLinks={socialLinks}
-          metaPills={metaPills}
-          extraMetaPills={extraMetaPills}
-          overviewText={overviewText}
-          overviewTitle={overviewTitle}
-          overviewEmptyText={overviewEmptyText}
-          displayRating={displayRating}
-          isActivateHovered={isActivateHovered}
-          starsStyleSheetText={starsStyleSheetText}
-          t={t}
-          openModal={openModal}
-          setIsActivateHovered={setIsActivateHovered}
-          handleToggleFavorite={handleToggleFavorite}
-          handleToggleActive={handleToggleActive}
-          handleOpenReviewModal={handleOpenReviewModal}
-          handlePeopleRatingMouseMove={handlePeopleRatingMouseMove}
-          handlePeopleRatingMouseLeave={handlePeopleRatingMouseLeave}
-          handlePeopleRatingClick={handlePeopleRatingClick}
-          onMediaCardClick={handleOpenImagePickerModal}
-        />
-      )}
+        <div className="entity-detail-page__transition-wrapper">
+          <EntityDetailHeroSection
+            isPeople={isPeople}
+            item={item}
+            isScrolled={isScrolled}
+            onScrollArrowClick={handleScrollArrowClick}
+            mediaUrl={mediaUrl}
+            profileLinks={profileLinks}
+            extraLinks={extraLinks}
+            socialLinks={socialLinks}
+            metaPills={metaPills}
+            extraMetaPills={extraMetaPills}
+            overviewText={overviewText}
+            overviewTitle={overviewTitle}
+            overviewEmptyText={overviewEmptyText}
+            displayRating={displayRating}
+            isActivateHovered={isActivateHovered}
+            starsStyleSheetText={starsStyleSheetText}
+            t={t}
+            openModal={openModal}
+            setIsActivateHovered={setIsActivateHovered}
+            handleToggleFavorite={handleToggleFavorite}
+            handleToggleActive={handleToggleActive}
+            handleOpenReviewModal={handleOpenReviewModal}
+            handlePeopleRatingMouseMove={handlePeopleRatingMouseMove}
+            handlePeopleRatingMouseLeave={handlePeopleRatingMouseLeave}
+            handlePeopleRatingClick={handlePeopleRatingClick}
+            onMediaCardClick={handleOpenImagePickerModal}
+          />
 
-      {!hasError && isPeople && (
-        <PersonCreditsSections
-          id={id}
-          item={item}
-          navigate={navigate}
-          t={t}
-        />
-      )}
+          {isPeople && (
+            <PersonCreditsSections
+              id={id}
+              item={item}
+              isScrolled={isScrolled}
+              navigate={navigate}
+              t={t}
+            />
+          )}
 
-      {!hasError && !isPeople && (
-        <CollectionDetailSections
-          item={item}
-          navigate={navigate}
-          t={t}
-        />
+          {!isPeople && (
+            <CollectionDetailSections
+              item={item}
+              navigate={navigate}
+              t={t}
+            />
+          )}
+        </div>
       )}
 
       {!hasError && isPeople && socialLinks.length > 0 && (
@@ -215,6 +244,19 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
               </button>
             )}
           </div>
+        </div>
+      )}
+
+      {!hasError && isPeople && (
+        <div className={`entity-detail-page__scroll-toggle-container ${isScrolled ? 'is-scrolled' : ''}`}>
+          <button
+            type="button"
+            className="entity-detail-page__scroll-toggle-btn"
+            onClick={() => setIsScrolled(!isScrolled)}
+            title={isScrolled ? (t('library.details.backToProfile') || 'Back to Profile') : (t('library.details.scrollToCredits') || 'Scroll to Credits')}
+          >
+            {isScrolled ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </button>
         </div>
       )}
     </DetailPageShell>

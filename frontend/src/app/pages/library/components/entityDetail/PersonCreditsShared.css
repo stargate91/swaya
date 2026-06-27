@@ -81,6 +81,19 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   padding-bottom: var(--space-sm);
   align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  transition: padding var(--motion-base), margin var(--motion-base), background var(--motion-base);
+}
+
+.person-credits-section-container.is-scrolled .person-credits-tabs {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 12px 24px;
+  margin-left: -24px;
+  margin-right: -24px;
 }
 
 .person-credits-tab-btn {
@@ -120,4 +133,6 @@
   border-radius: var(--radius-full);
   font-weight: normal;
 }
+
+
 

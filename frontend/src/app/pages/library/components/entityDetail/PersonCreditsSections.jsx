@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import PersonCreditsGridSection from './PersonCreditsGridSection';
 import { usePersonCreditsQuery } from '@/queries/metadataQueries';
 
-export default function PersonCreditsSections({ id, item, navigate, t }) {
+export default function PersonCreditsSections({ id, item, isScrolled, navigate, t }) {
   const hasMovies = Number(item?.total_movie_credits) > 0;
   const hasTv = Number(item?.total_tv_credits) > 0;
   const hasStashDb = !!item?.external_ids?.stashdb_id;
@@ -154,7 +154,7 @@ export default function PersonCreditsSections({ id, item, navigate, t }) {
   const handlePornDbScenesPagination = useCallback((data) => handlePaginationData('scenes_porndb', data), [handlePaginationData]);
 
   return (
-    <div className="person-credits-section-container">
+    <div className={`person-credits-section-container ${isScrolled ? 'is-scrolled' : ''}`}>
       {(tabs.length > 1 || (paginationInfo && paginationInfo.totalPages > 1)) && (
         <div className="person-credits-tabs">
           {tabs.length > 1 && tabs.map((tab) => (

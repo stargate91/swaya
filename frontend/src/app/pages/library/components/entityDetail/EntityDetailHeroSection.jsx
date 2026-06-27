@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import Pill from '@/ui/Pill';
-import { Layers, User, PenLine, Sliders, Heart, Check, Minus, Plus, Star } from 'lucide-react';
+import { Layers, User, PenLine, Sliders, Heart, Check, Minus, Plus, Star, ChevronDown } from 'lucide-react';
 import { OverviewContent } from './EntityDetailSections';
 import Tooltip from '@/ui/Tooltip';
 import './EntityDetailHeroSection.css';
@@ -10,6 +10,8 @@ import './EntityDetailHeroSection.css';
 export default function EntityDetailHeroSection({
   isPeople,
   item,
+  isScrolled,
+  onScrollArrowClick,
   mediaUrl,
   profileLinks,
   socialLinks = [],
@@ -127,6 +129,7 @@ export default function EntityDetailHeroSection({
             </span>
           </div>
         )}
+
       </div>
 
       <div className="entity-detail-page__summary">
