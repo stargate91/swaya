@@ -57,14 +57,28 @@ class LibraryStatsService:
         )
         total_episodes = episodes_query.scalar() or 0
 
-        scenes_query = self.db.query(func.count(MediaItem.id)).select_from(MediaItem).join(
-            MetadataMatch, (MetadataMatch.media_item_id == MediaItem.id)
-        ).filter(
-            MediaItem.status.in_(library_statuses),
-            MetadataMatch.media_type == MediaType.SCENE,
-            MetadataMatch.is_adult == include_adult
-        )
-        total_scenes = scenes_query.scalar() or 0
+        from app.infrastructure.settings.db_settings_adapter import DbSettingsAdapter
+        settings_adapter = DbSettingsAdapter(self.db)
+        # Mock user context if needed, or fallback to system settings
+        try:
+            import app.shared_kernel.user_context
+            current_user_id = app.shared_kernel.user_context.get_current_user_id()
+        except Exception:
+            current_user_id = 1
+            
+        include_adult_setting_val = settings_adapter.get_setting("include_adult", user_id=current_user_id)
+        include_adult_setting = str(include_adult_setting_val).lower() == "true"
+
+        total_scenes = 0
+        if include_adult_setting:
+            scenes_query = self.db.query(func.count(MediaItem.id)).select_from(MediaItem).join(
+                MetadataMatch, (MetadataMatch.media_item_id == MediaItem.id)
+            ).filter(
+                MediaItem.status.in_(library_statuses),
+                MetadataMatch.media_type == MediaType.SCENE,
+                MetadataMatch.is_adult == True
+            )
+            total_scenes = scenes_query.scalar() or 0
 
         # Calculate storage sizes
         items = self.db.query(MediaItem).select_from(MediaItem).join(MetadataMatch).filter(

@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '@/ui/Button';
 import { useTranslation } from '@/providers/LanguageContext';
 import { useOverridePersonBackdropMutation, useUploadPersonBackdropMutation, useUpdatePersonStatusMutation } from '@/queries/libraryQueries';
@@ -53,13 +53,15 @@ export default function usePeopleCollectionDetailController({
   const hasError = isPeople ? personQuery.isError : collectionQuery.isError;
 
   const navigate = useNavigate();
+  const location = useLocation();
   const sessionMode = useLibraryModeStore((state) => state.sessionMode);
+  const allowAdult = location.state?.allowAdult;
 
   useEffect(() => {
-    if (!isLoading && (!item || (item && item.is_adult)) && sessionMode !== 'nsfw') {
+    if (!isLoading && (!item || (item && item.is_adult)) && sessionMode !== 'nsfw' && !allowAdult) {
       navigate('/dashboard', { replace: true });
     }
-  }, [isLoading, item, sessionMode, navigate]);
+  }, [isLoading, item, sessionMode, navigate, allowAdult]);
 
   const overviewTitle = isPeople
     ? (t('library.details.biographyTitle') || 'Biography')

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/providers/LanguageContext';
 import { useLibraryItemDetailQuery, useLibraryTvDetailQuery } from '@/queries/metadataQueries';
@@ -57,13 +57,15 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
   const { data: settings } = useSettingsQuery();
 
   const navigate = useNavigate();
+  const location = useLocation();
   const sessionMode = useLibraryModeStore((state) => state.sessionMode);
+  const allowAdult = location.state?.allowAdult;
 
   useEffect(() => {
-    if (!isLoading && (!item || (item && item.is_adult)) && sessionMode !== 'nsfw') {
+    if (!isLoading && (!item || (item && item.is_adult)) && sessionMode !== 'nsfw' && !allowAdult) {
       navigate('/dashboard', { replace: true });
     }
-  }, [isLoading, item, sessionMode, navigate]);
+  }, [isLoading, item, sessionMode, navigate, allowAdult]);
 
   const [prevItem, setPrevItem] = useState(item);
   const [prevCleanId, setPrevCleanId] = useState(cleanId);

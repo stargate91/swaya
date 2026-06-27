@@ -44,7 +44,7 @@ export default function CastPanel() {
                 <div
                   key={director.id}
                   className="person-card"
-                  onClick={() => navigate(`/library/people/${director.id}`)}
+                  onClick={() => navigate(`/library/people/${director.id}`, { state: { allowAdult: true } })}
                 >
                   {director.profile_path ? (
                     <img
@@ -82,7 +82,7 @@ export default function CastPanel() {
                 <div
                   key={writer.id}
                   className="person-card"
-                  onClick={() => navigate(`/library/people/${writer.id}`)}
+                  onClick={() => navigate(`/library/people/${writer.id}`, { state: { allowAdult: true } })}
                 >
                   {writer.profile_path ? (
                     <img
@@ -120,7 +120,7 @@ export default function CastPanel() {
                 <div
                   key={actor.id}
                   className="person-card"
-                  onClick={() => navigate(`/library/people/${actor.id}`)}
+                  onClick={() => navigate(`/library/people/${actor.id}`, { state: { allowAdult: true } })}
                 >
                   {actor.profile_path ? (
                     <img

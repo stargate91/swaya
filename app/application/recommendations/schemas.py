@@ -25,6 +25,7 @@ class RecommendationsResponse(BaseModel):
     trending: List[RecommendationItem]
     discover_movies: List[RecommendationItem]
     discover_tv: List[RecommendationItem]
+    discover_adult: Optional[List[RecommendationItem]] = None
     top_movie_genre: str
     top_tv_genre: str
     watchlist_item_ids: List[int]

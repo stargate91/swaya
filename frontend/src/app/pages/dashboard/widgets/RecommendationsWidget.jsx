@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
-import { Check, ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Star, Plus, Minus } from 'lucide-react';
 import { useUi } from '../../../providers/UiProvider';
 import { resolveMediaImageUrl } from '../../../lib/imageUrls';
 import {
@@ -10,28 +10,33 @@ import {
   useRemoveFromWatchlistMutation,
 } from '../../../queries/dashboardQueries';
 import Button from '../../../ui/Button';
-import DashboardWidgetShell from './DashboardWidgetShell';
+import Pill from '../../../ui/Pill';
+import { useLibraryModeStore } from '../../../stores/useLibraryModeStore';
+import { API_BASE } from '../../../lib/backend';
 
 const SpotlightBanner = ({ item, watchlistIds, onWatchlist, onCardClick, T }) => {
   if (!item) return null;
   const imageUrl = resolveMediaImageUrl(item.backdrop_path, 'backdrop');
   const title = item.title || item.name;
   const isWatchlisted = watchlistIds.includes(item.id);
-  const rating = item.vote_average;
+  const imdbRating = item.rating_imdb;
+  const tmdbRating = item.rating_tmdb || item.vote_average;
+  const ratingToDisplay = imdbRating || tmdbRating;
+  const ratingSource = imdbRating ? 'imdb' : 'tmdb';
   const year = item.release_date ? new Date(item.release_date).getFullYear() : null;
 
   return (
-    <div className="recommend-spotlight" onClick={() => onCardClick(item)}>
+    <div className="recommend-spotlight">
       {imageUrl && <img src={imageUrl} alt={title} className="recommend-spotlight-image" />}
       <div className="recommend-spotlight-gradient recommend-spotlight-gradient--side" />
       <div className="recommend-spotlight-gradient recommend-spotlight-gradient--bottom" />
 
       <div className="recommend-spotlight-copy">
-        <h2 className="recommend-spotlight-title">{title}</h2>
+        <h2 className="recommend-spotlight-title" onClick={() => onCardClick(item)} style={{ cursor: 'pointer' }}>{title}</h2>
         <div className="recommend-spotlight-meta">
-          {rating ? (
-            <span className="recommend-spotlight-rating is-tmdb">
-              <Star size={14} fill="currentColor" /> {rating.toFixed(1)}
+          {ratingToDisplay ? (
+            <span className={`recommend-spotlight-rating is-${ratingSource}`}>
+              <Star size={14} fill="currentColor" /> {ratingToDisplay.toFixed(1)}
             </span>
           ) : null}
           {year ? <span className="recommend-spotlight-year">{year}</span> : null}
@@ -70,10 +75,11 @@ SpotlightBanner.propTypes = {
   T: PropTypes.func.isRequired,
 };
 
-const RecommendationCarousel = ({ title, items, watchlistIds, onWatchlist, onCardClick, T }) => {
+const RecommendationCarousel = ({ title, items, watchlistIds, onWatchlist, onCardClick, T, isAdultCarousel = false }) => {
   const scrollRef = useRef(null);
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(true);
+  const sessionMode = useLibraryModeStore((state) => state.sessionMode);
 
   const updateArrows = useCallback(() => {
     const element = scrollRef.current;
@@ -99,58 +105,96 @@ const RecommendationCarousel = ({ title, items, watchlistIds, onWatchlist, onCar
 
       <div className="recommend-carousel-shell">
         {showLeft && (
-          <Button
+          <button
             className="recommend-carousel-arrow is-left"
             onClick={() => scroll('left')}
-            variant="secondary-neutral"
           >
-            <ChevronLeft size={22} />
-          </Button>
+            <ChevronLeft size={24} />
+          </button>
         )}
 
         {showRight && (
-          <Button
+          <button
             className="recommend-carousel-arrow is-right"
             onClick={() => scroll('right')}
-            variant="secondary-neutral"
           >
-            <ChevronRight size={22} />
-          </Button>
+            <ChevronRight size={24} />
+          </button>
         )}
 
         <div
           ref={scrollRef}
           onScroll={updateArrows}
-          className="recommend-carousel-track custom-scrollbar"
+          className="recommend-carousel-track"
         >
           {items.map((item) => {
             const isWatchlisted = watchlistIds.includes(item.id);
-            const posterUrl = resolveMediaImageUrl(item.poster_path, 'poster');
-            const year = item.release_date ? new Date(item.release_date).getFullYear() : null;
-            const rating = item.vote_average;
+            const rawPosterUrl = resolveMediaImageUrl(item.poster_path, 'poster');
+            const shouldBlur = isAdultCarousel && sessionMode !== 'nsfw';
+            const posterUrl = (shouldBlur && rawPosterUrl)
+              ? `${API_BASE}/api/v1/media/image-proxy?url=${encodeURIComponent(rawPosterUrl)}&blur=true`
+              : rawPosterUrl;
+            const ratingImdb = item.rating_imdb;
+            const ratingTmdb = item.rating_tmdb || item.vote_average;
+            const hasRating = (ratingImdb && ratingImdb > 0) || (ratingTmdb && ratingTmdb > 0);
+
+            const isTv = item.media_type === 'tv' || !item.title;
+            let yearLabel = null;
+            if (isTv) {
+              const firstAirYear = item.first_air_date ? new Date(item.first_air_date).getFullYear() : null;
+              const lastAirYear = item.last_air_date ? new Date(item.last_air_date).getFullYear() : null;
+              const isEnded = item.release_status?.toLowerCase() === 'ended' || !!lastAirYear;
+              if (firstAirYear) {
+                yearLabel = isEnded && lastAirYear
+                  ? `${firstAirYear} - ${lastAirYear}`
+                  : `${firstAirYear} -`;
+              }
+            } else {
+              yearLabel = item.release_date ? new Date(item.release_date).getFullYear() : null;
+            }
+
             return (
               <div
                 key={item.id}
                 className="recommend-card"
                 onClick={() => onCardClick(item)}
               >
-                <div className="recommend-card-poster-shell">
-                  {posterUrl && <img src={posterUrl} alt={item.title || item.name} className="recommend-card-image" />}
+                <div className={`recommend-card-poster-shell ${shouldBlur ? 'is-blurred' : ''}`}>
+                  {posterUrl && (
+                    <img
+                      key={posterUrl}
+                      src={posterUrl}
+                      alt={item.title || item.name}
+                      className="recommend-card-image"
+                    />
+                  )}
+                  {shouldBlur && (
+                    <div className="recommend-card-blur-overlay">
+                      <span className="settings-badge settings-badge--danger">18+</span>
+                    </div>
+                  )}
                   <div className="recommend-card-overlay">
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
                         onWatchlist(item.id, item.title ? 'movie' : 'tv');
                       }}
-                      className={`ui-card-action-pill ${isWatchlisted ? 'is-active' : ''}`}
+                      className={`recommend-card-watchlist-btn ${isWatchlisted ? 'is-active' : ''}`}
                       variant="unstyled"
                     >
                       {isWatchlisted ? (
                         <>
-                          <Check size={14} /> {T('dashboard.watchlist.added') || 'Watchlisted'}
+                          <span className="watchlist-btn-state-default" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <Check size={12} strokeWidth={3} /> {T('dashboard.watchlist.added') || 'Watchlisted'}
+                          </span>
+                          <span className="watchlist-btn-state-hover" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <Minus size={12} strokeWidth={3} /> {T('dashboard.watchlist.remove_short') || 'Remove'}
+                          </span>
                         </>
                       ) : (
-                        `+ ${T('dashboard.watchlist.add_short') || 'Watchlist'}`
+                        <>
+                          <Plus size={12} strokeWidth={3} /> {T('dashboard.watchlist.add_short') || 'Watchlist'}
+                        </>
                       )}
                     </Button>
                   </div>
@@ -158,14 +202,21 @@ const RecommendationCarousel = ({ title, items, watchlistIds, onWatchlist, onCar
 
                 <div className="recommend-card-meta">
                   <div className="recommend-card-name">{item.title || item.name}</div>
-                  {(year || rating) ? (
+                  {(yearLabel || hasRating) ? (
                     <div className="recommend-card-secondary">
-                      {year ? <span className="recommend-card-year">{year}</span> : null}
-                      {rating ? (
-                        <span className="library-card-rating-pill is-inline is-tmdb">
-                          <Star size={10} fill="currentColor" /> {rating.toFixed(1)}
-                        </span>
-                      ) : null}
+                      {yearLabel ? <span className="recommend-card-year">{yearLabel}</span> : null}
+                      <div className="recommend-card-ratings">
+                        {ratingImdb && ratingImdb > 0 ? (
+                          <Pill variant="imdb">
+                            <Star size={10} fill="currentColor" /> {ratingImdb.toFixed(1)}
+                          </Pill>
+                        ) : null}
+                        {ratingTmdb && ratingTmdb > 0 ? (
+                          <Pill variant="tmdb">
+                            <Star size={10} fill="currentColor" /> {ratingTmdb.toFixed(1)}
+                          </Pill>
+                        ) : null}
+                      </div>
                     </div>
                   ) : null}
                 </div>
@@ -185,6 +236,7 @@ RecommendationCarousel.propTypes = {
   onWatchlist: PropTypes.func.isRequired,
   onCardClick: PropTypes.func.isRequired,
   T: PropTypes.func.isRequired,
+  isAdultCarousel: PropTypes.bool,
 };
 
 const RecommendationSkeleton = ({ showBanner = false }) => (
@@ -232,8 +284,9 @@ const RecommendationsWidget = ({ language, T }) => {
   };
 
   const handleCardClick = (item) => {
-    const type = item.title ? 'movie' : 'tv';
-    navigate(`/library/${type}/${item.id}`);
+    const type = item.media_type || (item.title ? 'movie' : 'tv');
+    const idToUse = item.in_library ? item.media_item_id : `tmdb_${item.id}`;
+    navigate(`/library/${type}/${idToUse}`, { state: { allowAdult: true } });
   };
 
   return (
@@ -271,6 +324,18 @@ const RecommendationsWidget = ({ language, T }) => {
           onWatchlist={handleWatchlist}
           onCardClick={handleCardClick}
           T={T}
+        />
+      )}
+
+      {!isLoading && recommendations?.discover_adult?.length > 0 && (
+        <RecommendationCarousel
+          title={T('dashboard.recommendations.discover_adult') || 'Discover Adult Movies'}
+          items={recommendations.discover_adult}
+          watchlistIds={watchlistIds}
+          onWatchlist={handleWatchlist}
+          onCardClick={handleCardClick}
+          T={T}
+          isAdultCarousel={true}
         />
       )}
     </>

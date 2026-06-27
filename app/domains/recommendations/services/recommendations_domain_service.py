@@ -23,8 +23,10 @@ class RecommendationsDomainService:
                 "media_type": media_type,
                 "in_library": bind.get("media_item_id") is not None,
                 "media_item_id": bind.get("media_item_id"),
-                "rating_imdb": bind.get("rating_imdb") or item.get("vote_average"),
+                "rating_imdb": bind.get("rating_imdb"),
                 "rating_tmdb": bind.get("rating_tmdb") or item.get("vote_average"),
+                "last_air_date": bind.get("last_air_date") or item.get("last_air_date"),
+                "release_status": bind.get("release_status") or item.get("release_status"),
             })
         return annotated
 
@@ -55,31 +57,55 @@ class RecommendationsDomainService:
         if not movie_ids and not tv_ids:
             return {}
 
-        filters = []
-        if movie_ids:
-            filters.append((MetadataMatch.provider == Provider.TMDB) & (MetadataMatch.external_id.in_(movie_ids)))
-        if tv_ids:
-            filters.append((MetadataMatch.provider == Provider.TMDB) & (MetadataMatch.external_id.in_(tv_ids)))
-
-        rows = db.query(
-            MediaItem.id,
-            MetadataMatch.external_id,
-            MetadataMatch.media_type,
-            MetadataMatch.rating_tmdb,
-            MetadataMatch.rating_imdb
-        ).join(
-            MetadataMatch, MetadataMatch.media_item_id == MediaItem.id
-        ).filter(
-            MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED]),
-            or_(*filters)
-        ).all()
-
         bindings = {}
-        for r in rows:
-            m_type = "tv" if r.media_type == MediaType.TV else "movie"
-            bindings[(m_type, int(r.external_id))] = {
-                "media_item_id": r.id,
-                "rating_imdb": r.rating_imdb,
-                "rating_tmdb": r.rating_tmdb,
-            }
+
+        # 1. Query TV matches directly from metadata_matches table
+        if tv_ids:
+            tv_rows = db.query(
+                MetadataMatch.external_id,
+                MetadataMatch.rating_tmdb,
+                MetadataMatch.rating_imdb,
+                MetadataMatch.last_air_date,
+                MetadataMatch.release_status
+            ).filter(
+                MetadataMatch.provider == Provider.TMDB,
+                MetadataMatch.media_type == MediaType.TV,
+                MetadataMatch.external_id.in_(tv_ids)
+            ).all()
+            for r in tv_rows:
+                ext_id = int(r.external_id)
+                bindings[("tv", ext_id)] = {
+                    "media_item_id": ext_id,
+                    "rating_imdb": r.rating_imdb,
+                    "rating_tmdb": r.rating_tmdb,
+                    "last_air_date": r.last_air_date.isoformat() if r.last_air_date else None,
+                    "release_status": r.release_status,
+                }
+
+        # 2. Query Movie matches joined with MediaItem to verify active status
+        if movie_ids:
+            movie_rows = db.query(
+                MediaItem.id,
+                MetadataMatch.external_id,
+                MetadataMatch.rating_tmdb,
+                MetadataMatch.rating_imdb,
+                MetadataMatch.release_status
+            ).join(
+                MetadataMatch, MetadataMatch.media_item_id == MediaItem.id
+            ).filter(
+                MediaItem.status.in_([ItemStatus.RENAMED, ItemStatus.ORGANIZED]),
+                MetadataMatch.provider == Provider.TMDB,
+                MetadataMatch.media_type == MediaType.MOVIE,
+                MetadataMatch.external_id.in_(movie_ids)
+            ).all()
+            for r in movie_rows:
+                ext_id = int(r.external_id)
+                bindings[("movie", ext_id)] = {
+                    "media_item_id": r.id,
+                    "rating_imdb": r.rating_imdb,
+                    "rating_tmdb": r.rating_tmdb,
+                    "last_air_date": None,
+                    "release_status": r.release_status,
+                }
+
         return bindings

@@ -193,7 +193,9 @@
   margin-bottom: var(--space-2xs);
 }
 
-.settings-block-top { margin-top: var(--space-2xl); }
+.settings-block-top {
+  margin-top: var(--space-2xl);
+}
 
 .settings-nested-block {
   margin-left: var(--space-4xl);
@@ -288,6 +290,7 @@
   padding-top: var(--space-sm);
   border-top: none;
 }
+
 .settings-profile-avatar-field {
   display: flex;
   align-items: center;

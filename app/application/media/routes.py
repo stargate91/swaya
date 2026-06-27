@@ -82,7 +82,7 @@ def undo_rename(batch_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/media/image-proxy")
-def image_proxy(url: str = Query(..., description="The remote image URL to proxy")):
+def image_proxy(url: str = Query(..., description="The remote image URL to proxy"), blur: bool = Query(False)):
     import requests
     from fastapi import HTTPException
     from fastapi.responses import StreamingResponse
@@ -90,6 +90,8 @@ def image_proxy(url: str = Query(..., description="The remote image URL to proxy
     import logging
     import traceback
     import urllib3
+    from PIL import Image, ImageFilter, ImageEnhance
+    import io
     
     urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     logger = logging.getLogger("app.media.image_proxy")
@@ -110,6 +112,23 @@ def image_proxy(url: str = Query(..., description="The remote image URL to proxy
         response.raise_for_status()
         
         content_type = response.headers.get("Content-Type", "image/jpeg")
+        
+        if blur:
+            img = Image.open(io.BytesIO(response.content))
+            img = img.filter(ImageFilter.GaussianBlur(32))
+            enhancer = ImageEnhance.Brightness(img)
+            img = enhancer.enhance(0.20)
+            
+            out_io = io.BytesIO()
+            fmt = "JPEG"
+            if "png" in content_type.lower():
+                fmt = "PNG"
+            elif "webp" in content_type.lower():
+                fmt = "WEBP"
+            img.save(out_io, format=fmt)
+            out_io.seek(0)
+            return StreamingResponse(out_io, media_type=content_type)
+            
         return StreamingResponse(response.iter_content(chunk_size=4096), media_type=content_type)
     except Exception as e:
         logger.exception(f"Image proxy failed for URL {url}")

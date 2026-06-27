@@ -7,6 +7,8 @@
   "stats": {
     "total_movies": "Total Movies",
     "movies_sub": "In Library",
+    "total_scenes": "Total Scenes",
+    "scenes_sub": "Scenes in library",
     "tv_series": "TV Series",
     "episodes_sub": "Episodes",
     "storage_used": "Storage Used",
@@ -27,12 +29,14 @@
     "add": "Watchlist",
     "add_short": "Watchlist",
     "added": "Watchlisted",
+    "remove_short": "Remove",
     "add_failed": "Couldn't add this to your watchlist.",
     "remove_failed": "Couldn't remove this from your watchlist."
   },
   "recommendations": {
     "discover_movies": "Discover Movies",
-    "discover_series": "Discover Series",
+    "discover_series": "Discover TV Shows",
+    "discover_adult": "Discover Adult Movies",
     "because_you_like": "Because you like {genre}...",
     "fallback_title": "Recommended for you"
   },

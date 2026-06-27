@@ -163,12 +163,12 @@ const LibraryPosterCard = memo(({
                 className="library-scene-card__performer-link"
                 onClick={(e) => {
                   e.stopPropagation();
-                  navigate(`/library/people/${p.id}`);
+                  navigate(`/library/people/${p.id}`, { state: { allowAdult: true } });
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.stopPropagation();
-                    navigate(`/library/people/${p.id}`);
+                    navigate(`/library/people/${p.id}`, { state: { allowAdult: true } });
                   }
                 }}
               >
@@ -381,13 +381,13 @@ export default function LibraryGrid({
     if (isCollections) {
       navigate(`/library/collection/${item.tmdb_id || item.id}`);
     } else if (isLibraryPeopleTab(resolvedTab)) {
-      navigate(`/library/people/${item.id}`);
+      navigate(`/library/people/${item.id}`, { state: { allowAdult: true } });
     } else if (isLibraryMovieTab(resolvedTab)) {
-      navigate(`/library/movie/${item.id}`);
+      navigate(`/library/movie/${item.id}`, { state: { allowAdult: true } });
     } else if (isLibraryTvTab(resolvedTab)) {
-      navigate(`/library/tv/${item.id}`);
+      navigate(`/library/tv/${item.id}`, { state: { allowAdult: true } });
     } else if (isLibraryScenesTab(resolvedTab)) {
-      navigate(`/library/scene/${item.id}`);
+      navigate(`/library/scene/${item.id}`, { state: { allowAdult: true } });
     }
   }, [isTags, isCollections, resolvedTab, navigate]);
 
@@ -662,15 +662,15 @@ function ExpandedTagPanel({ tag, t, resolvePosterUrl, emptyIcon, isFocusMode = f
             onClick={() => {
               const isPerson = isPersonMediaType(item.type);
               if (isPerson) {
-                navigate(`/library/people/${item.id}`);
+                navigate(`/library/people/${item.id}`, { state: { allowAdult: true } });
                 return;
               }
               if (isMovieMediaType(item.type)) {
-                navigate(`/library/movie/${item.id}`);
+                navigate(`/library/movie/${item.id}`, { state: { allowAdult: true } });
               } else if (isTvLikeMediaType(item.type)) {
-                navigate(`/library/tv/${item.id}`);
+                navigate(`/library/tv/${item.id}`, { state: { allowAdult: true } });
               } else if (isSceneMediaType(item.type)) {
-                navigate(`/library/scene/${item.id}`);
+                navigate(`/library/scene/${item.id}`, { state: { allowAdult: true } });
               }
             }}
           />

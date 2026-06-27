@@ -11,7 +11,12 @@ const StatisticsWidget = ({ T }) => {
         <div className="stat-card">
           <div className="stat-label">{T('dashboard.stats.total_movies') || 'Total Movies'}</div>
           <div className="stat-value">{(stats.total_movies || 0).toLocaleString()}</div>
-          <div className="stat-sub">{T('dashboard.stats.movies_sub') || 'Movies in library'}</div>
+          <div className="stat-sub">{T('dashboard.stats.movies_sub') || 'In Library'}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">{T('dashboard.stats.total_scenes') || 'Total Scenes'}</div>
+          <div className="stat-value">{(stats.total_scenes || 0).toLocaleString()}</div>
+          <div className="stat-sub">{T('dashboard.stats.scenes_sub') || 'In Library'}</div>
         </div>
         <div className="stat-card">
           <div className="stat-label">{T('dashboard.stats.tv_series') || 'TV Shows'}</div>
