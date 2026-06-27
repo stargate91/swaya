@@ -212,8 +212,6 @@ class PeopleSearchService:
             ).first()
             if link and link.person:
                 person = link.person
-                person.is_active = True
-                db.commit()
                 return {"status": "success", "id": person.id, "name": person.name}
 
             scraper_client = self.scrapers.adult(provider_enum, db)
@@ -261,7 +259,6 @@ class PeopleSearchService:
                 urls=perf.get("urls")
             )
             
-            person.is_active = True
             db.commit()
             return {"status": "success", "id": person.id, "name": person.name}
             
@@ -275,10 +272,8 @@ class PeopleSearchService:
             if is_adult is not None:
                 person = person_query.filter(Person.is_adult == is_adult).first()
             else:
-                person = person_query.filter(Person.is_adult == False).first()
+                person = person_query.first()
             if person:
-                person.is_active = True
-                db.commit()
                 return {"status": "success", "id": person.id, "name": person.name}
                 
             tmdb_details = None
@@ -286,28 +281,30 @@ class PeopleSearchService:
                 tmdb_details = self.tmdb.get_person_details(tmdb_id)
             except Exception as e:
                 logger.error(f"Error fetching person details from TMDB: {e}")
-
+ 
             if not tmdb_details:
                 if name:
                     tmdb_details = {
                         "name": name,
                         "profile_path": profile_path,
                         "gender": gender,
-                        "known_for_department": "Acting"
+                        "known_for_department": "Acting",
+                        "adult": bool(is_adult)
                     }
                 else:
                     raise HTTPException(status_code=404, detail="Person not found on TMDB and no details provided")
                 
+            resolved_is_adult = is_adult if is_adult is not None else bool(tmdb_details.get("adult"))
+            
             service = PersonService(db)
             person = service.update_or_create_person(
                 name=tmdb_details.get("name"),
                 profile_path=tmdb_details.get("profile_path"),
                 gender=tmdb_details.get("gender"),
-                is_adult=bool(is_adult),
+                is_adult=resolved_is_adult,
                 tmdb_id=str(tmdb_id),
                 known_for_department=tmdb_details.get("known_for_department") or "Acting"
             )
             
-            person.is_active = True
             db.commit()
             return {"status": "success", "id": person.id, "name": person.name}

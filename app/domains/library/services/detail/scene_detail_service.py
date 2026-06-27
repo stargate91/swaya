@@ -121,7 +121,7 @@ class SceneDetailService(DetailFormatter):
             for link in sorted(people_links, key=lambda x: x.order if x.order is not None else 0):
                 person = link.person
                 cast_by_name[person.name.lower()] = {
-                    "id": person.id,
+                    "id": f"local:{person.id}",
                     "name": person.name,
                     "character": link.character_name,
                     "job": link.role.value if hasattr(link.role, "value") else str(link.role),
@@ -155,10 +155,10 @@ class SceneDetailService(DetailFormatter):
             person_db = db.query(Person).filter(Person.name == perf_name).first()
             if person_db:
                 resolved_img = self._resolve_img(person_db.local_profile_path or person_db.profile_path, "people")
-                p_id = person_db.id
+                p_id = f"local:{person_db.id}"
             else:
                 resolved_img = p_img
-                p_id = perf.get("id")
+                p_id = f"{provider_prefix}:{perf.get('id')}" if provider_prefix else perf.get("id")
 
             cast_by_name[perf_name.lower()] = {
                 "id": p_id,

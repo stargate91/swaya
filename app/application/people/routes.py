@@ -112,14 +112,13 @@ def search_people_tmdb(
 
 
 @router.get("/{person_id}", response_model=PersonDetailResponse)
-def get_person_detail(person_id: int, db: Session = Depends(get_db)):
-
+def get_person_detail(person_id: str, db: Session = Depends(get_db)):
     return PeopleDetailService(db, scraper_gateway).get_person_detail(person_id)
 
 
 @router.get("/{person_id}/movies", response_model=PersonFilmographyResponse)
 def get_person_movies(
-    person_id: int,
+    person_id: str,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=12, ge=1),
     source: str = Query(default=None),
@@ -130,7 +129,7 @@ def get_person_movies(
 
 @router.get("/{person_id}/tv", response_model=PersonFilmographyResponse)
 def get_person_tv(
-    person_id: int,
+    person_id: str,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=12, ge=1),
     db: Session = Depends(get_db)
@@ -140,7 +139,7 @@ def get_person_tv(
 
 @router.get("/{person_id}/scenes", response_model=PersonFilmographyResponse)
 def get_person_scenes(
-    person_id: int,
+    person_id: str,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=12, ge=1),
     source: str = Query(default=None),
@@ -168,7 +167,7 @@ def update_person_status(
 
 @router.get("/{person_id}/credit-backdrops")
 def get_person_credit_backdrops(
-    person_id: int,
+    person_id: str,
     tmdb_id: int = Query(..., ge=1),
     media_type: str = Query(...),
     db: Session = Depends(get_db)
@@ -749,7 +748,7 @@ def save_custom_fields(
 
 
 @router.delete("/{person_id}")
-def delete_person(person_id: int, db: Session = Depends(get_db)):
+def delete_person(person_id: str, db: Session = Depends(get_db)):
     person = resolve_person(person_id, db)
     if not person:
         raise HTTPException(status_code=404, detail="Person not found")

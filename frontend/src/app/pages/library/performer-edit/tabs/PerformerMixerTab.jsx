@@ -31,6 +31,7 @@ export default function PerformerMixerTab({ person: initialPerson, onBack }) {
     { key: 'place_of_birth', label: 'Place of Birth', type: 'string' },
     { key: 'gender', label: 'Gender', type: 'gender' },
     { key: 'height', label: 'Height', type: 'height' },
+    { key: 'weight', label: 'Weight', type: 'weight' },
     { key: 'hair_color', label: 'Hair Color', type: 'string' },
     { key: 'eye_color', label: 'Eye Color', type: 'string' },
     { key: 'ethnicity', label: 'Ethnicity', type: 'string' },
@@ -68,6 +69,9 @@ export default function PerformerMixerTab({ person: initialPerson, onBack }) {
     }
     if (type === 'height') {
       return `${val} cm`;
+    }
+    if (type === 'weight') {
+      return `${val} kg`;
     }
     if (type === 'text') {
       // Show biography snippet

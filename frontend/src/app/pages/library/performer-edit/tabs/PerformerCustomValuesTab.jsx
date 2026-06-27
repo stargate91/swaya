@@ -87,6 +87,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
     place_of_birth: '',
     gender: '',
     height: '',
+    weight: '',
     hair_color: '',
     eye_color: '',
     ethnicity: '',
@@ -111,6 +112,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
         place_of_birth: manualData.place_of_birth || '',
         gender: manualData.gender !== undefined ? String(manualData.gender) : '',
         height: manualData.height !== undefined ? String(manualData.height) : '',
+        weight: manualData.weight !== undefined ? String(manualData.weight) : '',
         hair_color: manualData.hair_color ? manualData.hair_color.toUpperCase() : '',
         eye_color: manualData.eye_color ? manualData.eye_color.toUpperCase() : '',
         ethnicity: manualData.ethnicity ? manualData.ethnicity.toUpperCase() : '',
@@ -145,6 +147,12 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
       const h = Number(form.height);
       if (isNaN(h) || h < 50 || h > 300) {
         errs.height = t('performerEdit.validation.height');
+      }
+    }
+    if (form.weight) {
+      const w = Number(form.weight);
+      if (isNaN(w) || w < 30 || w > 300) {
+        errs.weight = t('performerEdit.validation.weight');
       }
     }
     if (form.cup_size) {
@@ -192,7 +200,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
           payload['biographies'] = cleanedBios;
         } else if (v === '') {
           payload[k] = null;
-        } else if (k === 'gender' || k === 'height' || k === 'band_size' || k === 'waist' || k === 'hip') {
+        } else if (k === 'gender' || k === 'height' || k === 'weight' || k === 'band_size' || k === 'waist' || k === 'hip') {
           payload[k] = Number(v);
         } else {
           payload[k] = v;
@@ -251,6 +259,11 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
     }
   }, [isDirty, onDirtyChange]);
 
+  const bioLanguageOptions = TARGET_LANGUAGE_OPTIONS.map(opt => ({
+    value: opt.value,
+    label: `${opt.label} ${form.biographies?.[opt.value] ? '✓' : ''}`.trim()
+  }));
+
   return (
     <form onSubmit={handleSave} className="custom-values-form settings-tab-content">
       <div className="custom-values-header">
@@ -268,20 +281,16 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
             <div className="ui-field custom-values-field--full">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <label className="ui-field__label" style={{ margin: 0 }}>Biography</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: 'var(--font-size-sm, 12px)', color: 'var(--color-text-secondary)' }}>Language:</span>
-                  <select
-                    className="ui-input"
-                    style={{ width: 'auto', padding: '2px 8px', height: '28px', fontSize: 'var(--font-size-sm, 12px)' }}
-                    value={selectedBioLang}
-                    onChange={e => setSelectedBioLang(e.target.value)}
-                  >
-                    {TARGET_LANGUAGE_OPTIONS.map(opt => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label} {form.biographies?.[opt.value] ? '✓' : ''}
-                      </option>
-                    ))}
-                  </select>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '320px' }}>
+                  <span style={{ fontSize: 'var(--font-size-sm, 12px)', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>Language:</span>
+                  <div style={{ flex: 1 }}>
+                    <Dropdown
+                      options={bioLanguageOptions}
+                      value={selectedBioLang}
+                      onChange={e => setSelectedBioLang(e.target.value)}
+                      placeholder="Language"
+                    />
+                  </div>
                 </div>
               </div>
               <textarea
@@ -351,6 +360,16 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
                   value={form.height}
                   onChange={e => handleChange('height', e.target.value)}
                   error={errors.height}
+                />
+              </div>
+              <div className="ui-field">
+                <label className="ui-field__label">Weight (kg)</label>
+                <Input
+                  type="number"
+                  placeholder="e.g. 60"
+                  value={form.weight}
+                  onChange={e => handleChange('weight', e.target.value)}
+                  error={errors.weight}
                 />
               </div>
               <Dropdown

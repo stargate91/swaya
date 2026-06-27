@@ -64,20 +64,52 @@ class PerformerDetailReader:
             limit=limit,
         )
 
-    def _resolve_person(self, person_id: int, load_localizations: bool = False) -> Person:
+    def _resolve_person(self, person_id: Any, load_localizations: bool = False) -> Person:
         db = self.db
         query = db.query(Person)
         if load_localizations:
             query = query.options(joinedload(Person.localizations))
         
-        person = query.filter(Person.id == person_id).first()
+        person = None
+        person_id_str = str(person_id)
+        if person_id_str.startswith("local:"):
+            try:
+                p_id = int(person_id_str.split(":", 1)[1])
+                person = query.filter(Person.id == p_id).first()
+            except (ValueError, TypeError):
+                pass
+        elif ":" not in person_id_str:
+            try:
+                p_id = int(person_id_str)
+                person = query.filter(Person.id == p_id).first()
+            except (ValueError, TypeError):
+                pass
+        
         if not person:
-            query_ext = db.query(Person)
-            if load_localizations:
-                query_ext = query_ext.options(joinedload(Person.localizations))
-            person = query_ext.filter(
-                Person.external_ids["tmdb"].as_string() == str(person_id)
-            ).first()
+            if ":" in person_id_str and not person_id_str.startswith("local:"):
+                parts = person_id_str.split(":", 1)
+                source_name = parts[0]
+                uuid_str = parts[1]
+                scraper_name = "porndb" if source_name == "theporndb" else source_name
+                try:
+                    provider_enum = Provider(scraper_name)
+                    link = db.query(ExternalSourceLink).filter(
+                        ExternalSourceLink.provider == provider_enum,
+                        ExternalSourceLink.external_id == uuid_str
+                    ).first()
+                    if link:
+                        person = link.person
+                        if load_localizations:
+                            person = query.filter(Person.id == person.id).first()
+                except Exception:
+                    pass
+            else:
+                query_ext = db.query(Person)
+                if load_localizations:
+                    query_ext = query_ext.options(joinedload(Person.localizations))
+                person = query_ext.filter(
+                    Person.external_ids["tmdb"].as_string() == person_id_str
+                ).first()
             
             if not person:
                 try:
@@ -88,13 +120,13 @@ class PerformerDetailReader:
                             query_new = query_new.options(joinedload(Person.localizations))
                         person = query_new.filter(Person.id == res["id"]).first()
                 except Exception as e:
-                    logger.error(f"Error dynamically importing person {person_id} from TMDB: {e}")
+                    logger.error(f"Error dynamically importing person {person_id}: {e}")
                     
         if not person:
             raise HTTPException(status_code=404, detail="Person not found")
         return person
 
-    def get_person_detail(self, person_id: int) -> PersonDetailResponse:
+    def get_person_detail(self, person_id: Any) -> PersonDetailResponse:
         db = self.db
         person = self._resolve_person(person_id, load_localizations=True)
         person_id = person.id
@@ -328,7 +360,7 @@ class PerformerDetailReader:
         }
         return PersonDetailResponse(**result)
 
-    def get_person_movies(self, person_id: int, page: int = 1, page_size: int = 12, source: Optional[str] = None) -> PersonFilmographyResponse:
+    def get_person_movies(self, person_id: Any, page: int = 1, page_size: int = 12, source: Optional[str] = None) -> PersonFilmographyResponse:
         db = self.db
         person = self._resolve_person(person_id)
         person_id = person.id
@@ -371,7 +403,7 @@ class PerformerDetailReader:
         }
         return PersonFilmographyResponse(**res)
 
-    def get_person_tv(self, person_id: int, page: int = 1, page_size: int = 12) -> PersonFilmographyResponse:
+    def get_person_tv(self, person_id: Any, page: int = 1, page_size: int = 12) -> PersonFilmographyResponse:
         db = self.db
         person = self._resolve_person(person_id)
         person_id = person.id
@@ -410,18 +442,17 @@ class PerformerDetailReader:
         }
         return PersonFilmographyResponse(**res)
 
-    def get_person_scenes(self, person_id: int, page: int = 1, page_size: int = 12, source: Optional[str] = None) -> PersonFilmographyResponse:
+    def get_person_scenes(self, person_id: Any, page: int = 1, page_size: int = 12, source: Optional[str] = None) -> PersonFilmographyResponse:
         db = self.db
         person = self._resolve_person(person_id)
         person_id = person.id
         res = self.filmography_service.get_person_scenes(person_id, page, page_size, source)
         return PersonFilmographyResponse(**res)
 
-    def get_person_credit_backdrops(self, person_id: int, tmdb_id: int, media_type: str) -> Dict[str, Any]:
+    def get_person_credit_backdrops(self, person_id: Any, tmdb_id: int, media_type: str) -> Dict[str, Any]:
         db = self.db
-        person = db.query(Person).filter(Person.id == person_id).first()
-        if not person:
-            raise HTTPException(status_code=404, detail="Person not found")
+        person = self._resolve_person(person_id)
+        person_id = person.id
 
         normalized_type = "tv" if str(media_type or "").lower() in {"tv", "series"} else "movie"
         ui_lang = DEFAULT_FALLBACK_LANGUAGE

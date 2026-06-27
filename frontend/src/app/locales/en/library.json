@@ -440,6 +440,7 @@
   "performerEdit": {
     "validation": {
       "height": "Height must be between 50 and 300 cm",
+      "weight": "Weight must be between 30 and 300 kg",
       "cupSize": "Cup size must be 1-3 letters (e.g. B, DD)",
       "bandSize": "Band size must be between 10 and 100",
       "waist": "Waist must be between 10 and 100",

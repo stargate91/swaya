@@ -283,6 +283,7 @@ class PornDBScraper(BaseScraper):
                 hair_color
                 eye_color
                 height
+                weight
                 band_size
                 cup_size
                 waist_size
@@ -395,6 +396,7 @@ class PornDBScraper(BaseScraper):
                     "hair_color": p_info.get("extras", {}).get("hair_colour") or p_info.get("hair_color"),
                     "eye_color": p_info.get("extras", {}).get("eye_colour") or p_info.get("eye_color"),
                     "height": p_info.get("extras", {}).get("height") or p_info.get("height"),
+                    "weight": p_info.get("extras", {}).get("weight") or p_info.get("weight"),
                     "measurements": {
                         "band_size": p_info.get("extras", {}).get("band_size"),
                         "cup_size": p_info.get("extras", {}).get("cupsize") or p_info.get("cup_size"),
