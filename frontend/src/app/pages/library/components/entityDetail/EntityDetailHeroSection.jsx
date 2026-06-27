@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import Pill from '@/ui/Pill';
-import { Layers, User, PenLine, Sliders, Heart, Check, Minus, Plus, Star, ChevronDown, Info } from 'lucide-react';
+import { Layers, User, PenLine, Sliders, Heart, Check, Minus, Plus, Star, ChevronDown, Info, Bookmark } from 'lucide-react';
 import { OverviewContent } from './EntityDetailSections';
 import Tooltip from '@/ui/Tooltip';
 import './EntityDetailHeroSection.css';
@@ -304,6 +304,9 @@ export default function EntityDetailHeroSection({
         <div className="entity-detail-page__summary">
           {isPeople && item?.known_for?.length > 0 && (
             <div className="entity-detail-page__known-for-section">
+              <h3 className="entity-detail-page__known-for-title">
+                {t('library.details.knownForTitle') || 'Known For'}
+              </h3>
               <div className="entity-detail-page__known-for-grid">
                 {item.known_for.map((credit) => {
                   const creditTitle = credit.title || credit.name || 'Unknown';
@@ -346,18 +349,28 @@ export default function EntityDetailHeroSection({
                     >
                       <div className="entity-detail-page__known-for-poster-container">
                         {credit.poster_path ? (
-                          <img
-                            src={credit.poster_path}
-                            alt={creditTitle}
-                            className="entity-detail-page__known-for-poster"
-                            loading="lazy"
-                          />
+                           <img
+                             src={credit.poster_path}
+                             alt={creditTitle}
+                             className="entity-detail-page__known-for-poster"
+                             loading="lazy"
+                           />
                         ) : (
                           <div className="entity-detail-page__known-for-placeholder">
                             <Layers size={20} />
                           </div>
                         )}
+                        {/* Bookmark badge to represent "In Library" / "Owned" */}
+                        {credit.in_library && (
+                          <div className="entity-detail-page__known-for-library-badge" title={t('library.details.inLibrary') || 'In Library'}>
+                            <Bookmark size={10} />
+                          </div>
+                        )}
                       </div>
+                      <span className="entity-detail-page__known-for-card-title">{creditTitle}</span>
+                      {credit.character && (
+                        <span className="entity-detail-page__known-for-card-role">{credit.character}</span>
+                      )}
                     </div>
                   );
                 })}
