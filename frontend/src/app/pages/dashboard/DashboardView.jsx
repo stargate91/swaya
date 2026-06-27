@@ -1,4 +1,4 @@
-import PropTypes from 'prop-types';
+
 import { useSettingsQuery } from '../../queries';
 import { useTranslation } from '../../providers/LanguageContext';
 import ContinueWatchingWidget from './widgets/ContinueWatchingWidget';

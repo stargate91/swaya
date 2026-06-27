@@ -131,13 +131,13 @@ export default function PersonCreditsGridSection({ personId, mediaType, totalCou
       const itemSource = item.source || source;
       const prefix = itemSource === 'porndb' || itemSource === 'theporndb' ? 'porndb' : itemSource === 'fansdb' ? 'fansdb' : 'stash';
       const sceneId = item.in_library ? (item.library_item_id || item.id) : `${prefix}_${item.stash_id || item.id}`;
-      navigate(`/library/scene/${sceneId}`);
+      navigate(`/library/scene/${sceneId}`, { state: { allowAdult: true } });
       return;
     }
 
     if (isTvLikeMediaType(item.media_type || item.type)) {
       const tvId = item.library_tv_tmdb_id || item.tv_tmdb_id || item.tmdb_id || item.id;
-      navigate(`/library/tv/${tvId}`);
+      navigate(`/library/tv/${tvId}`, { state: { allowAdult: true } });
       return;
     }
 
@@ -146,7 +146,7 @@ export default function PersonCreditsGridSection({ personId, mediaType, totalCou
       : (item.source === 'porndb' || source === 'porndb')
       ? `porndb_${item.tmdb_id || item.id}`
       : `tmdb_${item.tmdb_id || item.id}`;
-    navigate(`/library/movie/${movieId}`);
+    navigate(`/library/movie/${movieId}`, { state: { allowAdult: true } });
   };
 
   return (

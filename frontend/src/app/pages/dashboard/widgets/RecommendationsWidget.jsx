@@ -32,7 +32,7 @@ const SpotlightBanner = ({ item, watchlistIds, onWatchlist, onCardClick, T }) =>
       <div className="recommend-spotlight-gradient recommend-spotlight-gradient--bottom" />
 
       <div className="recommend-spotlight-copy">
-        <h2 className="recommend-spotlight-title" onClick={() => onCardClick(item)} style={{ cursor: 'pointer' }}>{title}</h2>
+        <h2 className="recommend-spotlight-title" onClick={() => onCardClick(item)}>{title}</h2>
         <div className="recommend-spotlight-meta">
           {ratingToDisplay ? (
             <span className={`recommend-spotlight-rating is-${ratingSource}`}>
@@ -42,7 +42,7 @@ const SpotlightBanner = ({ item, watchlistIds, onWatchlist, onCardClick, T }) =>
           {year ? <span className="recommend-spotlight-year">{year}</span> : null}
         </div>
         <p className="recommend-spotlight-overview">{item.overview}</p>
-        <div className="recommend-spotlight-actions" style={{ display: 'flex', gap: '12px' }}>
+        <div className="recommend-spotlight-actions">
           <Button
             onClick={(e) => {
               e.stopPropagation();
@@ -57,7 +57,7 @@ const SpotlightBanner = ({ item, watchlistIds, onWatchlist, onCardClick, T }) =>
               </>
             ) : (
               <>
-                <span>+ </span> {T('dashboard.watchlist.add') || 'Watchlist'}
+                <Plus size={16} /> {T('dashboard.watchlist.add') || 'Watchlist'}
               </>
             )}
           </Button>
@@ -158,6 +158,13 @@ const RecommendationCarousel = ({ title, items, watchlistIds, onWatchlist, onCar
                 key={item.id}
                 className="recommend-card"
                 onClick={() => onCardClick(item)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    onCardClick(item);
+                  }
+                }}
               >
                 <div className={`recommend-card-poster-shell ${shouldBlur ? 'is-blurred' : ''}`}>
                   {posterUrl && (
@@ -170,7 +177,7 @@ const RecommendationCarousel = ({ title, items, watchlistIds, onWatchlist, onCar
                   )}
                   {shouldBlur && (
                     <div className="recommend-card-blur-overlay">
-                      <span className="settings-badge settings-badge--danger">18+</span>
+                      <span className="settings-badge settings-badge--danger">{'18+'}</span>
                     </div>
                   )}
                   <div className="recommend-card-overlay">
@@ -184,10 +191,10 @@ const RecommendationCarousel = ({ title, items, watchlistIds, onWatchlist, onCar
                     >
                       {isWatchlisted ? (
                         <>
-                          <span className="watchlist-btn-state-default" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <span className="watchlist-btn-state-default">
                             <Check size={12} strokeWidth={3} /> {T('dashboard.watchlist.added') || 'Watchlisted'}
                           </span>
-                          <span className="watchlist-btn-state-hover" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <span className="watchlist-btn-state-hover">
                             <Minus size={12} strokeWidth={3} /> {T('dashboard.watchlist.remove_short') || 'Remove'}
                           </span>
                         </>

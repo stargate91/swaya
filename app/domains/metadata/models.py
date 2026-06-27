@@ -114,7 +114,7 @@ class MetadataLocalization(Base):
     match_id: Mapped[int] = mapped_column(ForeignKey("metadata_matches.id", ondelete="CASCADE"), index=True)
     locale: Mapped[str] = mapped_column(String, default="en", index=True) # "hu", "en", etc.
     
-    title: Mapped[str] = mapped_column(String)
+    title: Mapped[Optional[str]] = mapped_column(String, default="", nullable=True)
     tagline: Mapped[Optional[str]] = mapped_column(String)
     overview: Mapped[Optional[str]] = mapped_column(String)
     poster_path: Mapped[Optional[str]] = mapped_column(String)
@@ -182,7 +182,7 @@ class MediaCollectionLocalization(Base):
     collection_id: Mapped[int] = mapped_column(ForeignKey("media_collections.id", ondelete="CASCADE"), index=True)
     locale: Mapped[str] = mapped_column(String, default="en", index=True) # "hu", "en", etc.
     
-    title: Mapped[str] = mapped_column(String)
+    title: Mapped[Optional[str]] = mapped_column(String, default="", nullable=True)
     overview: Mapped[Optional[str]] = mapped_column(String)
     poster_path: Mapped[Optional[str]] = mapped_column(String)
     local_poster_path: Mapped[Optional[str]] = mapped_column(String) # Local path to cached poster

@@ -4,7 +4,7 @@ import Badge from '@/ui/Badge';
 import MetaRow from '@/ui/MetaRow';
 import PosterCard from '@/ui/PosterCard';
 import BackdropCard from '@/ui/BackdropCard';
-import { buildTmdbImageUrl, resolveMediaImageUrl, TMDB_IMAGE_SIZES } from '@/lib/imageUrls';
+import { resolveMediaImageUrl } from '@/lib/imageUrls';
 import { MEDIA_TYPES, isTvLikeMediaType, toMetadataMediaType } from '@/lib/mediaTypes';
 import { API_BASE } from '@/lib/backend';
 
@@ -23,7 +23,7 @@ const getDisplayYear = (candidate, mediaType) => {
   return rawDate ? String(rawDate).slice(0, 4) : null;
 };
 
-const getImageUrl = (path, mediaType, size = TMDB_IMAGE_SIZES.posterThumb) => {
+const getImageUrl = (path, mediaType) => {
   if (!path) return '';
   const pathStr = String(path);
 
@@ -58,7 +58,7 @@ export default function MatchCandidateCard({
   const displayTitle = getDisplayTitle(candidate, mediaType, t);
   const displayYear = getDisplayYear(candidate, mediaType);
   const candidateId = candidate.tmdb_id || candidate.id;
-  const posterUrl = getImageUrl(candidate.poster_path, mediaType, TMDB_IMAGE_SIZES.posterThumb);
+  const posterUrl = getImageUrl(candidate.poster_path, mediaType);
   const isDisabled = isResolvingId === candidateId || isBrowserLoading;
   const [prevPosterUrl, setPrevPosterUrl] = useState(posterUrl);
   const [imageError, setImageError] = useState(false);

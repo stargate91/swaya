@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+
 import PropTypes from 'prop-types';
 import { Play, X } from 'lucide-react';
 import { useContinueWatchingQuery } from '../../../queries';
@@ -111,6 +111,15 @@ const ContinueWatchingWidget = ({ T }) => {
               onClick={() => {
                 if (item.type === 'episode' || item.type === 'movie') {
                   playMutation.mutate(item.id);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  if (item.type === 'episode' || item.type === 'movie') {
+                    playMutation.mutate(item.id);
+                  }
                 }
               }}
             >

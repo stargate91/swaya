@@ -44,6 +44,13 @@ export default function EntityDetailHeroSection({
             className="entity-detail-page__media-card entity-detail-page__media-card--editable"
             onClick={onMediaCardClick}
             title={t('library.details.changePoster') || 'Change Poster'}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                onMediaCardClick?.();
+              }
+            }}
           >
             {mediaUrl ? (
               <img
@@ -382,21 +389,21 @@ export default function EntityDetailHeroSection({
                       const itemSource = credit.source || (credit.rating_porndb ? 'porndb' : (item?.external_ids?.stashdb_id ? 'stashdb' : 'fansdb'));
                       const prefix = itemSource === 'porndb' || itemSource === 'theporndb' ? 'porndb' : (itemSource === 'fansdb' ? 'fansdb' : 'stash');
                       const sceneId = credit.in_library ? (credit.library_item_id || credit.id) : `${prefix}_${credit.stash_id || credit.id}`;
-                      navigate(`/library/scene/${sceneId}`);
+                      navigate(`/library/scene/${sceneId}`, { state: { allowAdult: true } });
                       return;
                     }
 
                     const isTv = credit.media_type === 'tv' || credit.type === 'tv';
                     if (isTv) {
                       const tvId = credit.library_tv_tmdb_id || credit.tv_tmdb_id || credit.tmdb_id || credit.id;
-                      navigate(`/library/tv/${tvId}`);
+                      navigate(`/library/tv/${tvId}`, { state: { allowAdult: true } });
                       return;
                     }
 
                     const movieId = credit.in_library
                       ? (credit.library_item_id || credit.id)
                       : (credit.source === 'porndb' ? `porndb_${credit.tmdb_id || credit.id}` : `tmdb_${credit.tmdb_id || credit.id}`);
-                    navigate(`/library/movie/${movieId}`);
+                    navigate(`/library/movie/${movieId}`, { state: { allowAdult: true } });
                   };
 
                   return (
