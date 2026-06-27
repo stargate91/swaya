@@ -42,7 +42,7 @@ class PornDbMovieFormatter(MovieDetailFormatter):
             perf_name = p_info.get("name")
             if not perf_name:
                 continue
-            gender_str = str(p_info.get("gender") or "").upper()
+            gender_str = str(p_info.get("gender") or p_info.get("extras", {}).get("gender") or p_info.get("extra", {}).get("gender") or "").upper()
             mapped_gender = 0
             if "FEMALE" in gender_str:
                 mapped_gender = 1

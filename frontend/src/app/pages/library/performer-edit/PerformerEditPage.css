@@ -108,14 +108,42 @@
   opacity: 0.7;
 }
 
+.performer-linker-card__silhouette {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .performer-gender-silhouette {
   width: 32px;
   height: 32px;
   opacity: 0.2;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.performer-gender-silhouette--mask {
+  width: 100%;
+  height: 90%;
+  background-color: currentColor;
+  -webkit-mask-image: var(--silhouette-url);
+  mask-image: var(--silhouette-url);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
 .performer-linker-card:hover .performer-gender-silhouette {
   opacity: 0.35;
+}
+
+.performer-linker-card:hover .performer-gender-silhouette--mask {
+  opacity: 0.45;
+  transform: scale(1.03);
 }
 
 .performer-linker-card__badge {

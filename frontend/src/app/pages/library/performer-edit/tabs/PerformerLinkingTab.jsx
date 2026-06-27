@@ -24,17 +24,23 @@ import { Search, Link as LinkIcon, User, Trash2, GitFork, Star, ArrowLeft, Alert
 import Modal from '@/ui/Modal';
 
 const FemaleSilhouette = () => (
-  <svg viewBox="0 0 24 24" className="performer-gender-silhouette" fill="currentColor" style={{ color: '#ec4899' }}>
-    <circle cx="12" cy="7" r="4.5" />
-    <path d="M12 13c-4.4 0-8 3-8 7.5V22h16v-1.5c0-4.5-3.6-7.5-8-7.5zm-5 7.5c.3-2.3 2.1-4.5 5-4.5s4.7 2.2 5 4.5H7z" />
-  </svg>
+  <div
+    className="performer-gender-silhouette performer-gender-silhouette--mask"
+    style={{
+      '--silhouette-url': 'url(/silhouettes/girl.svg)',
+      color: '#ec4899'
+    }}
+  />
 );
 
 const MaleSilhouette = () => (
-  <svg viewBox="0 0 24 24" className="performer-gender-silhouette" fill="currentColor" style={{ color: '#3b82f6' }}>
-    <circle cx="12" cy="7" r="4" />
-    <path d="M12 12.5c-4.8 0-8.8 3-8.8 7.5V22h17.6v-2c0-4.5-4-7.5-8.8-7.5zm-6 6.5c.5-2.5 3-4.5 6-4.5s5.5 2 6 4.5H6z" />
-  </svg>
+  <div
+    className="performer-gender-silhouette performer-gender-silhouette--mask"
+    style={{
+      '--silhouette-url': 'url(/silhouettes/man.svg)',
+      color: '#3b82f6'
+    }}
+  />
 );
 
 const OtherSilhouette = () => (
