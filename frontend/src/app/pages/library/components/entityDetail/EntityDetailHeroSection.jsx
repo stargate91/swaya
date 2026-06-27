@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import Pill from '@/ui/Pill';
-import { Layers, User, PenLine, Sliders } from 'lucide-react';
+import { Layers, User, PenLine, Sliders, Heart, Check, Minus, Plus, Star } from 'lucide-react';
 import { OverviewContent } from './EntityDetailSections';
-import PersonRatingControls from './PersonRatingControls';
 import Tooltip from '@/ui/Tooltip';
 import './EntityDetailHeroSection.css';
 
@@ -34,6 +33,7 @@ export default function EntityDetailHeroSection({
 }) {
   const [isAliasesExpanded, setIsAliasesExpanded] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isHoveringBar, setIsHoveringBar] = useState(false);
 
   const aliasLimit = 4;
   const hasMoreAliases = item?.alternate_names?.length > aliasLimit;
@@ -65,8 +65,6 @@ export default function EntityDetailHeroSection({
             </div>
           )}
 
-
-
           <button
             type="button"
             className="entity-detail-page__media-edit-badge"
@@ -80,51 +78,133 @@ export default function EntityDetailHeroSection({
             <PenLine size={14} />
           </button>
         </div>
+
+        {isPeople && (
+          <div className="entity-detail-page__segmented-rating-container">
+            <div
+              className="entity-detail-page__segmented-rating-bar"
+              onMouseMove={(e) => {
+                setIsHoveringBar(true);
+                handlePeopleRatingMouseMove(e);
+              }}
+              onMouseLeave={() => {
+                setIsHoveringBar(false);
+                handlePeopleRatingMouseLeave();
+              }}
+              onMouseUp={handlePeopleRatingClick}
+              role="slider"
+              tabIndex={0}
+              aria-label={t('library.details.yourRating') || 'Your Rating'}
+              aria-valuemin={0}
+              aria-valuemax={10}
+              aria-valuenow={displayRating ?? 0}
+            >
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((val) => {
+                let fill = 0;
+                if (displayRating >= val) {
+                  fill = 100;
+                } else if (displayRating > val - 1) {
+                  fill = (displayRating - (val - 1)) * 100;
+                }
+                return (
+                  <div key={val} className="entity-detail-page__rating-segment">
+                    <div 
+                      className="entity-detail-page__rating-segment-fill" 
+                      style={{ width: `${fill}%` }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            <span className="entity-detail-page__segmented-rating-label">
+              {isHoveringBar && displayRating !== null && displayRating !== undefined
+                ? `${t('library.details.yourRating') || 'Your Rating'}: ${displayRating.toFixed(1)}`
+                : (item?.user_rating !== null && item?.user_rating !== undefined
+                  ? `${t('library.details.yourRating') || 'Your Rating'}: ${item.user_rating.toFixed(1)}`
+                  : (t('library.details.yourRating') || 'Your Rating'))}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="entity-detail-page__summary">
         <div className="entity-detail-page__headline-block">
-          <h1 className="entity-detail-page__title">
-            {item?.name || item?.title || (isPeople ? 'Unknown Person' : 'Unknown Collection')}
-          </h1>
-          {metaPills.length > 0 && (
-            <div className="entity-detail-page__meta-row">
-              {metaPills.map((metaItem) => (
-                <Pill key={metaItem.key} variant="meta">{metaItem.content}</Pill>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {isPeople && (
-          <PersonRatingControls
-            item={item}
-            displayRating={displayRating}
-            isActivateHovered={isActivateHovered}
-            starsStyleSheetText={starsStyleSheetText}
-            t={t}
-            setIsActivateHovered={setIsActivateHovered}
-            handleToggleFavorite={handleToggleFavorite}
-            handleToggleActive={handleToggleActive}
-            handleOpenReviewModal={handleOpenReviewModal}
-            handlePeopleRatingMouseMove={handlePeopleRatingMouseMove}
-            handlePeopleRatingMouseLeave={handlePeopleRatingMouseLeave}
-            handlePeopleRatingClick={handlePeopleRatingClick}
-          />
-        )}
-
-        {isPeople && (
-          <div className="entity-detail-page__more-details-container">
-            <button
-              type="button"
-              className="entity-detail-page__more-details-btn"
-              onClick={() => setIsDrawerOpen(true)}
-            >
-              <Sliders size={13} style={{ marginRight: '4px' }} />
-              {t('library.details.needMoreBtn') || 'Need more?'}
-            </button>
+          <div className="entity-detail-page__title-row">
+            <h1 className="entity-detail-page__title">
+              {item?.name || item?.title || (isPeople ? 'Unknown Person' : 'Unknown Collection')}
+            </h1>
+            {isPeople && (
+              <div className="entity-detail-page__headline-actions">
+                <button
+                  type="button"
+                  className={`entity-detail-page__headline-action entity-detail-page__headline-action--favorite ${item?.is_favorite ? 'is-active' : ''}`}
+                  onClick={handleToggleFavorite}
+                  title={t('library.details.favorite') || 'Favorite'}
+                >
+                  <Heart size={15} fill={item?.is_favorite ? 'currentColor' : 'none'} />
+                </button>
+                <button
+                  type="button"
+                  className={`entity-detail-page__headline-action entity-detail-page__headline-action--activate ${item?.is_active ? 'is-active' : ''}`}
+                  onClick={handleToggleActive}
+                  onMouseEnter={() => setIsActivateHovered(true)}
+                  onMouseLeave={() => setIsActivateHovered(false)}
+                  title={t('library.people.addPeopleBtn') || 'Activate'}
+                >
+                  {item?.is_active
+                    ? (isActivateHovered ? <Minus size={15} /> : <Check size={15} />)
+                    : <Plus size={15} />}
+                </button>
+                <button
+                  type="button"
+                  className="entity-detail-page__headline-action"
+                  onClick={handleOpenReviewModal}
+                  title={t('library.details.writeReview') || 'Write Review'}
+                >
+                  <PenLine size={15} />
+                </button>
+                {displayRating !== undefined && displayRating !== null && (
+                  <div className="entity-detail-page__headline-rating-badge">
+                    <Star size={12} fill="currentColor" style={{ marginRight: '4px' }} />
+                    {displayRating.toFixed(1)}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        )}
+          {metaPills.length > 0 && (() => {
+            const placeOfBirthPill = metaPills.find(pill => pill.key === 'place-of-birth');
+            const primaryMetaPills = metaPills.filter(pill => pill.key !== 'place-of-birth');
+            return (
+              <>
+                {primaryMetaPills.length > 0 && (
+                  <div className="entity-detail-page__meta-row">
+                    {primaryMetaPills.map((metaItem) => (
+                      <Pill key={metaItem.key} variant="meta">{metaItem.content}</Pill>
+                    ))}
+                  </div>
+                )}
+                {(placeOfBirthPill || isPeople) && (
+                  <div className="entity-detail-page__meta-row entity-detail-page__meta-row--secondary">
+                    {placeOfBirthPill && (
+                      <Pill key={placeOfBirthPill.key} variant="meta">{placeOfBirthPill.content}</Pill>
+                    )}
+                    {isPeople && (
+                      <button
+                        type="button"
+                        className="entity-detail-page__more-details-btn"
+                        onClick={() => setIsDrawerOpen(true)}
+                      >
+                        <Sliders size={13} style={{ marginRight: '4px' }} />
+                        {t('library.details.needMoreBtn') || 'Need more?'}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </>
+            );
+          })()}
+        </div>
 
 
 
