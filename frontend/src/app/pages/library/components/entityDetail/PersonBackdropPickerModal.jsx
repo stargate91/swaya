@@ -28,6 +28,7 @@ const PERSON_BACKDROP_COLUMNS = 4;
 const PERSON_BACKDROP_PAGE_SIZE = 20;
 
 export default function PersonBackdropPickerModal({ personId, item, t, toast, overridePersonBackdropMutation, uploadPersonBackdropMutation }) {
+  const person = item;
   const viewportRef = useRef(null);
   const { updateModal } = useUi();
   const sessionKey = String(personId || '');

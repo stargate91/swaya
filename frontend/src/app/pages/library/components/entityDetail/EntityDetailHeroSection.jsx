@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { Layers, User, PenLine, Heart, Check, Minus, Plus, Info, Bookmark } from 'lucide-react';
+import Pill from '@/ui/Pill';
+import { OverviewContent } from './EntityDetailSections';
 import './EntityDetailHeroSection.css';
 
 const TIMES_CHAR = '\u00d7';
@@ -15,6 +17,8 @@ export default function EntityDetailHeroSection({
   mediaUrl,
   overviewText,
   overviewTitle,
+  overviewEmptyText,
+  metaPills = [],
   displayRating,
   isActivateHovered,
   t,
@@ -26,10 +30,78 @@ export default function EntityDetailHeroSection({
   handlePeopleRatingMouseLeave,
   handlePeopleRatingClick,
   onMediaCardClick,
+  openModal,
 }) {
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isHoveringBar, setIsHoveringBar] = useState(false);
+
+  if (!isPeople) {
+    return (
+      <section className="entity-detail-page__hero-grid">
+        <div className="entity-detail-page__media-column">
+          <div
+            className="entity-detail-page__media-card entity-detail-page__media-card--editable"
+            onClick={onMediaCardClick}
+            title={t('library.details.changePoster') || 'Change Poster'}
+          >
+            {mediaUrl ? (
+              <img
+                src={mediaUrl}
+                alt={item?.name || item?.title || 'Detail artwork'}
+                className="entity-detail-page__media-image"
+              />
+            ) : (
+              <div className="entity-detail-page__media-placeholder">
+                <Layers size={44} />
+              </div>
+            )}
+            <button
+              type="button"
+              className="entity-detail-page__media-edit-badge"
+              onClick={(event) => {
+                event.stopPropagation();
+                onMediaCardClick?.();
+              }}
+              title={t('library.details.changePoster') || 'Change Poster'}
+              aria-label={t('library.details.changePoster') || 'Change Poster'}
+            >
+              <PenLine size={14} />
+            </button>
+          </div>
+        </div>
+
+        <div className="entity-detail-page__summary">
+          <div className="entity-detail-page__headline-block">
+            <h1 className="entity-detail-page__title">
+              {item?.title || item?.name || 'Unknown Collection'}
+            </h1>
+            {metaPills.length > 0 && (
+              <div className="entity-detail-page__meta-row">
+                {metaPills.map((metaItem) => (
+                  <Pill key={metaItem.key} variant="meta">{metaItem.content}</Pill>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {overviewText && (
+            <div className="entity-detail-page__summary-layout">
+              <div className="entity-detail-page__summary-text">
+                <OverviewContent
+                  text={overviewText}
+                  title={overviewTitle}
+                  emptyText={overviewEmptyText}
+                  t={t}
+                  openModal={openModal}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  }
 
   const candidateAliases = (isPeople && item?.alternate_names) ? item.alternate_names.slice(0, 4) : [];
   let accumulatedLength = 0;
