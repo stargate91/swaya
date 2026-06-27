@@ -27,13 +27,19 @@ class RecommendationsService:
     def get_recommendations(self, language: Optional[str] = None) -> RecommendationsResponse:
         watchlist_tmdb_ids = RecommendationsDomainService.fetch_watchlist_tmdb_ids(self.db)
         pref_lang = language or self._preferred_metadata_language()
+        
+        include_adult_val = self.settings.get_setting("include_adult")
+        include_adult = str(include_adult_val).lower() == "true"
 
         trending_movie = self.scraper.get_trending("movie", "day", language=pref_lang)
         trending_tv = self.scraper.get_trending("tv", "day", language=pref_lang)
 
         trending_results = trending_movie.get("results", [])[:10] + trending_tv.get("results", [])[:10]
-        discover_movies = self.scraper.discover("movie", language=pref_lang, sort_by="popularity.desc").get("results", [])
-        discover_tv = self.scraper.discover("tv", language=pref_lang, sort_by="popularity.desc").get("results", [])
+        if not include_adult:
+            trending_results = [item for item in trending_results if not item.get("adult", False)]
+
+        discover_movies = self.scraper.discover("movie", language=pref_lang, sort_by="popularity.desc", include_adult=include_adult).get("results", [])
+        discover_tv = self.scraper.discover("tv", language=pref_lang, sort_by="popularity.desc", include_adult=include_adult).get("results", [])
 
         bindings = RecommendationsDomainService.resolve_local_recommendation_bindings(self.db, trending_results + discover_movies + discover_tv)
 

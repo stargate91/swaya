@@ -151,7 +151,7 @@ export default function OrganizerPage() {
   }), [
     settings,
   ]);
-  const previousRuleSignatureRef = useRef(organizerRuleSignature);
+  const previousRuleSignatureRef = useRef(null);
   const {
     activeExtrasTab,
     activeManualTab,

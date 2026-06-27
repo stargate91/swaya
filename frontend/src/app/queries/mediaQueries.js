@@ -419,6 +419,7 @@ export const usePlayMediaMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['library-item-detail', itemId] });
       queryClient.invalidateQueries({ queryKey: ['library-tv-detail', itemId] });
       queryClient.invalidateQueries({ queryKey: ['watched-history'] });
+      queryClient.invalidateQueries({ queryKey: ['continue-watching'] });
     },
   });
 };
@@ -430,6 +431,7 @@ export const useResetProgressMutation = () => {
     onSuccess: (data, itemId) => {
       queryClient.invalidateQueries({ queryKey: ['library-item-detail', itemId] });
       queryClient.invalidateQueries({ queryKey: ['library-tv-detail', itemId] });
+      queryClient.invalidateQueries({ queryKey: ['continue-watching'] });
     },
   });
 };

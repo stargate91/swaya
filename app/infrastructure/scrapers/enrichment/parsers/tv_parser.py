@@ -167,8 +167,8 @@ def enrich_tv(parser, match: MetadataMatch, language: str, include_ratings: bool
                 logger.warning(f"Failed to fetch metadata for episode {ename}: {e}")
 
         loc = parser.get_or_create_loc(match, language)
+        loc.title = " / ".join(titles) if titles else f"Episode {ep_nums[0]}"
         if titles:
-            loc.title = " / ".join(titles)
             match.still_path = first_still
             match.stills = all_stills
             still_prefix = f"tmdb_tv_{match.external_id}_s{match.season_number}_e{ep_nums[0]}"

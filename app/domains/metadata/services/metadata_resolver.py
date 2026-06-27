@@ -151,7 +151,7 @@ class MetadataResolver:
             self.scrapers.enrich_mainstream(db, item, DEFAULT_FALLBACK_LANGUAGE, commit=True)
         except Exception as e:
             logger.error(f"Enrichment failed during manual resolve: {e}")
-            db.commit()
+            db.rollback()
 
         return {"status": "success", "item_id": item.id, "match_id": match.id}
 

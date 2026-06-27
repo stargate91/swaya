@@ -34,6 +34,8 @@ class ScanResolver:
         self.include_adult = include_adult
         self.provider = provider
         self.task_monitor = task_monitor
+        import threading
+        self._db_write_lock = threading.Lock()
         if library_port is None:
             from app.infrastructure.media.db_media_resolver import DbMediaResolver
             self.library_port = DbMediaResolver(db_session)
@@ -121,7 +123,8 @@ class ScanResolver:
                             task_id=task_id,
                             stop_requested=lambda: self._stop_requested(task_id),
                         )
-                        local_db.commit()
+                        with self._db_write_lock:
+                            local_db.commit()
                         return
                     except OperationalError as e:
                         local_db.rollback()
@@ -144,7 +147,9 @@ class ScanResolver:
                         local_port = DbMediaResolver(local_db)
                         db_item = local_port.get_item_by_id(item_id)
                         if db_item:
-                            local_port.set_item_status(item_id, ItemStatus.ERROR)
+                            with self._db_write_lock:
+                                local_port.set_item_status(item_id, ItemStatus.ERROR)
+                                local_db.commit()
                         break
                     except OperationalError as status_ex:
                         local_db.rollback()
@@ -167,11 +172,11 @@ class ScanResolver:
                         progress_callback(current_completed, total_items)
                     except Exception as cb_ex:
                         logger.warning(f"Progress callback raised exception: {cb_ex}")
-
+ 
         # ThreadPool for network requests (limited to avoid SQLite write lock contention and rate limits)
         executor = self.task_monitor.executor if self.task_monitor else concurrent.futures.ThreadPoolExecutor(max_workers=DEFAULT_MAX_WORKERS)
-        # Limit to 3 concurrent workers to prevent SQLite database lock contention and keep the UI responsive
-        max_workers = min(getattr(executor, "_max_workers", DEFAULT_MAX_WORKERS), 3)
+        # Limit to 10 concurrent workers to fetch network data faster while db_write_lock handles database concurrency
+        max_workers = min(getattr(executor, "_max_workers", DEFAULT_MAX_WORKERS), 10)
         
         future_to_item = {}
         item_iter = iter(item_ids)

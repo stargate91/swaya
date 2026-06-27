@@ -33,7 +33,8 @@ const PosterCard = memo(function PosterCard({
   ...props
 }) {
   const isInteractive = !!onClick;
-  const DefaultComponent = Component || (isInteractive ? 'button' : 'div');
+  const hasInteractiveChildren = Boolean(children);
+  const DefaultComponent = Component || ((isInteractive && !hasInteractiveChildren) ? 'button' : 'div');
   const isOverlayTitle = variant === 'overlay-title';
 
   const [imageError, setImageError] = useState(false);
@@ -42,7 +43,21 @@ const PosterCard = memo(function PosterCard({
     setImageError(false);
   }, [imageUrl]);
 
+  const handleKeyDown = (e) => {
+    if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      onClick(e);
+    }
+  };
+
   const cardClassName = `ui-poster-card ${isOverlayTitle ? 'ui-poster-card--overlay-title' : ''} ${active ? 'is-active' : ''} ${className}`.trim();
+
+  const interactiveProps = {};
+  if (DefaultComponent === 'div' && isInteractive) {
+    interactiveProps.role = 'button';
+    interactiveProps.tabIndex = 0;
+    interactiveProps.onKeyDown = handleKeyDown;
+  }
 
   return (
     /* eslint-disable-next-line react/forbid-dom-props */
@@ -53,6 +68,7 @@ const PosterCard = memo(function PosterCard({
           className="ui-poster-card__image-wrapper"
           onClick={onClick}
           disabled={disabled || undefined}
+          {...interactiveProps}
           {...props}
         >
           <MediaCard className="ui-poster-card__media">

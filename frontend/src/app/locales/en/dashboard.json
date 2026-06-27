@@ -1,4 +1,44 @@
 {
-  "welcome": "Welcome",
-  "subtitle": "Your media hub is ready. Pick up where you left off and keep an eye on what matters most."
+  "welcome": "Welcome back, {name}",
+  "welcome_no_name": "Welcome back",
+  "user_fallback": "User",
+  "subtitle": "Your library is ready whenever you are.",
+  "details": "Details",
+  "stats": {
+    "total_movies": "Total Movies",
+    "movies_sub": "In Library",
+    "tv_series": "TV Series",
+    "episodes_sub": "Episodes",
+    "storage_used": "Storage Used",
+    "storage_sub": "across {count} drives",
+    "hydrating": "Downloading Actors",
+    "unmatched": "Unmatched",
+    "unmatched_sub": "Pending in Organizer",
+    "library_dna": "Library DNA",
+    "timeline": "Time-Travel Timeline",
+    "decade_label": "{decade}s",
+    "top_decade": "You are a {decade} fanatic!",
+    "other_genres": "Other Genres",
+    "items_count_tooltip": "{label}: {count} items",
+    "library_dna_low_data": "Your Library DNA needs a few more organized titles before the radar view becomes meaningful. For now, these are your strongest genre signals from {count} organized title(s).",
+    "timeline_low_data": "The timeline needs a bit more organized history before it can draw a real spread. Right now it is based on {count} organized title(s)."
+  },
+  "watchlist": {
+    "add": "Watchlist",
+    "add_short": "Watchlist",
+    "added": "Watchlisted",
+    "add_failed": "Couldn't add this to your watchlist.",
+    "remove_failed": "Couldn't remove this from your watchlist."
+  },
+  "recommendations": {
+    "discover_movies": "Discover Movies",
+    "discover_series": "Discover Series",
+    "because_you_like": "Because you like {genre}...",
+    "fallback_title": "Recommended for you"
+  },
+  "continue_watching": {
+    "title": "Continue Watching",
+    "remove": "Remove from Continue Watching",
+    "minutes_left": "{minutes} min left"
+  }
 }

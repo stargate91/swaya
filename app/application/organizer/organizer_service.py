@@ -112,13 +112,26 @@ class OrganizerService:
             matches_dto = []
             for m in item.matches:
                 loc = LanguageService.get_best_localization(m.localizations, pref_lang)
+                
+                # Resolve the best available image path (prefer local/cached paths)
+                resolved_poster = None
+                if m.media_type.value == "scene":
+                    resolved_poster = self._resolve_image_with_fallback(m.local_backdrop_path, m.backdrop_path, "scene_stills")
+                    if not resolved_poster:
+                        resolved_poster = self._resolve_image_with_fallback(m.local_still_path, m.still_path, "stills")
+                else:
+                    if loc:
+                        resolved_poster = self._resolve_image_with_fallback(loc.local_poster_path, loc.poster_path, "posters")
+                    if not resolved_poster:
+                        resolved_poster = self._resolve_image_with_fallback(m.local_backdrop_path, m.backdrop_path, "backdrops")
+
                 matches_dto.append({
                     "id": m.id,
                     "tmdb_id": int(m.external_id) if m.external_id.isdigit() else m.external_id,
                     "type": m.media_type.value,
                     "title": loc.title if loc else "",
                     "year": m.release_date.year if m.release_date else None,
-                    "poster_path": loc.poster_path if loc else None,
+                    "poster_path": resolved_poster,
                     "vote_average": m.rating_tmdb,
                     "is_active": m.is_active,
                     "confidence": m.confidence_score,
