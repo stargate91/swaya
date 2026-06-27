@@ -860,7 +860,7 @@
 .entity-detail-page__rating-segment-fill {
   height: 100%;
   background: var(--color-accent-blue, #007aff);
-  opacity: 0.35;
+  opacity: 0.85; /* Increased default opacity so set ratings are clearly visible */
   transition: opacity 0.2s ease, box-shadow 0.2s ease, width 0.12s ease;
 }
 
@@ -872,7 +872,7 @@
 .entity-detail-page__segmented-rating-label {
   font-size: 10px;
   font-weight: 600;
-  color: var(--color-text-faint, rgba(255, 255, 255, 0.45));
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.65)); /* Brightened default text color */
   text-transform: uppercase;
   letter-spacing: 0.06em;
   transition: color 0.2s ease;
@@ -1143,6 +1143,12 @@
   background: rgba(48, 209, 88, 0.06);
 }
 
+.entity-detail-page__sidebar-action--activate.is-active:hover {
+  color: var(--color-state-danger, #ef4444);
+  border-color: rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.08);
+}
+
 /* Sidebar Specs Grid */
 .entity-detail-page__sidebar-specs {
   display: grid;
@@ -1211,6 +1217,97 @@
   font-weight: 500;
   color: var(--color-text-secondary, rgba(255, 255, 255, 0.6));
   margin-top: 4px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Subtle Country Flag Badge overlay on Profile Image */
+.entity-detail-page__media-flag-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 4; /* Below the edit badge which is z-index 5 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(10, 12, 16, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  cursor: help;
+  font-size: 12px; /* Proportionally larger font size */
+  font-weight: 700;
+  letter-spacing: -0.05em; /* Pulls Windows text flag characters closer to center */
+  line-height: 1;
+  padding-bottom: 2px; /* Fine-tunes vertical text/emoji alignment to nudge it upward */
+  box-sizing: border-box;
+  opacity: 0.65; /* Not too flashy, blends into image */
+  transition: opacity 0.25s cubic-bezier(0.25, 1, 0.5, 1), transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  pointer-events: none; /* Make sure it doesn't block image clicks */
+}
+
+/* On card hover, flag fades out to not fight with the image/backdrop and allows edit badge to appear */
+.entity-detail-page__media-card:hover .entity-detail-page__media-flag-badge {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+/* Elegant Sidebar Info Table */
+.entity-detail-page__sidebar-info-table {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.entity-detail-page__info-row {
+  display: flex;
+  width: 100%;
+}
+
+.entity-detail-page__info-row:first-child {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.entity-detail-page__info-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.entity-detail-page__info-cell:first-child {
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  padding-right: 12px;
+}
+
+.entity-detail-page__info-cell:last-child {
+  padding-left: 12px;
+}
+
+.entity-detail-page__info-label {
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.4));
+  font-weight: 600;
+}
+
+.entity-detail-page__info-value {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #ffffff);
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;

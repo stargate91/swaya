@@ -55,6 +55,44 @@ export default function EntityDetailHeroSection({
     ...((isPeople && item?.alternate_names) ? item.alternate_names.slice(4) : [])
   ];
 
+  const countryISO = (() => {
+    if (!isPeople || !item?.place_of_birth) return null;
+    const place = item.place_of_birth.trim().toUpperCase();
+    const parts = place.split(',').map(p => p.trim());
+    const lastPart = parts[parts.length - 1];
+    
+    const map = {
+      'USA': 'US', 'UNITED STATES': 'US', 'UNITED STATES OF AMERICA': 'US',
+      'HUNGARY': 'HU', 'MAGYARORSZÁG': 'HU',
+      'GERMANY': 'DE', 'DEUTSCHLAND': 'DE',
+      'UNITED KINGDOM': 'GB', 'UK': 'GB', 'GREAT BRITAIN': 'GB', 'ENGLAND': 'GB',
+      'CANADA': 'CA', 'FRANCE': 'FR', 'SPAIN': 'ES', 'ITALY': 'IT',
+      'RUSSIA': 'RU', 'RUSSIAN FEDERATION': 'RU',
+      'AUSTRALIA': 'AU', 'JAPAN': 'JP', 'BRAZIL': 'BR',
+      'NETHERLANDS': 'NL', 'POLAND': 'PL', 'UKRAINE': 'UA', 'SWEDEN': 'SE',
+      'CZECH REPUBLIC': 'CZ', 'CZECHIA': 'CZ', 'SLOVAKIA': 'SK', 'AUSTRIA': 'AT',
+      'CUBA': 'CU', 'COLOMBIA': 'CO', 'MEXICO': 'MX', 'ROMANIA': 'RO',
+      'ARGENTINA': 'AR', 'BELGIUM': 'BE', 'SWITZERLAND': 'CH', 'CHINA': 'CN',
+      'SOUTH KOREA': 'KR', 'KOREA': 'KR', 'PHILIPPINES': 'PH', 'THAILAND': 'TH',
+      'VIETNAM': 'VN', 'NORWAY': 'NO', 'DENMARK': 'DK', 'FINLAND': 'FI',
+      'BULGARIA': 'BG', 'GREECE': 'GR', 'TURKEY': 'TR', 'PORTUGAL': 'PT',
+      'SOUTH AFRICA': 'ZA', 'NEW ZEALAND': 'NZ', 'VENEZUELA': 'VE',
+    };
+    return map[lastPart] || (lastPart.length === 2 ? lastPart : null);
+  })();
+
+  const flagEmoji = (() => {
+    if (!countryISO) return '';
+    const codePoints = countryISO
+      .split('')
+      .map(char => 127397 + char.charCodeAt(0));
+    try {
+      return String.fromCodePoint(...codePoints);
+    } catch (e) {
+      return '';
+    }
+  })();
+
   return (
     <div className="entity-detail-page__hero-section-wrapper">
       <section className="entity-detail-page__hero-grid">
@@ -87,6 +125,16 @@ export default function EntityDetailHeroSection({
             ) : (
               <div className="entity-detail-page__media-placeholder">
                 {isPeople ? <User size={44} /> : <Layers size={44} />}
+              </div>
+            )}
+
+            {/* Subtle Country Flag Badge overlay */}
+            {flagEmoji && (
+              <div 
+                className="entity-detail-page__media-flag-badge"
+                title={item.place_of_birth}
+              >
+                {flagEmoji}
               </div>
             )}
 
@@ -186,24 +234,55 @@ export default function EntityDetailHeroSection({
             </div>
           )}
 
-          {/* 5. Basic Metadata Pills restored */}
-          {metaPills.length > 0 && (() => {
-            const placeOfBirthPill = metaPills.find(pill => pill.key === 'place-of-birth');
-            const primaryMetaPills = metaPills.filter(pill => pill.key !== 'place-of-birth');
+          {/* 5. Elegant 2x2 Metadata Table */}
+          {isPeople && (() => {
+            const calculateAge = (birthdayStr) => {
+              if (!birthdayStr) return '';
+              const birthDate = new Date(birthdayStr);
+              if (isNaN(birthDate.getTime())) return '';
+              const today = new Date();
+              let age = today.getFullYear() - birthDate.getFullYear();
+              const m = today.getMonth() - birthDate.getMonth();
+              if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+              }
+              return t('library.details.yearsOld', { count: age, defaultValue: `${age} Years Old` });
+            };
+
+            const getGenderLabel = (gender) => {
+              if (gender === 1 || gender === '1') return t('library.details.female') || 'Female';
+              if (gender === 2 || gender === '2') return t('library.details.male') || 'Male';
+              if (gender === 3 || gender === '3') return t('library.details.nonBinary') || 'Non-binary';
+              return null;
+            };
+
+            const genderVal = getGenderLabel(item?.gender);
+            const deptVal = item?.known_for_department || (item?.is_adult ? 'Performer' : 'Artist');
+
             return (
-              <div className="entity-detail-page__sidebar-meta-section" style={{ marginTop: 'var(--space-md)', width: '100%' }}>
-                {primaryMetaPills.length > 0 && (
-                  <div className="entity-detail-page__meta-row" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {primaryMetaPills.map((metaItem) => (
-                      <Pill key={metaItem.key} variant="meta">{metaItem.content}</Pill>
-                    ))}
+              <div className="entity-detail-page__sidebar-info-table">
+                <div className="entity-detail-page__info-row">
+                  <div className="entity-detail-page__info-cell">
+                    <span className="entity-detail-page__info-label">{t('library.details.gender') || 'Gender'}</span>
+                    <span className="entity-detail-page__info-value">{genderVal || '—'}</span>
                   </div>
-                )}
-                {placeOfBirthPill && (
-                  <div className="entity-detail-page__meta-row entity-detail-page__meta-row--secondary" style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    <Pill key={placeOfBirthPill.key} variant="meta">{placeOfBirthPill.content}</Pill>
+                  <div className="entity-detail-page__info-cell">
+                    <span className="entity-detail-page__info-label">{t('library.details.role') || 'Role'}</span>
+                    <span className="entity-detail-page__info-value">{deptVal}</span>
                   </div>
-                )}
+                </div>
+                <div className="entity-detail-page__info-row">
+                  <div className="entity-detail-page__info-cell">
+                    <span className="entity-detail-page__info-label">{t('library.details.born') || 'Born'}</span>
+                    <span className="entity-detail-page__info-value">{item?.birthday || '—'}</span>
+                  </div>
+                  <div className="entity-detail-page__info-cell">
+                    <span className="entity-detail-page__info-label">{t('library.details.age') || 'Age'}</span>
+                    <span className="entity-detail-page__info-value">
+                      {item?.birthday ? calculateAge(item.birthday) : '—'}
+                    </span>
+                  </div>
+                </div>
               </div>
             );
           })()}
@@ -312,7 +391,7 @@ export default function EntityDetailHeroSection({
 
         const tattooVal = formatListAttr(item.tattoos);
         const piercingVal = formatListAttr(item.piercings);
-        const hasAnySpecs = item?.height || item?.weight || item?.measurements || item?.breast_type || item?.hair_color || item?.eye_color || item?.ethnicity || item?.tattoos || item?.piercings || item?.career_start_year;
+        const hasAnySpecs = item?.height || item?.weight || item?.measurements || item?.breast_type || item?.hair_color || item?.eye_color || item?.ethnicity || item?.tattoos || item?.piercings || item?.career_start_year || item?.place_of_birth;
 
         return createPortal(
           <>
@@ -352,6 +431,12 @@ export default function EntityDetailHeroSection({
                       {t('library.details.specsTitle') || 'Physical Specs'}
                     </h4>
                     <div className="entity-detail-page__drawer-specs-grid">
+                      {item.place_of_birth && (
+                        <div className="entity-detail-page__specs-item entity-detail-page__specs-item--full">
+                          <span className="entity-detail-page__specs-label">Place of Birth</span>
+                          <span className="entity-detail-page__specs-value">{item.place_of_birth}</span>
+                        </div>
+                      )}
                       {item.career_start_year && (
                         <div className="entity-detail-page__specs-item">
                           <span className="entity-detail-page__specs-label">Active Years</span>
