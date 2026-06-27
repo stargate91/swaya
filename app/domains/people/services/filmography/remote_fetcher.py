@@ -53,14 +53,133 @@ class RemoteCreditsFetcher:
         if not ext_id:
             return None
             
+        # Check Cache
+        from app.domains.people.models import RemoteFilmographyCache
+        cache_entry = db.query(RemoteFilmographyCache).filter(
+            RemoteFilmographyCache.person_id == person_id,
+            RemoteFilmographyCache.provider == source.lower(),
+            RemoteFilmographyCache.media_type == media_type
+        ).first()
+
+        if cache_entry and cache_entry.data is not None:
+            mapped_items = cache_entry.data.get("items") or []
+            total_items = cache_entry.data.get("total_items") or len(mapped_items)
+        else:
+            mapped_items, total_items = self._query_remote_source(source, media_type, ext_id)
+            
+            # Save to Cache
+            if mapped_items:
+                clean_items = []
+                for item in mapped_items:
+                    clean_item = dict(item)
+                    clean_item.pop("in_library", None)
+                    clean_item.pop("library_item_id", None)
+                    clean_items.append(clean_item)
+
+                if not cache_entry:
+                    cache_entry = RemoteFilmographyCache(
+                        person_id=person_id,
+                        provider=source.lower(),
+                        media_type=media_type,
+                        data={"items": clean_items, "total_items": total_items}
+                    )
+                    db.add(cache_entry)
+                else:
+                    cache_entry.data = {"items": clean_items, "total_items": total_items}
+                
+                try:
+                    db.commit()
+                except Exception as e:
+                    db.rollback()
+                    logger.error(f"Error saving remote filmography cache: {e}")
+
+        local_items = []
+        try:
+            prov_enum = Provider(source.lower())
+            active_match_ids = self.library_port.get_active_match_ids(media_type=media_type)
+            from app.shared_kernel.language import LanguageService
+            
+            links = db.query(MediaPersonLink).filter(
+                MediaPersonLink.person_id == person_id,
+                MediaPersonLink.match_id.in_(active_match_ids)
+            ).all()
+            
+            ui_lang = DEFAULT_FALLBACK_LANGUAGE
+            for link in links:
+                match = link.match
+                item = match.media_item
+                match_loc = LanguageService.get_best_localization(match.localizations, ui_lang)
+                title = match_loc.title if match_loc else item.filename
+                
+                local_items.append({
+                    "id": item.id,
+                    "title": title,
+                    "type": media_type,
+                    "media_type": media_type,
+                    "year": match.release_date.year if match.release_date else None,
+                    "poster_path": self._resolve_img(match_loc.poster_path if match_loc else None, "posters"),
+                    "backdrop_path": self._resolve_img(match.backdrop_path, "backdrops", size="original"),
+                    "rating": match.rating_tmdb or 0.0,
+                    "rating_porndb": match.rating_porndb,
+                    "job": link.role.value if hasattr(link.role, "value") else str(link.role),
+                    "character": link.character_name,
+                    "in_library": True,
+                    "library_item_id": item.id,
+                    "stash_id": match.external_id if (match.provider and match.provider.value == source.lower()) else None,
+                    "source": source.lower(),
+                })
+        except Exception as e:
+            logger.error(f"Error querying local items in _fetch_remote_credits: {e}")
+
+        local_by_ext_id = {str(li["stash_id"]).lower().strip(): li for li in local_items if li.get("stash_id")}
+        combined_items = []
+        
+        for item in mapped_items:
+            ext_id_key = str(item["id"]).lower().strip()
+            if ext_id_key in local_by_ext_id:
+                local_item = local_by_ext_id[ext_id_key]
+                item.update({
+                    "in_library": True,
+                    "library_item_id": local_item["id"],
+                })
+                local_item["_merged"] = True
+            combined_items.append(item)
+            
+        for li in local_items:
+            if not li.get("_merged"):
+                combined_items.append(li)
+                
+        combined_items.sort(
+            key=lambda x: (
+                0 if x.get("in_library") else 1,
+                -(x.get("year") or 0),
+                x.get("title") or ""
+            )
+        )
+        
+        total_items = max(total_items, len(combined_items))
+        total_pages = max(1, math.ceil(total_items / page_size))
+        start_idx = (page - 1) * page_size
+        sliced = combined_items[start_idx : start_idx + page_size]
+        
+        return {
+            "items": sliced,
+            "page": page,
+            "page_size": page_size,
+            "total_items": total_items,
+            "total_pages": total_pages,
+        }
+
+    def _query_remote_source(self, source: str, media_type: str, ext_id: str) -> tuple[list, int]:
+        from app.infrastructure.scrapers.support.gateway import scraper_gateway
+        db = self.db
         mapped_items = []
         total_items = 0
-        
         remote_per_page = 5000
-        
+
         if source.lower() in ("stashdb", "fansdb"):
             if media_type != "scene":
-                return {"items": [], "page": page, "page_size": page_size, "total_items": 0, "total_pages": 1}
+                return [], 0
                 
             try:
                 prov_enum = Provider(source.lower())
@@ -229,81 +348,6 @@ class RemoteCreditsFetcher:
                                 "source": "porndb",
                             })
             except Exception as e:
-                logger.error(f"Error querying PornDB REST API for performer {person_id}: {e}")
-                
-        local_items = []
-        try:
-            prov_enum = Provider(source.lower())
-            active_match_ids = self.library_port.get_active_match_ids(media_type=media_type)
-            from app.shared_kernel.language import LanguageService
-            
-            links = db.query(MediaPersonLink).filter(
-                MediaPersonLink.person_id == person_id,
-                MediaPersonLink.match_id.in_(active_match_ids)
-            ).all()
-            
-            ui_lang = DEFAULT_FALLBACK_LANGUAGE
-            for link in links:
-                match = link.match
-                item = match.media_item
-                match_loc = LanguageService.get_best_localization(match.localizations, ui_lang)
-                title = match_loc.title if match_loc else item.filename
-                
-                local_items.append({
-                    "id": item.id,
-                    "title": title,
-                    "type": media_type,
-                    "media_type": media_type,
-                    "year": match.release_date.year if match.release_date else None,
-                    "poster_path": self._resolve_img(match_loc.poster_path if match_loc else None, "posters"),
-                    "backdrop_path": self._resolve_img(match.backdrop_path, "backdrops", size="original"),
-                    "rating": match.rating_tmdb or 0.0,
-                    "rating_porndb": match.rating_porndb,
-                    "job": link.role.value if hasattr(link.role, "value") else str(link.role),
-                    "character": link.character_name,
-                    "in_library": True,
-                    "library_item_id": item.id,
-                    "stash_id": match.external_id if (match.provider and match.provider.value == source.lower()) else None,
-                    "source": source.lower(),
-                })
-        except Exception as e:
-            logger.error(f"Error querying local items in _fetch_remote_credits: {e}")
+                logger.error(f"Error querying PornDB REST API for performer {ext_id}: {e}")
 
-        local_by_ext_id = {str(li["stash_id"]).lower().strip(): li for li in local_items if li.get("stash_id")}
-        combined_items = []
-        
-        for item in mapped_items:
-            ext_id_key = str(item["id"]).lower().strip()
-            if ext_id_key in local_by_ext_id:
-                local_item = local_by_ext_id[ext_id_key]
-                item.update({
-                    "in_library": True,
-                    "library_item_id": local_item["id"],
-                })
-                local_item["_merged"] = True
-            combined_items.append(item)
-            
-        for li in local_items:
-            if not li.get("_merged"):
-                combined_items.append(li)
-                
-        combined_items.sort(
-            key=lambda x: (
-                0 if x.get("in_library") else 1,
-                -(x.get("year") or 0),
-                x.get("title") or ""
-            )
-        )
-        
-        total_items = max(total_items, len(combined_items))
-        total_pages = max(1, math.ceil(total_items / page_size))
-        start_idx = (page - 1) * page_size
-        sliced = combined_items[start_idx : start_idx + page_size]
-        
-        return {
-            "items": sliced,
-            "page": page,
-            "page_size": page_size,
-            "total_items": total_items,
-            "total_pages": total_pages,
-        }
+        return mapped_items, total_items

@@ -14,7 +14,7 @@ import { resolveDetailsImageUrl } from '../../utils/detailUtils';
 import { normalizeBackdropKey } from '../../peopleCollectionDetailUtils.jsx';
 import './PersonCreditsShared.css';
 
-export function OverviewContent({ text, title, emptyText, t, openModal, className = '' }) {
+export function OverviewContent({ text, title, emptyText, t, openDrawer, className = '' }) {
   const overviewRef = useRef(null);
   const [isTruncated, setIsTruncated] = useState(false);
 
@@ -69,19 +69,7 @@ export function OverviewContent({ text, title, emptyText, t, openModal, classNam
             <button
               type="button"
               className="media-detail-page__read-more-btn"
-              onClick={() => {
-                openModal({
-                  title,
-                  variant: 'wide',
-                  content: (
-                    <div className="read-more-overview">
-                      {text.split(/\n{2,}/).map((paragraph, index) => (
-                        <p key={index} className="read-more-paragraph">{paragraph}</p>
-                      ))}
-                    </div>
-                  ),
-                });
-              }}
+              onClick={openDrawer}
             >
               {t('library.details.readMore') || 'Read More'}
             </button>

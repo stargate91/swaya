@@ -159,6 +159,13 @@ class PerformerDetailReader:
                     person.known_for_department = tmdb_details.get("known_for_department") or person.known_for_department
                     person.homepage = tmdb_details.get("homepage") or person.homepage
                     
+                    if tmdb_details.get("also_known_as"):
+                        aliases = list(person.aliases or [])
+                        for alias in tmdb_details["also_known_as"]:
+                            if alias not in aliases:
+                                aliases.append(alias)
+                        person.aliases = aliases
+                    
                     profiles = tmdb_details.get("images", {}).get("profiles") or []
                     new_imgs = [p.get("file_path") for p in profiles if p.get("file_path")]
                     if person.profile_path:

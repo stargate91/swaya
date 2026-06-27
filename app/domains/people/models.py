@@ -1,5 +1,6 @@
 from typing import List, Optional, Any
-from sqlalchemy import String, Integer, Float, Enum as SQLEnum, JSON, Boolean, ForeignKey, UniqueConstraint
+from datetime import datetime
+from sqlalchemy import String, Integer, Float, Enum as SQLEnum, JSON, Boolean, ForeignKey, UniqueConstraint, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.shared_kernel.database import Base
@@ -59,6 +60,7 @@ class Person(Base):
     media_links: Mapped[List["MediaPersonLink"]] = relationship(back_populates="person", cascade="all, delete-orphan")
     localizations: Mapped[List["PersonLocalization"]] = relationship(back_populates="person", cascade="all, delete-orphan")
     external_links: Mapped[List["ExternalSourceLink"]] = relationship(back_populates="person", cascade="all, delete-orphan")
+    filmography_caches: Mapped[List["RemoteFilmographyCache"]] = relationship(back_populates="person", cascade="all, delete-orphan")
 
     def recalculate_projection(self, db):
         priority_map = {
@@ -272,3 +274,21 @@ class ExternalSourceLink(Base):
 
     # Relationships
     person: Mapped["Person"] = relationship(back_populates="external_links")
+
+
+class RemoteFilmographyCache(Base):
+    """
+    Caches external filmography credits (movies/scenes) statically for performers.
+    """
+    __tablename__ = "remote_filmography_caches"
+    __table_args__ = (UniqueConstraint("person_id", "provider", "media_type", name="uq_person_provider_mediatype"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    person_id: Mapped[int] = mapped_column(ForeignKey("people.id", ondelete="CASCADE"), index=True)
+    provider: Mapped[str] = mapped_column(String, index=True) # "stashdb", "fansdb", "porndb"
+    media_type: Mapped[str] = mapped_column(String, index=True) # "scene", "movie"
+    data: Mapped[dict] = mapped_column(JSON) # Array of serialized filmography items (excluding live 'in_library' status)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
+
+    # Relationships
+    person: Mapped["Person"] = relationship(back_populates="filmography_caches")
