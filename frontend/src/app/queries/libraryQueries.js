@@ -679,9 +679,6 @@ export const useUnlinkPersonSourceMutation = () => {
         }
       }
     },
-    onSuccess: (data, variables) => {
-      // onSuccess can still fire, but the actual invalidation happens in onSettled
-    },
     onSettled: (data, error, variables) => {
       queryClient.invalidateQueries({ queryKey: ['person-detail', variables.personId] });
       queryClient.invalidateQueries({ queryKey: ['person-detail', String(variables.personId)] });

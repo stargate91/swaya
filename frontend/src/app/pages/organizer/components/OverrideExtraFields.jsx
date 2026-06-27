@@ -13,7 +13,6 @@ export default function OverrideExtraFields({
   isExtra,
   LANGUAGE_OPTIONS,
   t,
-  isScenesMode,
 }) {
   return (
     <>

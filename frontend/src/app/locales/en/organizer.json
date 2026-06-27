@@ -105,7 +105,7 @@
     "overrideSeasonEpisodeRequired": "Season and Episode numbers are required for episodes.",
     "overrideSuccess": "Overrides saved successfully!",
     "bulkOverrideSaveFailed": "Oops! We couldn't save the bulk overrides.",
-    "selfParentError": "An item cannot be its own parent."
+    "selfParentError": "An item can't be its own parent!"
   },
   "actions": {
     "match": "Match",
@@ -276,21 +276,21 @@
     "empty": "Select an item from the list to see more details here!",
     "delete": {
       "title": "What should we do with this file?",
-      "descriptionMedia": "Choose what you'd like to do with this file. Any linked extras will follow along automatically where it makes sense.",
+      "descriptionMedia": "What would you like to do with this file? Don't worry, any linked extras will follow along automatically.",
       "descriptionExtra": "Choose what you'd like to do with this extra file.",
       "cancel": "Cancel",
       "ignore": {
         "label": "Hide It",
-        "description": "Hide it from the organizer for now. We will remember where it was so you can bring it back later."
+        "description": "Hide it from the list for now. We'll remember where it was so you can easily bring it back!"
       },
       "dbOnly": {
         "label": "Forget It Here",
-        "descriptionMedia": "Only remove it from SWAYA. Your files will stay exactly where they are on your disk, and you can always scan them again later.",
-        "descriptionExtra": "Only remove this extra from SWAYA. The file stays exactly where it is on your disk, and you can scan it again later."
+        "descriptionMedia": "Only remove it from SWAYA. Your files will stay exactly where they are on your computer, and you can always scan them again later.",
+        "descriptionExtra": "Only remove this extra from SWAYA. The file will stay exactly where it is on your computer."
       },
       "trash": {
         "label": "Move to Trash",
-        "descriptionMedia": "Send the file to the trash and remove it from SWAYA. All linked extras will go with it.",
+        "descriptionMedia": "Send this file to the trash and remove it from SWAYA. All linked extras will go with it.",
         "descriptionExtra": "Send this extra file to the trash and remove it from SWAYA."
       }
     },

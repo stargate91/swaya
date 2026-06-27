@@ -49,9 +49,9 @@ export default function PersonBackdropPickerModal({ personId, item, t, toast, ov
     creditValidationByKey,
   } = resolvedSession;
 
-  const isTmdbPerformer = !!item?.external_ids?.tmdb_id || (!item?.external_ids?.stashdb_id && !item?.external_ids?.fansdb_id && !item?.external_ids?.theporndb_id);
+  const isTmdbPerformer = !!person?.external_ids?.tmdb_id || (!person?.external_ids?.stashdb_id && !person?.external_ids?.fansdb_id && !person?.external_ids?.theporndb_id);
 
-  const profilePath = item?.profile_path;
+  const profilePath = person?.profile_path || item?.profile_path;
   const profileUrl = profilePath ? resolveDetailsImageUrl(profilePath, API_BASE, 'person') : null;
 
   const selectedBackdropTmdbId = Number(selectedCredit?.tv_tmdb_id || selectedCredit?.tmdb_id || selectedCredit?.id || 0);
@@ -61,12 +61,12 @@ export default function PersonBackdropPickerModal({ personId, item, t, toast, ov
   });
 
   useEffect(() => {
-    ensureSession(personId, item?.backdrop_path || '');
-  }, [ensureSession, item?.backdrop_path, personId]);
+    ensureSession(personId, person?.backdrop_path || item?.backdrop_path || '');
+  }, [ensureSession, item?.backdrop_path, person?.backdrop_path, personId]);
 
   useEffect(() => {
     if (!session) {
-      patchSession(personId, { selectedBackdropPath: item?.backdrop_path || '' });
+      patchSession(personId, { selectedBackdropPath: person?.backdrop_path || item?.backdrop_path || '' });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [personId]);
@@ -82,33 +82,33 @@ export default function PersonBackdropPickerModal({ personId, item, t, toast, ov
   });
 
   useEffect(() => {
-    if (isTmdbPerformer && moviesQuery.data?.items && (!moviePages || moviePages.length === 0)) {
+    if (isTmdbPerformer && moviesQuery.data?.items && !moviesQuery.isPlaceholderData && (!moviePages || moviePages.length === 0)) {
       patchSession(personId, { moviePages: [moviesQuery.data], movieNextPage: 2 });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [moviesQuery.data, patchSession, personId, isTmdbPerformer]);
+  }, [moviesQuery.data, moviesQuery.isPlaceholderData, patchSession, personId, isTmdbPerformer]);
 
   useEffect(() => {
-    if (isTmdbPerformer && tvQuery.data?.items && (!tvPages || tvPages.length === 0)) {
+    if (isTmdbPerformer && tvQuery.data?.items && !tvQuery.isPlaceholderData && (!tvPages || tvPages.length === 0)) {
       patchSession(personId, { tvPages: [tvQuery.data], tvNextPage: 2 });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [patchSession, personId, tvQuery.data, isTmdbPerformer]);
+  }, [patchSession, personId, tvQuery.data, tvQuery.isPlaceholderData, isTmdbPerformer]);
 
-  const currentBackdropKey = normalizeBackdropKey(selectedBackdropPath || item?.backdrop_path);
+  const currentBackdropKey = normalizeBackdropKey(selectedBackdropPath || person?.backdrop_path || item?.backdrop_path);
   const movieItems = useMemo(
     () => prioritizePersonCredits(
       sortBackdropCredits(mergeBackdropCreditPages(moviePages)),
-      item?.known_for || []
+      person?.known_for || item?.known_for || []
     ),
-    [item?.known_for, moviePages]
+    [item?.known_for, person?.known_for, moviePages]
   );
   const tvItems = useMemo(
     () => prioritizePersonCredits(
       sortBackdropCredits(mergeBackdropCreditPages(tvPages)),
-      item?.known_for || []
+      person?.known_for || item?.known_for || []
     ),
-    [item?.known_for, tvPages]
+    [item?.known_for, person?.known_for, tvPages]
   );
 
   const activeItems = activeTab === 'movies' ? movieItems : tvItems;
@@ -116,12 +116,19 @@ export default function PersonBackdropPickerModal({ personId, item, t, toast, ov
     if (!currentBackdropKey) {
       return '';
     }
+    if (person?.backdrop_source_tmdb_id) {
+      const sourceIdStr = String(person.backdrop_source_tmdb_id);
+      const matched = activeItems.find((credit) => String(credit.tmdb_id || credit.id || '') === sourceIdStr);
+      if (matched) {
+        return sourceIdStr;
+      }
+    }
     const matchedCredit = activeItems.find((credit) => normalizeBackdropKey(credit?.backdrop_path) === currentBackdropKey);
     if (!matchedCredit) {
       return '';
     }
     return String(matchedCredit.tmdb_id || matchedCredit.id || '');
-  }, [activeItems, currentBackdropKey]);
+  }, [activeItems, currentBackdropKey, person?.backdrop_source_tmdb_id]);
   const selectedCreditKey = currentSourceCreditKey || matchedCreditKey;
   const selectedBackdrops = useMemo(() => {
     const allBackdrops = selectedBackdropMetadataQuery.data?.backdrops || [];
@@ -410,7 +417,14 @@ export default function PersonBackdropPickerModal({ personId, item, t, toast, ov
           <div className="scene-image-picker-grid">
             <div 
               className={`scene-image-picker-card ${!selectedBackdropPath ? 'active' : ''}`}
+              role="button"
+              tabIndex={0}
               onClick={() => handleSaveBackdropUrl("")}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  handleSaveBackdropUrl("");
+                }
+              }}
             >
               <div className="scene-image-picker-img-wrapper backdrop-variant person-backdrop-fallback-blur">
                 <img src={profileUrl} alt="Default blurred fallback" />
@@ -454,13 +468,19 @@ export default function PersonBackdropPickerModal({ personId, item, t, toast, ov
               />
             </div>
           ) : activeTab === 'default' ? (
-            <div className="person-backdrop-picker__default-tab-content" style={{ display: 'flex', justifyContent: 'center', paddingTop: '24px', paddingBottom: '24px' }}>
+            <div className="person-backdrop-picker__default-tab-content">
               {profileUrl ? (
                 <div className="scene-image-picker-grid">
                   <div 
-                    className={`scene-image-picker-card ${!selectedBackdropPath ? 'active' : ''}`}
+                    className={`scene-image-picker-card ${!selectedBackdropPath ? 'active' : ''} person-backdrop-picker__fallback-card`}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => handleSaveBackdropUrl("")}
-                    style={{ maxWidth: '360px', width: '100%', margin: '0 auto' }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        handleSaveBackdropUrl("");
+                      }
+                    }}
                   >
                     <div className="scene-image-picker-img-wrapper backdrop-variant person-backdrop-fallback-blur">
                       <img src={profileUrl} alt="Default blurred fallback" />

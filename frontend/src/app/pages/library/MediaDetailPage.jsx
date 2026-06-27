@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from '@/providers/LanguageContext';
 import { useUi } from '@/providers/UiProvider';
-import { isMovieMediaType, normalizeMediaType } from '@/lib/mediaTypes';
+import { normalizeMediaType } from '@/lib/mediaTypes';
 import UniversalImagePickerModal from './modals/UniversalImagePickerModal';
 
 // Context
@@ -287,7 +287,14 @@ export default function MediaDetailPage({ type = 'movie' }) {
           <div className="media-detail-page__fallback-grid">
             <div
               className="media-detail-page__fallback-poster-col"
+              role="button"
+              tabIndex={0}
               onClick={handleOpenPosterModal}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  handleOpenPosterModal();
+                }
+              }}
               title={t('library.details.choosePoster') || 'Choose Poster'}
             >
               <img src={state.posterUrl} alt={state.title} className="media-detail-page__fallback-poster" />

@@ -8,7 +8,7 @@ import './DetailsPanel.css';
 
 
 export default function DetailsPanel() {
-  const { state, mutations, t } = useMediaDetailContext();
+  const { state, t } = useMediaDetailContext();
   const {
     item,
     isMovie

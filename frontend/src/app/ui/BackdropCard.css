@@ -115,7 +115,7 @@
   align-items: center;
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs, 12px);
-  padding: 12px;
+  padding: var(--space-3);
   text-align: center;
   box-sizing: border-box;
 }

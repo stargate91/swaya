@@ -57,42 +57,42 @@
   },
   "progress": {
     "abortConfirm": {
-      "title": "Abort Scan?",
-      "description": "Are you sure you want to abort the active scanning or renaming process?",
-      "body": "The file currently in progress will finish processing, and the operation will then halt safely.",
-      "confirm": "Abort Process",
-      "cancel": "Go Back"
+      "title": "Stop Scanning?",
+      "description": "Are you sure you want to stop the scan or rename?",
+      "body": "The file we're currently working on will finish up, and then we'll stop the whole process safely.",
+      "confirm": "Stop Process",
+      "cancel": "Keep Going"
     },
     "ready": "Ready",
-    "working": "Working...",
+    "working": "Working on it...",
     "images": {
       "downloading": "Downloading images..."
     },
     "people": {
-      "hydrating": "Enriching extra people...",
-      "importing": "Importing bulk people..."
+      "hydrating": "Getting extra info for people...",
+      "importing": "Importing your list of people..."
     },
     "sync": {
-      "running": "Syncing metadata languages..."
+      "running": "Syncing info languages..."
     },
     "scan": {
-      "collecting": "Scanning files...",
-      "resolving": "Resolving metadata...",
-      "enriching": "Enriching metadata...",
-      "organizing": "Organizing media files...",
-      "undoing": "Undoing organization..."
+      "collecting": "Scanning your files...",
+      "resolving": "Finding matches...",
+      "enriching": "Fetching media details...",
+      "organizing": "Organizing your files...",
+      "undoing": "Undoing file organization..."
     }
   },
   "closePrompt": {
     "title": "Close SWAYA?",
-    "description": "Choose whether to quit the application completely or minimize it to the system tray.",
-    "info": "You can customize this behavior anytime in Settings > General.",
+    "description": "Do you want to close SWAYA completely, or just minimize it to your system tray?",
+    "info": "You can always change this later in Settings > General.",
     "action": {
       "cancel": "Cancel",
       "tray": "Minimize to Tray",
-      "quit": "Quit App"
+      "quit": "Quit"
     },
-    "dontAskAgain": "Don't ask me again"
+    "dontAskAgain": "Remember my choice"
   },
   "languages": {
     "en": "English (English)",

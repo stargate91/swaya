@@ -7,7 +7,7 @@ import {
   normalizeItemStatus,
 } from '../organizerMappers';
 import { scrollOrganizerToTop } from '../organizerScroll';
-import { isEpisodeMediaType, isMovieMediaType, isTvLikeMediaType } from '@/lib/mediaTypes';
+import { isMovieMediaType, isTvLikeMediaType } from '@/lib/mediaTypes';
 
 const normalizeType = (value) => String(value || '').toLowerCase();
 const isSceneType = (value) => normalizeType(value) === 'scene';
@@ -129,6 +129,7 @@ export function useOrganizerFocus({
     try {
       localStorage.setItem('organizer_details_collapsed', JSON.stringify(false));
     } catch {
+      /* ignore storage failure */
     }
     scrollOrganizerToTop();
   };

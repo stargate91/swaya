@@ -7,7 +7,7 @@ import {
   MATCHED_STATUSES,
   normalizeItemStatus,
 } from '../organizerMappers';
-import { isEpisodeMediaType, isMovieMediaType, isTvLikeMediaType } from '@/lib/mediaTypes';
+import { isMovieMediaType, isTvLikeMediaType } from '@/lib/mediaTypes';
 
 const normalizeType = (value) => String(value || '').toLowerCase();
 const isSceneType = (value) => normalizeType(value) === 'scene';
@@ -60,15 +60,9 @@ export function useOrganizerFilteredRows({
 
   const matchesSessionModeExtra = useMemo(() => {
     return (extra) => {
-      let parentIsAdult = false;
-      if (extra.parent_is_adult !== undefined && extra.parent_is_adult !== null) {
-        parentIsAdult = extra.parent_is_adult;
-      } else {
-        const parentScanMode = extra.parent_scan_mode || '';
-        parentIsAdult = extra.parent_type === 'scene'
-          || parentScanMode === 'scenes'
-          || parentScanMode === 'porndb_movie';
-      }
+      const parentIsAdult = (extra.parent_is_adult !== undefined && extra.parent_is_adult !== null)
+        ? extra.parent_is_adult
+        : (extra.parent_type === 'scene' || (extra.parent_scan_mode || '') === 'scenes' || (extra.parent_scan_mode || '') === 'porndb_movie');
 
       return sessionMode === 'nsfw' ? parentIsAdult : !parentIsAdult;
     };

@@ -188,7 +188,7 @@ export function buildPersonExternalLinks(item, t) {
       if (seenUrls.has(normalized)) return;
       seenUrls.add(normalized);
       links.push(linkObj);
-    } catch (e) {
+    } catch {
       if (seenUrls.has(linkObj.href.toLowerCase())) return;
       seenUrls.add(linkObj.href.toLowerCase());
       links.push(linkObj);
@@ -232,7 +232,7 @@ export function buildPersonExternalLinks(item, t) {
         return domain.charAt(0).toUpperCase() + domain.slice(1);
       }
       return hostname;
-    } catch (e) {
+    } catch {
       return site || 'Link';
     }
   };
@@ -563,7 +563,9 @@ export function buildPersonExternalLinks(item, t) {
       if (hostname.includes('babepedia.com')) return '/links/babepedia.ico';
       if (hostname.includes('freeones.com')) return '/links/freeones.png';
       if (hostname.includes('data18.com')) return '/links/data18.ico';
-    } catch (e) { }
+    } catch {
+      /* ignore invalid URL */
+    }
     return '/links/website.svg';
   };
 
@@ -624,8 +626,6 @@ export function buildEntityMetaPills({ isPeople, item, t }) {
     ].filter(Boolean);
   }
 
-  const externalIds = item?.external_ids || {};
-  const attrs = externalIds.attributes || {};
 
   return [
     (() => {
@@ -718,17 +718,19 @@ export function buildEntityExtraMetaPills({ isPeople, item, t }) {
   const tattooText = formatListAttribute(attrs.tattoos);
   const piercingText = formatListAttribute(attrs.piercings);
 
+  const COLON_SPACE = ': ';
+
   // For tattoos
   let tattooPillText = null;
   let tattooTooltip = null;
   if (tattooText) {
     if (Array.isArray(attrs.tattoos)) {
-      tattooPillText = `Tattoos: ${attrs.tattoos.length}`;
+      tattooPillText = `${t('library.details.tattoos') || 'Tattoos'}${COLON_SPACE}${attrs.tattoos.length}`;
       tattooTooltip = tattooText;
     } else if (tattooText.length <= 16) {
-      tattooPillText = `Tattoos: ${tattooText}`;
+      tattooPillText = `${t('library.details.tattoos') || 'Tattoos'}${COLON_SPACE}${tattooText}`;
     } else {
-      tattooPillText = 'Tattoos: Yes';
+      tattooPillText = `${t('library.details.tattoos') || 'Tattoos'}${COLON_SPACE}Yes`;
       tattooTooltip = tattooText;
     }
   }
@@ -738,15 +740,17 @@ export function buildEntityExtraMetaPills({ isPeople, item, t }) {
   let piercingTooltip = null;
   if (piercingText) {
     if (Array.isArray(attrs.piercings)) {
-      piercingPillText = `Piercings: ${attrs.piercings.length}`;
+      piercingPillText = `${t('library.details.piercings') || 'Piercings'}${COLON_SPACE}${attrs.piercings.length}`;
       piercingTooltip = piercingText;
     } else if (piercingText.length <= 16) {
-      piercingPillText = `Piercings: ${piercingText}`;
+      piercingPillText = `${t('library.details.piercings') || 'Piercings'}${COLON_SPACE}${piercingText}`;
     } else {
-      piercingPillText = 'Piercings: Yes';
+      piercingPillText = `${t('library.details.piercings') || 'Piercings'}${COLON_SPACE}Yes`;
       piercingTooltip = piercingText;
     }
   }
+
+  const CM_SUFFIX = ' cm';
 
   return [
     attrs.height ? {
@@ -754,7 +758,7 @@ export function buildEntityExtraMetaPills({ isPeople, item, t }) {
       content: (
         <span className="entity-detail-page__meta-pill-content">
           <Ruler size={14} />
-          <span>{attrs.height} cm</span>
+          <span>{attrs.height}{CM_SUFFIX}</span>
         </span>
       ),
     } : null,

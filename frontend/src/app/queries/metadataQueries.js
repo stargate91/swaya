@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useInfiniteQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
 
 export const useSearchMetadataQuery = (query, itemType, year, season, episode, includeAdult, provider, options = {}) => useQuery({
@@ -85,6 +85,20 @@ export const usePersonCreditsQuery = (personId, mediaType, page, pageSize, optio
     queryKey: ['person-credits', personId, mediaType, page, pageSize, excludeKnownFor, source || null],
     queryFn: () => api.people.getCredits(personId, mediaType, { page, pageSize, excludeKnownFor, source }),
     placeholderData: (previousData) => previousData,
+    ...queryOptions,
+  });
+};
+
+export const usePersonCreditsInfiniteQuery = (personId, mediaType, pageSize, options = {}) => {
+  const { excludeKnownFor = false, source, ...queryOptions } = options;
+  return useInfiniteQuery({
+    queryKey: ['person-credits-infinite', personId, mediaType, pageSize, excludeKnownFor, source || null],
+    queryFn: ({ pageParam = 1 }) => api.people.getCredits(personId, mediaType, { page: pageParam, pageSize, excludeKnownFor, source }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const totalPages = Math.ceil((lastPage.total_items || 0) / pageSize);
+      return lastPage.page < totalPages ? lastPage.page + 1 : undefined;
+    },
     ...queryOptions,
   });
 };

@@ -238,11 +238,13 @@ class PerformerDetailReader:
         )
 
         effective_backdrop = None
+        source_tmdb_id = None
+        source_media_type = None
         if override_dict and override_dict.get("custom_backdrop"):
             effective_backdrop = override_dict.get("custom_backdrop")
         elif tmdb_id:
             from app.domains.people.helpers import resolve_person_known_for_backdrop
-            effective_backdrop = resolve_person_known_for_backdrop(
+            effective_backdrop, source_tmdb_id, source_media_type = resolve_person_known_for_backdrop(
                 db,
                 self.tmdb,
                 known_for,
@@ -317,6 +319,8 @@ class PerformerDetailReader:
             "is_adult": person.is_adult,
             "profile_path": self._resolve_img((override_dict.get("custom_poster") if override_dict and override_dict.get("custom_poster") else person.profile_path), "people"),
             "backdrop_path": self._resolve_img(effective_backdrop, "backdrops", size="original"),
+            "backdrop_source_tmdb_id": source_tmdb_id,
+            "backdrop_source_media_type": source_media_type,
             "is_active": person.is_active,
             "is_favorite": override_dict.get("is_favorite") if override_dict else False,
             "user_rating": override_dict.get("user_rating") if override_dict else None,

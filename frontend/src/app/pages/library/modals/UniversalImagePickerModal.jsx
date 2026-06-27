@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import TMDBImageGrid from '../components/entityDetail/TMDBImageGrid';
 import Dropdown from '@/ui/Dropdown';
 import {
@@ -16,6 +16,8 @@ import {
 import ImageUploadPanel from './ImageUploadPanel';
 import { resolveMediaImageUrl } from '@/lib/imageUrls';
 import './UniversalImagePickerModal.css';
+
+const COLON_CHAR = ':';
 
 export default function UniversalImagePickerModal({
   entityId,
@@ -62,14 +64,17 @@ export default function UniversalImagePickerModal({
     });
   }
 
+  const [prevCurrentPath, setPrevCurrentPath] = useState(currentPath);
   const [selectedPath, setSelectedPath] = useState(currentPath);
+
+  if (prevCurrentPath !== currentPath) {
+    setPrevCurrentPath(currentPath);
+    setSelectedPath(currentPath);
+  }
+
   const [imageSource, setImageSource] = useState(() => {
     return sources.length > 0 ? sources[0].value : 'tmdb';
   });
-
-  useEffect(() => {
-    setSelectedPath(currentPath);
-  }, [currentPath]);
 
   const handleSelectTmdbImage = async (path) => {
     setSelectedPath(path);
@@ -197,11 +202,18 @@ export default function UniversalImagePickerModal({
                 seenLogos.add(item.networks[0].logo_path);
               }
 
-              return logoOptions.map((opt, idx) => (
+               return logoOptions.map((opt, idx) => (
                 <div 
                   key={idx}
                   className={`scene-image-picker-card ${selectedPath === opt.path ? 'active' : ''}`}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelectTmdbImage(opt.path)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      handleSelectTmdbImage(opt.path);
+                    }
+                  }}
                 >
                   <div className="scene-image-picker-img-wrapper">
                     <img src={resolveMediaImageUrl(opt.path, 'logo')} alt={opt.alt} />
@@ -216,7 +228,7 @@ export default function UniversalImagePickerModal({
 
       {sources.length > 1 && (
         <div className="universal-image-picker__source-filter">
-          <span className="universal-image-picker__source-label">{t('library.details.imageSource') || 'Image Source'}:</span>
+          <span className="universal-image-picker__source-label">{t('library.details.imageSource') || 'Image Source'}{COLON_CHAR}</span>
           <div className="universal-image-picker__source-dropdown-wrapper">
             <Dropdown
               value={imageSource}

@@ -4,6 +4,10 @@ import { useMediaDetailContext } from '../MediaDetailContext';
 import Pill from '@/ui/Pill';
 import './PeaksPanel.css';
 
+const LPAR = '(';
+const RPAR = ')';
+const DASH_CHAR = '—';
+
 export default function PeaksPanel() {
   const { state, mutations, t } = useMediaDetailContext();
   const { item } = state;
@@ -29,7 +33,7 @@ export default function PeaksPanel() {
     <div className="peaks-panel">
       <div className="peaks-panel__header-row">
         <h4 className="peaks-panel__title">
-          {t('library.details.peaksTitle') || 'Peak Moments'} ({peaks.length})
+          {t('library.details.peaksTitle') || 'Peak Moments'} {LPAR}{peaks.length}{RPAR}
         </h4>
       </div>
 
@@ -54,7 +58,7 @@ export default function PeaksPanel() {
                         {formatTime(log.video_position)}
                       </Pill>
                     ) : (
-                      <span className="peaks-table__empty-cell">—</span>
+                      <span className="peaks-table__empty-cell">{DASH_CHAR}</span>
                     )}
                   </div>
                   <div className="peaks-table__cell peaks-table__cell--actions">

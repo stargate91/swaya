@@ -1,5 +1,5 @@
 import Stack from '@/ui/Stack';
-import { useSettingsField, useSettingsViewContext, useSettingsFormContext } from '../SettingsFormContext.jsx';
+import { useSettingsField, useSettingsViewContext } from '../SettingsFormContext.jsx';
 import SettingsSectionRenderer from './SettingsSectionRenderer.jsx';
 import {
   createAdultGeneralSection,
@@ -8,9 +8,8 @@ import {
   createAdultTheporndbSection,
 } from '../settingsSectionConfigs.jsx';
 
-export default function AdultTab({ form, setForm }) {
+export default function AdultTab() {
   const { adultGenderPreferenceOptions, t } = useSettingsViewContext();
-  const { renderContext } = useSettingsFormContext();
   const includeAdultField = useSettingsField('include_adult');
   const context = { include_adult: includeAdultField.checked };
 

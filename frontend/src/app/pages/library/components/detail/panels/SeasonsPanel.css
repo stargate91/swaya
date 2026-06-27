@@ -499,7 +499,8 @@
 }
 
 .episode-card__peaks-title svg {
-  color: #ef4444;
+  --peaks-svg-color: #ef4444;
+  color: var(--peaks-svg-color);
 }
 
 .episode-card__peaks-items {
@@ -527,7 +528,8 @@
   font-weight: 600;
   color: var(--color-text-primary);
   background: var(--color-surface-glass);
-  padding: 2px 6px;
+  --peak-padding: 2px 6px;
+  padding: var(--peak-padding);
   border-radius: 4px;
 }
 
@@ -545,8 +547,10 @@
 }
 
 .episode-card__peak-delete:hover {
-  color: #ef4444;
-  background: color-mix(in srgb, #ef4444 10%, transparent);
+  --peaks-del-color: #ef4444;
+  color: var(--peaks-del-color);
+  --peaks-del-bg: color-mix(in srgb, #ef4444 10%, transparent);
+  background: var(--peaks-del-bg);
 }
 
 .episode-card__action-btn--peak {
@@ -554,6 +558,15 @@
 }
 
 .episode-card__action-btn--peak:hover {
-  color: #ef4444;
-  background: color-mix(in srgb, #ef4444 12%, transparent);
+  --peaks-act-color: #ef4444;
+  color: var(--peaks-act-color);
+  --peaks-act-bg: color-mix(in srgb, #ef4444 12%, transparent);
+  background: var(--peaks-act-bg);
 }
+
+.episode-card__shared-pill {
+  opacity: 0.8;
+  font-size: 0.65rem;
+  padding: 0.05rem 0.35rem;
+}
+

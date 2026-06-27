@@ -66,16 +66,16 @@
     "advancedLanguage": {
       "title": "Language for Names and Info",
       "eyebrow": "Advanced",
-      "metadataFollowsUi": "Use the app language for titles and descriptions",
-      "metadataFollowsUiHint": "SWAYA will try to fetch movie and episode info in the same language as the app.",
-      "metadataLanguage": "Preferred language for titles and descriptions",
-      "metadataLanguageHint": "Pick the language SWAYA should try first when it looks up movie or episode info.",
-      "fallbackMetadataLanguage": "Backup language for titles and descriptions",
-      "fallbackMetadataLanguageHint": "Use this if the first language isn't available.",
+      "metadataFollowsUi": "Match titles and info with the app language",
+      "metadataFollowsUiHint": "We'll try to look up movie and episode details in the same language as the app.",
+      "metadataLanguage": "Preferred language for titles and info",
+      "metadataLanguageHint": "Pick the language we should check first when looking up details.",
+      "fallbackMetadataLanguage": "Backup language for titles and info",
+      "fallbackMetadataLanguageHint": "We'll use this if the first language details aren't found.",
       "targetFollowsUi": "Use the app language for renamed files and folders",
-      "targetFollowsUiHint": "SWAYA will use the same language as the app when it renames files and folders.",
+      "targetFollowsUiHint": "We'll rename your files and folders using the app's language.",
       "targetLanguage": "Language for renamed files and folders",
-      "targetLanguageHint": "Pick the language you want to see in the final file and folder names."
+      "targetLanguageHint": "Choose the language you'd like to use for renamed files and folders."
     },
     "theme": {
       "title": "Theme",
@@ -136,25 +136,25 @@
       "title": "StashDB Integration",
       "eyebrow": "Adult Metadata",
       "apiKey": "StashDB API Key",
-      "apiKeyHint": "Enter your StashDB (stashdb.org) API key for fetching adult performer metadata.",
-      "endpoint": "StashDB GraphQL Endpoint",
-      "endpointHint": "The GraphQL API URL for StashDB."
+      "apiKeyHint": "Enter your StashDB (stashdb.org) API key to get adult performer details.",
+      "endpoint": "StashDB API Link",
+      "endpointHint": "The address where SWAYA connects to StashDB."
     },
     "fansdb": {
       "title": "FansDB Integration",
       "eyebrow": "Adult Metadata",
       "apiKey": "FansDB API Key",
-      "apiKeyHint": "Enter your FansDB (fansdb.cc) API key for indie performers and OnlyFans metadata.",
-      "endpoint": "FansDB GraphQL Endpoint",
-      "endpointHint": "The GraphQL API URL for FansDB."
+      "apiKeyHint": "Enter your FansDB (fansdb.cc) API key to get indie performer and OnlyFans details.",
+      "endpoint": "FansDB API Link",
+      "endpointHint": "The address where SWAYA connects to FansDB."
     },
     "theporndb": {
       "title": "ThePornDB Integration",
       "eyebrow": "Adult Metadata",
       "apiKey": "ThePornDB API Key",
-      "apiKeyHint": "Enter your ThePornDB (theporndb.net) API key.",
-      "endpoint": "ThePornDB GraphQL Endpoint",
-      "endpointHint": "The GraphQL API URL for ThePornDB."
+      "apiKeyHint": "Enter your ThePornDB (theporndb.net) API key to get details.",
+      "endpoint": "ThePornDB API Link",
+      "endpointHint": "The address where SWAYA connects to ThePornDB."
     },
     "folders": {
       "title": "Folders",

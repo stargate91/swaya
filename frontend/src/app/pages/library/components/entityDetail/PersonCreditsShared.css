@@ -1,4 +1,3 @@
-
 .entity-detail-page__credits-list {
   display: flex;
   flex-wrap: wrap;
@@ -77,8 +76,8 @@
 .person-credits-tabs {
   display: flex;
   gap: var(--space-md);
-  margin-bottom: var(--space-xl);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  --tabs-border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: var(--tabs-border);
   padding-bottom: var(--space-sm);
   align-items: center;
   position: sticky;
@@ -87,27 +86,76 @@
   transition: padding var(--motion-base), margin var(--motion-base), background var(--motion-base);
 }
 
-/* Layout Alignment with Hero grid */
 .person-credits-section-container {
   display: grid;
   grid-template-columns: minmax(240px, 330px) minmax(0, 1fr);
   gap: var(--space-4xl);
   width: 100%;
-  margin-top: var(--space-3xl, 32px);
+  --container-margin-top: 120px;
+  margin-top: var(--container-margin-top);
+  /* Pushed down at entry point to be completely invisible */
+  --container-pb: 180px;
+  padding-bottom: var(--container-pb);
+  /* Prevent bottom overlapping vertically */
+  --container-pr: 80px;
+  padding-right: var(--container-pr);
+  /* Keep the right side clear so cards never overlap the bottom-right socials on the X-axis */
+  --container-transition: margin-top 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: var(--container-transition);
+  /* Smooth slide transition matching the profile card slide */
 }
 
-.person-credits-tabs,
-.person-credits-section-container .entity-detail-page__credits-list {
+.is-scrolled .person-credits-section-container {
+  --container-scrolled-mt: -24px;
+  margin-top: var(--container-scrolled-mt);
+  /* Pull up to align top Y-axis with the profile card when scrolled */
+  height: calc(100vh - var(--page-top-offset, 4rem) - 120px);
+  overflow: hidden;
+  grid-template-rows: auto 1fr;
+  row-gap: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  box-sizing: border-box;
+}
+
+.is-scrolled .person-credits-discover-panel {
+  margin-bottom: var(--space-3);
+}
+
+.is-scrolled .person-credits-discover-grid-wrapper {
+  overflow-y: auto;
+  min-height: 0;
+  padding-bottom: var(--space-6);
+}
+
+.is-scrolled .person-credits-row--library {
+  height: 100%;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.is-scrolled .person-credits-row--library .person-credits-discover-grid {
+  overflow-y: auto;
+  flex: 1;
+  padding-bottom: var(--space-6);
+}
+
+.person-credits-section-container>* {
   grid-column: 2;
+  /* Force all child panels/grids to the second column to align with the hero details */
 }
 
 .person-credits-section-container.is-scrolled .person-credits-tabs {
   background: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  padding: 12px 24px;
-  margin-left: -24px;
-  margin-right: -24px;
+  padding: var(--space-3) var(--space-6);
+  --scrolled-ml: -24px;
+  margin-left: var(--scrolled-ml);
+  --scrolled-mr: -24px;
+  margin-right: var(--scrolled-mr);
 }
 
 .person-credits-tab-btn {
@@ -130,23 +178,642 @@
 
 .person-credits-tab-btn:hover {
   color: var(--color-text-primary);
-  background: rgba(255, 255, 255, 0.04);
+  --tab-hover-bg: rgba(255, 255, 255, 0.04);
+  background: var(--tab-hover-bg);
 }
 
 .person-credits-tab-btn.active {
   color: var(--color-text-primary);
-  background: rgba(255, 255, 255, 0.08);
+  --tab-active-bg: rgba(255, 255, 255, 0.08);
+  background: var(--tab-active-bg);
   box-shadow: inset 0 -2px 0 var(--color-accent);
 }
 
 .person-credits-tab-count {
   font-size: 0.75rem;
   opacity: 0.8;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 1px 6px;
+  --count-bg: rgba(0, 0, 0, 0.3);
+  background: var(--count-bg);
+  --count-padding: 1px 6px;
+  padding: var(--count-padding);
   border-radius: var(--radius-full);
   font-weight: normal;
 }
 
+/* Filmography Horizontal Scroll Rows */
+.person-credits-row {
+  width: 100%;
+  --row-mb: 18px;
+  margin-bottom: var(--row-mb);
+  /* Tighter margins to fit 4 rows elegantly */
+  display: flex;
+  flex-direction: column;
+}
 
+.person-credits-row--library {
+  --row-library-bg: rgba(255, 255, 255, 0.01);
+  background: var(--row-library-bg);
+  --row-library-padding: 10px 12px;
+  padding: var(--row-library-padding);
+  /* Tighter library row padding */
+  border-radius: 12px;
+  --row-library-border: 1px solid rgba(255, 255, 255, 0.03);
+  border: var(--row-library-border);
+}
 
+.person-credits-row__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+  /* Reduced header margin */
+  --header-pb: 6px;
+  padding-bottom: var(--header-pb);
+  /* Reduced header padding */
+  --header-bb: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: var(--header-bb);
+}
+
+.person-credits-row__title {
+  font-family: var(--font-family-display, inherit);
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.person-credits-row__source-selector {
+  display: flex;
+  --source-gap: 6px;
+  gap: var(--source-gap);
+  --source-selector-bg: rgba(255, 255, 255, 0.03);
+  background: var(--source-selector-bg);
+  --source-selector-padding: 3px;
+  padding: var(--source-selector-padding);
+  border-radius: 8px;
+  --source-selector-border: 1px solid rgba(255, 255, 255, 0.05);
+  border: var(--source-selector-border);
+}
+
+.person-credits-row__source-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: var(--space-1) var(--space-2);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  --btn-gap: 6px;
+  gap: var(--btn-gap);
+  --btn-transition: all 0.2s ease;
+  transition: var(--btn-transition);
+  outline: none;
+}
+
+.person-credits-row__source-btn:hover {
+  color: var(--color-text-primary);
+}
+
+.person-credits-row__source-btn.active {
+  --btn-active-bg: rgba(255, 255, 255, 0.08);
+  background: var(--btn-active-bg);
+  color: var(--color-text-primary);
+  --btn-active-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--btn-active-shadow);
+}
+
+.person-credits-row__badge-count {
+  font-size: 0.6rem;
+  --badge-bg: rgba(255, 255, 255, 0.1);
+  background: var(--badge-bg);
+  --badge-padding: 1px 4px;
+  padding: var(--badge-padding);
+  border-radius: 4px;
+  color: var(--color-text-muted);
+}
+
+.person-credits-row__source-btn.active .person-credits-row__badge-count {
+  background: var(--color-accent-blue);
+  color: var(--color-text-primary);
+}
+
+/* Slider Controls */
+.person-credits-row__slider-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.person-credits-row__scroll-container {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  --container-padding: 4px 4px 6px 4px;
+  padding: var(--container-padding);
+  /* Reduced bottom padding */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE/Edge */
+}
+
+.person-credits-row__scroll-container::-webkit-scrollbar {
+  display: none;
+  /* Chrome/Safari */
+}
+
+.person-credits-row__scroll-btn {
+  position: absolute;
+  top: calc(50% - 24px);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  --scroll-btn-bg: rgba(15, 20, 30, 0.7);
+  background: var(--scroll-btn-bg);
+  --scroll-btn-border: 1px solid rgba(255, 255, 255, 0.1);
+  border: var(--scroll-btn-border);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  opacity: 0;
+  --scroll-btn-transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: var(--scroll-btn-transition);
+  --scroll-btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--scroll-btn-shadow);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.person-credits-row__slider-wrapper:hover .person-credits-row__scroll-btn {
+  opacity: 1;
+}
+
+.person-credits-row__scroll-btn:hover {
+  --scroll-btn-hover-bg: rgba(25, 30, 45, 0.95);
+  background: var(--scroll-btn-hover-bg);
+  --scroll-btn-hover-bc: rgba(255, 255, 255, 0.25);
+  border-color: var(--scroll-btn-hover-bc);
+  transform: scale(1.1);
+}
+
+.person-credits-row__scroll-btn--left {
+  left: -14px;
+}
+
+.person-credits-row__scroll-btn--right {
+  right: -14px;
+}
+
+.person-credits-row__empty {
+  font-size: 0.76rem;
+  color: var(--color-text-muted);
+  padding: var(--space-md) var(--space-sm);
+}
+
+/* Card Aspect Ratios & Styling */
+.person-credits-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  --card-transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: var(--card-transition);
+  cursor: pointer;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
+}
+
+.person-credits-card:hover {
+  transform: translateY(-4px);
+}
+
+.person-credits-card.aspect-2-3 {
+  flex: 0 0 92px;
+  /* Matching the Known For width */
+}
+
+.person-credits-card.aspect-16-9 {
+  flex: 0 0 164px;
+  /* 16:9 landscape aspect ratio card */
+}
+
+.person-credits-card__poster-container {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  --poster-container-bg: rgba(255, 255, 255, 0.02);
+  background: var(--poster-container-bg);
+  --poster-container-border: 1px solid rgba(255, 255, 255, 0.08);
+  border: var(--poster-container-border);
+  --poster-container-transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: var(--poster-container-transition);
+  --poster-container-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--poster-container-shadow);
+}
+
+.person-credits-card.aspect-2-3 .person-credits-card__poster-container {
+  aspect-ratio: 2 / 3;
+}
+
+.person-credits-card.aspect-16-9 .person-credits-card__poster-container {
+  aspect-ratio: 16 / 9;
+}
+
+.person-credits-card:hover .person-credits-card__poster-container {
+  --poster-hover-bc: rgba(255, 255, 255, 0.2);
+  border-color: var(--poster-hover-bc);
+  --poster-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--poster-hover-shadow);
+}
+
+.person-credits-card__poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0.8;
+  filter: grayscale(10%);
+  --poster-transition: opacity 0.25s cubic-bezier(0.25, 1, 0.5, 1), filter 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: var(--poster-transition);
+}
+
+.person-credits-card:hover .person-credits-card__poster {
+  opacity: 1;
+  filter: grayscale(0%);
+}
+
+.person-credits-card__placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  --placeholder-bg: rgba(255, 255, 255, 0.01);
+  background: var(--placeholder-bg);
+}
+
+/* Skeletons */
+.person-credits-card.skeleton-card {
+  pointer-events: none;
+}
+
+.person-credits-card__poster-placeholder.skeleton-shimmer {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  --shimmer-bg: linear-gradient(90deg, rgba(255, 255, 255, 0.02) 25%, rgba(255, 255, 255, 0.06) 50%, rgba(255, 255, 255, 0.02) 75%);
+  background: var(--shimmer-bg);
+  background-size: 200% 100%;
+  --shimmer-animation: loadingShimmer 1.5s infinite;
+  animation: var(--shimmer-animation);
+}
+
+@keyframes loadingShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Badges */
+.person-credits-card__source-badge {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  font-size: 0.52rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  --badge-padding: 1px 4px;
+  padding: var(--badge-padding);
+  border-radius: 3px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  --badge-border: 1px solid rgba(255, 255, 255, 0.06);
+  border: var(--badge-border);
+  opacity: 0;
+  transform: translateY(4px);
+  --badge-transition: all 0.2s ease;
+  transition: var(--badge-transition);
+  z-index: 3;
+}
+
+.person-credits-card:hover .person-credits-card__source-badge {
+  opacity: 0.95;
+  transform: translateY(0);
+}
+
+.person-credits-card__source-badge.source-tmdb {
+  --badge-tmdb-bg: rgba(0, 180, 220, 0.8);
+  background: var(--badge-tmdb-bg);
+  color: var(--color-text-primary);
+}
+
+.person-credits-card__source-badge.source-porndb,
+.person-credits-card__source-badge.source-theporndb {
+  --badge-porndb-bg: rgba(255, 0, 85, 0.8);
+  background: var(--badge-porndb-bg);
+  color: var(--color-text-primary);
+}
+
+.person-credits-card__source-badge.source-stashdb {
+  --badge-stash-bg: rgba(10, 12, 16, 0.85);
+  background: var(--badge-stash-bg);
+  color: var(--color-text-primary);
+}
+
+.person-credits-card__source-badge.source-fansdb {
+  --badge-fansdb-bg: rgba(0, 175, 240, 0.8);
+  background: var(--badge-fansdb-bg);
+  color: var(--color-text-primary);
+}
+
+.person-credits-card__library-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  --badge-lib-bg: rgba(10, 150, 80, 0.75);
+  background: var(--badge-lib-bg);
+  --badge-lib-border: 1px solid rgba(255, 255, 255, 0.15);
+  border: var(--badge-lib-border);
+  --badge-lib-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--badge-lib-shadow);
+  color: var(--color-text-primary);
+}
+
+/* Card details underneath the poster */
+.person-credits-card__title {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-top: var(--space-2);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.person-credits-card__role {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+  --role-mt: 2px;
+  margin-top: var(--role-mt);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* Discover Selector Panel */
+.person-credits-discover-panel {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  --discover-panel-bg: rgba(255, 255, 255, 0.01);
+  background: var(--discover-panel-bg);
+  --discover-panel-border: 1px solid rgba(255, 255, 255, 0.03);
+  border: var(--discover-panel-border);
+  --discover-panel-padding: 10px 12px;
+  padding: var(--discover-panel-padding);
+  border-radius: 12px;
+  margin-bottom: var(--space-6);
+}
+
+.person-credits-discover-label {
+  font-family: var(--font-family-display, inherit);
+  font-size: 0.8rem;
+  /* Slightly larger and more prominent */
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  /* More visible header color */
+  font-weight: 800;
+  --discover-label-border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: var(--discover-label-border);
+  --discover-label-pb: 10px;
+  padding-bottom: var(--discover-label-pb);
+  line-height: 1.2;
+}
+
+.person-credits-discover-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+.person-credits-discover-group {
+  display: flex;
+  flex-direction: column;
+  --group-gap: 6px;
+  gap: var(--group-gap);
+}
+
+.person-credits-discover-group-title {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+.person-credits-discover-buttons {
+  display: flex;
+  --discover-btn-gap: 6px;
+  gap: var(--discover-btn-gap);
+  --discover-buttons-bg: rgba(0, 0, 0, 0.2);
+  background: var(--discover-buttons-bg);
+  --discover-buttons-padding: 3px;
+  padding: var(--discover-buttons-padding);
+  border-radius: 8px;
+  --discover-buttons-border: 1px solid rgba(255, 255, 255, 0.03);
+  border: var(--discover-buttons-border);
+}
+
+.discover-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  --discover-btn-padding: 5px 12px;
+  padding: var(--discover-btn-padding);
+  border-radius: 6px;
+  cursor: pointer;
+  --discover-btn-transition: all 0.2s ease;
+  transition: var(--discover-btn-transition);
+  outline: none;
+}
+
+.discover-btn:hover {
+  color: var(--color-text-primary);
+}
+
+.discover-btn.active {
+  --discover-btn-active-bg: rgba(255, 255, 255, 0.08);
+  background: var(--discover-btn-active-bg);
+  color: var(--color-text-primary);
+  --discover-btn-active-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--discover-btn-active-shadow);
+}
+
+/* Discover Infinite Grid Layouts */
+.person-credits-discover-grid-wrapper {
+  grid-column: 2;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.person-credits-discover-grid {
+  display: grid;
+  gap: var(--space-4) var(--space-3);
+  width: 100%;
+}
+
+/* Movies & TV Show posters (2:3) - larger card sizes */
+.person-credits-discover-grid.grid-2-3 {
+  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+}
+
+.person-credits-discover-grid.grid-2-3 .person-credits-card__poster-container {
+  aspect-ratio: 2 / 3;
+}
+
+/* Scenes landscape preview (16:9) - larger card sizes */
+.person-credits-discover-grid.grid-16-9 {
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+}
+
+.person-credits-discover-grid.grid-16-9 .person-credits-card__poster-container {
+  aspect-ratio: 16 / 9;
+}
+
+.person-credits-grid__finished {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: var(--space-6) 0;
+  --finished-border-top: 1px solid rgba(255, 255, 255, 0.03);
+  border-top: var(--finished-border-top);
+}
+
+.person-credits-row__mode-switch-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  --switch-btn-bg: rgba(255, 255, 255, 0.04);
+  background: var(--switch-btn-bg);
+  --switch-btn-border: 1px solid rgba(255, 255, 255, 0.08);
+  border: var(--switch-btn-border);
+  color: var(--color-accent-blue);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: var(--space-1) var(--space-2);
+  border-radius: 20px;
+  cursor: pointer;
+  --switch-btn-transition: all 0.2s ease;
+  transition: var(--switch-btn-transition);
+  margin-left: auto;
+  /* push to the right side of the header */
+  outline: none;
+}
+
+.person-credits-row__mode-switch-btn:hover {
+  --switch-btn-hover-bg: rgba(255, 255, 255, 0.08);
+  background: var(--switch-btn-hover-bg);
+  --switch-btn-hover-bc: rgba(255, 255, 255, 0.15);
+  border-color: var(--switch-btn-hover-bc);
+  transform: translateY(-1px);
+  color: var(--color-text-primary);
+}
+
+.person-credits-card__studio {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.person-credits-card__meta-container {
+  margin-top: 0.05rem;
+}
+
+.person-credits-card__res-pill {
+  font-size: 0.7rem;
+  padding: 0.05rem 0.25rem;
+}
+
+.person-credits-discover-header-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.person-credits-row-title-style {
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+}
+
+.person-credits-discover-groups-style {
+  --layout-mt: 14px;
+  margin-top: var(--layout-mt);
+  --layout-pt: 14px;
+  padding-top: var(--layout-pt);
+  --layout-bt: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: var(--layout-bt);
+  margin-bottom: var(--space-3);
+}
+
+.person-credits-discover-groups-discover-style {
+  --layout-mt2: 14px;
+  margin-top: var(--layout-mt2);
+  --layout-pt2: 14px;
+  padding-top: var(--layout-pt2);
+  --layout-bt2: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: var(--layout-bt2);
+}
+
+.person-credits-tab-count-style {
+  --tab-cnt-ml: 6px;
+  margin-left: var(--tab-cnt-ml);
+}
+
+.person-credits-card__poster-container.skeleton-shimmer {
+  width: 100%;
+  height: 100%;
+}
+
+.person-credits-grid__sentinel {
+  height: 20px;
+  width: 100%;
+}

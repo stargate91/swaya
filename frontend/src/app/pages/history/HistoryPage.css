@@ -299,7 +299,8 @@
 .history-card__file-error {
   color: var(--color-state-danger);
   font-size: 11px;
-  margin-top: 2px;
+  --error-margin-top: 2px;
+  margin-top: var(--error-margin-top);
 }
 
 /* Reversion Modal Styles */
@@ -411,8 +412,9 @@
   border-radius: 8px;
   overflow: hidden;
   background: var(--ui-surface-soft);
-  box-shadow: inset 0 0 0 1px var(--color-border-subtle),
-              0 4px 8px rgba(0, 0, 0, 0.2);
+  --poster-shadow: inset 0 0 0 1px var(--color-border-subtle),
+                  0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--poster-shadow);
   flex-shrink: 0;
   margin-right: var(--space-4);
   position: relative;
@@ -492,7 +494,8 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2xs);
-  padding: 2px var(--space-sm);
+  --status-padding: 2px var(--space-sm);
+  padding: var(--status-padding);
   border-radius: 4px;
   font-size: 11px;
   font-weight: var(--font-weight-semibold);
@@ -502,6 +505,51 @@
   background: color-mix(in srgb, var(--color-state-success) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--color-state-success) 20%, transparent);
   color: var(--color-state-success);
+}
+
+.watched-history-card.is-active {
+  border-color: color-mix(in srgb, var(--color-accent-blue) 40%, var(--color-border-subtle));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-accent-blue) 15%, transparent),
+              0 4px 12px color-mix(in srgb, black 25%, transparent);
+}
+
+.watched-history-card__status--active {
+  background: color-mix(in srgb, var(--color-accent-blue) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-blue) 30%, transparent);
+  --active-color: var(--color-accent-blue-pale, #5ac8fa);
+  color: var(--active-color);
+}
+
+.watched-history-card__status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent-blue);
+  display: inline-block;
+  margin-right: var(--space-1);
+}
+
+.watched-history-card__status-dot--pulsing {
+  --dot-pulse-animation: livePulse 1.5s infinite;
+  animation: var(--dot-pulse-animation);
+}
+
+@keyframes livePulse {
+  0% {
+    transform: scale(0.9);
+    --pulse-shadow-0: 0 0 0 0 rgba(0, 122, 255, 0.7);
+    box-shadow: var(--pulse-shadow-0);
+  }
+  70% {
+    transform: scale(1.1);
+    --pulse-shadow-70: 0 0 0 5px rgba(0, 122, 255, 0);
+    box-shadow: var(--pulse-shadow-70);
+  }
+  100% {
+    transform: scale(0.9);
+    --pulse-shadow-100: 0 0 0 0 rgba(0, 122, 255, 0);
+    box-shadow: var(--pulse-shadow-100);
+  }
 }
 
 .watched-history-card__progress-info {
@@ -526,13 +574,33 @@
   background: var(--color-border-subtle);
   border-radius: var(--radius-full);
   overflow: hidden;
-  margin-top: 2px;
+  --bar-margin-top: 2px;
+  margin-top: var(--bar-margin-top);
 }
 
 .watched-history-card__progress-bar {
   height: 100%;
   background: linear-gradient(90deg, var(--color-accent-blue), var(--color-accent-blue-pale));
   border-radius: var(--radius-full);
+}
+
+.watched-history-card__progress-bar--active {
+  --bar-active-bg: linear-gradient(90deg, var(--color-accent-blue), #5ac8fa, var(--color-accent-blue));
+  background: var(--bar-active-bg);
+  background-size: 200% 100%;
+  --bar-active-animation: progressBarGlow 2s linear infinite;
+  animation: var(--bar-active-animation);
+  --bar-active-shadow: 0 0 8px rgba(90, 200, 250, 0.6);
+  box-shadow: var(--bar-active-shadow);
+}
+
+@keyframes progressBarGlow {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
 }
 
 .watched-history-card__right {
@@ -569,3 +637,31 @@
     width: 100%;
   }
 }
+
+.history-sentinel,
+.watched-sentinel {
+  height: 40px;
+  margin: var(--space-4) 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.watched-history-card__status--active .watched-history-card__percent {
+  color: inherit;
+}
+
+.watched-history-card__status--active .watched-history-card__time {
+  color: inherit;
+  opacity: 0.8;
+}
+
+.history-card__toggle-btn {
+  margin-right: var(--space-2);
+}
+
+.history-card__toggle-btn span {
+  margin-left: var(--space-1);
+}
+
+

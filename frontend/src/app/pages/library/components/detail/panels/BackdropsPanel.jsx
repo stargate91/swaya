@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useMediaDetailContext } from '../MediaDetailContext';
 import TMDBImageGrid from '../../entityDetail/TMDBImageGrid';
 import ImageUploadPanel from '../../../modals/ImageUploadPanel';
@@ -17,13 +17,13 @@ export default function BackdropsPanel({ showTitle = true }) {
   } = mutations;
 
   const uploadBackdropMutation = useUploadBackdropMutation();
+  const [prevBackdropPath, setPrevBackdropPath] = useState(item?.backdrop_path || '');
   const [selectedBackdropPath, setSelectedBackdropPath] = useState(item?.backdrop_path || '');
 
-  useEffect(() => {
-    if (item?.backdrop_path) {
-      setSelectedBackdropPath(item.backdrop_path);
-    }
-  }, [item?.backdrop_path]);
+  if (item?.backdrop_path && item.backdrop_path !== prevBackdropPath) {
+    setPrevBackdropPath(item.backdrop_path);
+    setSelectedBackdropPath(item.backdrop_path);
+  }
 
   const handleUploadBackdrop = async (file) => {
     if (!file || uploadBackdropMutation.isPending) return;
@@ -74,7 +74,14 @@ export default function BackdropsPanel({ showTitle = true }) {
           <div className="scene-image-picker-grid">
             <div 
               className={`scene-image-picker-card ${selectedBackdropPath === item.original_backdrop_path ? 'active' : ''}`}
+              role="button"
+              tabIndex={0}
               onClick={() => handleSelectBackdrop(item.original_backdrop_path)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  handleSelectBackdrop(item.original_backdrop_path);
+                }
+              }}
             >
               <div className="scene-image-picker-img-wrapper backdrop-variant">
                 <img src={resolveMediaImageUrl(item.original_backdrop_path, 'backdrop')} alt="Original Scene Backdrop" />

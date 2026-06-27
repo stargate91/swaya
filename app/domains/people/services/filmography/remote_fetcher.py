@@ -246,6 +246,7 @@ class RemoteCreditsFetcher:
                             "year": year,
                             "studio": studio_name,
                             "poster_path": poster_url,
+                            "backdrop_path": poster_url,
                             "in_library": False,
                             "stash_id": sid,
                             "source": source.lower(),
@@ -336,6 +337,7 @@ class RemoteCreditsFetcher:
                                     pass
                             studio_name = x.get("site", {}).get("name") if x.get("site") else None
                             poster_url = x.get("poster")
+                            backdrop_url = x.get("image") or x.get("background") or poster_url
                             rating = x.get("rating")
                             
                             mapped_items.append({
@@ -346,6 +348,7 @@ class RemoteCreditsFetcher:
                                 "year": year,
                                 "studio": studio_name,
                                 "poster_path": poster_url,
+                                "backdrop_path": backdrop_url,
                                 "rating": 0.0,
                                 "rating_porndb": rating,
                                 "in_library": False,

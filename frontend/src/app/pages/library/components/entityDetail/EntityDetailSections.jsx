@@ -14,7 +14,7 @@ import { resolveDetailsImageUrl } from '../../utils/detailUtils';
 import { normalizeBackdropKey } from '../../peopleCollectionDetailUtils.jsx';
 import './PersonCreditsShared.css';
 
-export function OverviewContent({ text, title, emptyText, t, openDrawer, className = '' }) {
+export function OverviewContent({ text, emptyText, t, openDrawer, className = '' }) {
   const overviewRef = useRef(null);
   const [isTruncated, setIsTruncated] = useState(false);
 

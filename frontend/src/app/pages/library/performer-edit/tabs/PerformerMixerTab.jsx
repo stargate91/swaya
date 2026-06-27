@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslation } from '@/providers/LanguageContext';
 import { useUi } from '@/providers/UiProvider';
 import { useSetPersonFieldRoutingMutation } from '@/queries/libraryQueries';
 import { usePersonDetailQuery } from '@/queries/metadataQueries';
 import { Check } from 'lucide-react';
 
-export default function PerformerMixerTab({ person: initialPerson, onBack }) {
+export default function PerformerMixerTab({ person: initialPerson }) {
   const { t } = useTranslation();
   const { toast } = useUi();
   const routingMutation = useSetPersonFieldRoutingMutation();
@@ -13,15 +13,13 @@ export default function PerformerMixerTab({ person: initialPerson, onBack }) {
   const { data: fetchedPerson } = usePersonDetailQuery(initialPerson?.id);
   const person = fetchedPerson || initialPerson;
 
-  const [localRouting, setLocalRouting] = useState(null);
+  const [prevFieldRouting, setPrevFieldRouting] = useState(person?.field_routing);
+  const [localRouting, setLocalRouting] = useState(person?.field_routing || {});
 
-  useEffect(() => {
-    if (person?.field_routing) {
-      setLocalRouting(person.field_routing);
-    } else {
-      setLocalRouting({});
-    }
-  }, [person?.field_routing]);
+  if (prevFieldRouting !== person?.field_routing) {
+    setPrevFieldRouting(person?.field_routing);
+    setLocalRouting(person?.field_routing || {});
+  }
 
   const currentRouting = localRouting || {};
 
@@ -140,8 +138,8 @@ export default function PerformerMixerTab({ person: initialPerson, onBack }) {
         <table className="data-mixer-table">
           <thead>
             <tr>
-              <th className="mixer-th-field">Field</th>
-              <th className="mixer-th-source">Auto (Default)</th>
+              <th className="mixer-th-field">{t('library.performerEdit.field') || 'Field'}</th>
+              <th className="mixer-th-source">{t('library.performerEdit.autoDefault') || 'Auto (Default)'}</th>
               {PROVIDERS.map(p => (
                 <th key={p.key} className={`mixer-th-source ${!isSourceLinked(p.key) ? 'mixer-th-disabled' : ''}`}>
                   {p.label}
@@ -164,7 +162,7 @@ export default function PerformerMixerTab({ person: initialPerson, onBack }) {
                     className={`mixer-td-cell mixer-td-cell--auto ${activeRoute === 'auto' ? 'mixer-td-cell--active' : ''}`}
                   >
                     <div className="mixer-cell-content">
-                      <span className="mixer-cell-value">Default Priority</span>
+                      <span className="mixer-cell-value">{t('library.performerEdit.defaultPriority') || 'Default Priority'}</span>
                       {activeRoute === 'auto' && <Check size={14} className="mixer-check-icon" />}
                     </div>
                   </td>

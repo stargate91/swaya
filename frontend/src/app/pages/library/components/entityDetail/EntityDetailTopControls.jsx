@@ -11,8 +11,6 @@ export default function EntityDetailTopControls({
   updatePersonStatusMutation,
   handleOpenPeopleBackdropModal,
   handleOpenCollectionBackdropModal,
-  extraLinks,
-  socialLinks = [],
 }) {
   const navigate = useNavigate();
 

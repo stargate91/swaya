@@ -14,6 +14,14 @@ import { API_BASE } from '@/lib/backend';
 import HistoryCard from './components/HistoryCard';
 import './HistoryPage.css';
 
+const LPAR = '(';
+const RPAR = ')';
+const PERCENT = '%';
+const DASH = ' - ';
+const SLASH = ' / ';
+const S_CHAR = 'S';
+const E_CHAR = 'E';
+
 const getPosterUrl = (path) => {
   if (!path) return '';
   if (path.startsWith('http')) return path;
@@ -37,11 +45,7 @@ export default function HistoryPage() {
   const { t } = useTranslation();
   const { openModal, closeModal, toast } = useUi();
   const [activeTab, setActiveTab] = useState('rename');
-  const [utilityBarTarget, setUtilityBarTarget] = useState(null);
-
-  useEffect(() => {
-    setUtilityBarTarget(document.getElementById('shell-utility-bar-center'));
-  }, []);
+  const utilityBarTarget = typeof document !== 'undefined' ? document.getElementById('shell-utility-bar-center') : null;
 
   // Rename History
   const {
@@ -202,7 +206,7 @@ export default function HistoryPage() {
           />
         ))}
         {hasNextHistoryPage && (
-          <div id="history-sentinel" style={{ height: '40px', margin: '15px 0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div id="history-sentinel" className="history-sentinel">
             {isFetchingNextHistoryPage && <Spinner size={20} />}
           </div>
         )}
@@ -242,8 +246,10 @@ export default function HistoryPage() {
           return (
             <div
               key={log.id}
-              className="watched-history-card"
-              style={{ '--item-index': index }}
+              className={`watched-history-card ${log.is_active ? 'is-active' : ''}`}
+              ref={(el) => {
+                if (el) el.style.setProperty('--item-index', index);
+              }}
             >
               <div className="watched-history-card__poster-wrapper">
                 {posterUrl ? (
@@ -260,14 +266,14 @@ export default function HistoryPage() {
                   {isMovie ? (
                     <div className="watched-history-card__title-group">
                       <h3 className="watched-history-card__title">{log.title}</h3>
-                      {log.year && <span className="watched-history-card__year">({log.year})</span>}
+                      {log.year && <span className="watched-history-card__year">{LPAR}{log.year}{RPAR}</span>}
                     </div>
                   ) : (
                     <div className="watched-history-card__title-group">
                       <h3 className="watched-history-card__title">{log.tv_title}</h3>
-                      {log.year && <span className="watched-history-card__year">({log.year})</span>}
+                      {log.year && <span className="watched-history-card__year">{LPAR}{log.year}{RPAR}</span>}
                       <span className="watched-history-card__episode-info">
-                        S{String(log.season_number).padStart(2, '0')}E{String(log.episode_number).padStart(2, '0')} - {log.episode_title || log.title}
+                        {S_CHAR}{String(log.season_number).padStart(2, '0')}{E_CHAR}{String(log.episode_number).padStart(2, '0')}{DASH}{log.episode_title || log.title}
                       </span>
                     </div>
                   )}
@@ -279,7 +285,15 @@ export default function HistoryPage() {
                     <span>{new Date(log.watched_at).toLocaleString()}</span>
                   </div>
 
-                  {log.is_watched ? (
+                  {log.is_active ? (
+                    <div className="watched-history-card__status watched-history-card__status--active">
+                      <span className="watched-history-card__status-dot watched-history-card__status-dot--pulsing" />
+                      <span className="watched-history-card__percent">{percent}{PERCENT}</span>
+                      <span className="watched-history-card__time">
+                        {LPAR}{formatTime(log.resume_position)}{SLASH}{formatTime(log.duration)}{RPAR}
+                      </span>
+                    </div>
+                  ) : log.is_watched ? (
                     <div className="watched-history-card__status watched-history-card__status--watched">
                       <CheckCircle2 size={12} />
                       <span>{t('historyPage.watchedStatus') || 'Watched'}</span>
@@ -287,20 +301,22 @@ export default function HistoryPage() {
                   ) : (
                     percent > 0 && (
                       <div className="watched-history-card__progress-info">
-                        <span className="watched-history-card__percent">{percent}%</span>
+                        <span className="watched-history-card__percent">{percent}{PERCENT}</span>
                         <span className="watched-history-card__time">
-                          ({formatTime(log.resume_position)} / {formatTime(log.duration)})
+                          {LPAR}{formatTime(log.resume_position)}{SLASH}{formatTime(log.duration)}{RPAR}
                         </span>
                       </div>
                     )
                   )}
                 </div>
 
-                {!log.is_watched && percent > 0 && (
+                {(log.is_active || (!log.is_watched && percent > 0)) && (
                   <div className="watched-history-card__progress-bar-wrapper">
                     <div
-                      className="watched-history-card__progress-bar"
-                      style={{ width: `${percent}%` }}
+                      className={`watched-history-card__progress-bar ${log.is_active ? 'watched-history-bar--active' : ''}`}
+                      ref={(el) => {
+                        if (el) el.style.width = `${Math.max(percent, log.is_active ? 2 : 0)}%`;
+                      }}
                     />
                   </div>
                 )}
@@ -332,7 +348,7 @@ export default function HistoryPage() {
           );
         })}
         {hasNextWatchedPage && (
-          <div id="watched-sentinel" style={{ height: '40px', margin: '15px 0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div id="watched-sentinel" className="watched-sentinel">
             {isFetchingNextWatchedPage && <Spinner size={20} />}
           </div>
         )}

@@ -15,6 +15,7 @@ import { useFullMetadataQuery } from '../../queries';
 import '../../styles/OrganizerDetailsPanel.css';
 
 const resolveOrganizerImageUrl = (path) => resolveMediaImageUrl(path, 'poster', API_BASE);
+const SLASH_CHAR = ' / ';
 
 export default function OrganizerDetailsPanel({
   activeImage,
@@ -172,7 +173,7 @@ export default function OrganizerDetailsPanel({
         <ChevronRight size={18} />
       </button>
       <div className="organizer-details__image-count" aria-hidden="true">
-        {activeImageIndex + 1} / {activeImages.length}
+        {activeImageIndex + 1}{SLASH_CHAR}{activeImages.length}
       </div>
     </>
   ) : null;

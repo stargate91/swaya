@@ -529,10 +529,7 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
 
   const studioName = item?.companies?.[0]?.name || '';
   const networkName = item?.networks?.[0]?.name || '';
-  const studioLogo = item?.companies?.[0]?.logo_path || '';
-  const networkLogo = item?.networks?.[0]?.logo_path || '';
-  const hasStudioLogo = !!studioLogo;
-  const hasNetworkLogo = !!networkLogo;
+
 
   let showStudioPill = false;
   let showNetworkPill = false;

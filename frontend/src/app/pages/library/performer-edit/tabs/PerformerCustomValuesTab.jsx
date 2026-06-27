@@ -3,7 +3,6 @@ import { useSavePersonCustomFieldsMutation } from '@/queries/libraryQueries';
 import { usePersonDetailQuery } from '@/queries/metadataQueries';
 import { useTranslation } from '@/providers/LanguageContext';
 import { useUi } from '@/providers/UiProvider';
-import Button from '@/ui/Button';
 import Input from '@/ui/Input';
 import Dropdown from '@/ui/Dropdown';
 import FloatingActionBar from '@/ui/FloatingActionBar';
@@ -19,9 +18,9 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
   const manualData = manualLink?.source_data || {};
 
   const genderOptions = [
-    { value: '1', label: 'Female' },
-    { value: '2', label: 'Male' },
-    { value: '0', label: 'Other' },
+    { value: '1', label: t('library.performerEdit.female') || 'Female' },
+    { value: '2', label: t('library.performerEdit.male') || 'Male' },
+    { value: '0', label: t('library.performerEdit.other') || 'Other' },
   ];
 
   const sameSexOnlyOptions = [
@@ -81,55 +80,61 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
 
   const [selectedBioLang, setSelectedBioLang] = useState('en');
 
-  const [form, setForm] = useState({
-    biographies: {},
-    birthday: '',
-    place_of_birth: '',
-    gender: '',
-    height: '',
-    weight: '',
-    hair_color: '',
-    eye_color: '',
-    ethnicity: '',
-    measurements: '',
-    cup_size: '',
-    band_size: '',
-    waist: '',
-    hip: '',
-    tattoos: '',
-    piercings: '',
-    breast_type: '',
-    same_sex_only: '',
+  const [prevManualLink, setPrevManualLink] = useState(manualLink);
+  const [initialForm, setInitialForm] = useState(() => {
+    const initialized = {
+      name: manualData.name || '',
+      alternate_names: manualData.alternate_names || [],
+      biographies: manualData.biographies || (manualData.biography ? { en: manualData.biography } : {}),
+      birthday: manualData.birthday || '',
+      place_of_birth: manualData.place_of_birth || '',
+      gender: manualData.gender !== undefined ? String(manualData.gender) : '',
+      height: manualData.height !== undefined ? String(manualData.height) : '',
+      weight: manualData.weight !== undefined ? String(manualData.weight) : '',
+      hair_color: manualData.hair_color ? manualData.hair_color.toUpperCase() : '',
+      eye_color: manualData.eye_color ? manualData.eye_color.toUpperCase() : '',
+      ethnicity: manualData.ethnicity ? manualData.ethnicity.toUpperCase() : '',
+      measurements: manualData.measurements || '',
+      cup_size: manualData.cup_size || '',
+      band_size: manualData.band_size !== undefined ? String(manualData.band_size) : '',
+      waist: manualData.waist !== undefined ? String(manualData.waist) : '',
+      hip: manualData.hip !== undefined ? String(manualData.hip) : '',
+      tattoos: manualData.tattoos || '',
+      piercings: manualData.piercings || '',
+      breast_type: manualData.breast_type || '',
+      same_sex_only: manualData.same_sex_only || '',
+    };
+    return initialized;
   });
+  const [form, setForm] = useState(initialForm);
 
-  const [initialForm, setInitialForm] = useState(null);
-
-  useEffect(() => {
-    if (manualData) {
-      const initialized = {
-        biographies: manualData.biographies || (manualData.biography ? { en: manualData.biography } : {}),
-        birthday: manualData.birthday || '',
-        place_of_birth: manualData.place_of_birth || '',
-        gender: manualData.gender !== undefined ? String(manualData.gender) : '',
-        height: manualData.height !== undefined ? String(manualData.height) : '',
-        weight: manualData.weight !== undefined ? String(manualData.weight) : '',
-        hair_color: manualData.hair_color ? manualData.hair_color.toUpperCase() : '',
-        eye_color: manualData.eye_color ? manualData.eye_color.toUpperCase() : '',
-        ethnicity: manualData.ethnicity ? manualData.ethnicity.toUpperCase() : '',
-        measurements: manualData.measurements || '',
-        cup_size: manualData.cup_size || '',
-        band_size: manualData.band_size !== undefined ? String(manualData.band_size) : '',
-        waist: manualData.waist !== undefined ? String(manualData.waist) : '',
-        hip: manualData.hip !== undefined ? String(manualData.hip) : '',
-        tattoos: manualData.tattoos || '',
-        piercings: manualData.piercings || '',
-        breast_type: manualData.breast_type || '',
-        same_sex_only: manualData.same_sex_only || '',
-      };
-      setForm(initialized);
-      setInitialForm(initialized);
-    }
-  }, [manualLink]);
+  if (prevManualLink !== manualLink) {
+    setPrevManualLink(manualLink);
+    const initialized = {
+      name: manualData.name || '',
+      alternate_names: manualData.alternate_names || [],
+      biographies: manualData.biographies || (manualData.biography ? { en: manualData.biography } : {}),
+      birthday: manualData.birthday || '',
+      place_of_birth: manualData.place_of_birth || '',
+      gender: manualData.gender !== undefined ? String(manualData.gender) : '',
+      height: manualData.height !== undefined ? String(manualData.height) : '',
+      weight: manualData.weight !== undefined ? String(manualData.weight) : '',
+      hair_color: manualData.hair_color ? manualData.hair_color.toUpperCase() : '',
+      eye_color: manualData.eye_color ? manualData.eye_color.toUpperCase() : '',
+      ethnicity: manualData.ethnicity ? manualData.ethnicity.toUpperCase() : '',
+      measurements: manualData.measurements || '',
+      cup_size: manualData.cup_size || '',
+      band_size: manualData.band_size !== undefined ? String(manualData.band_size) : '',
+      waist: manualData.waist !== undefined ? String(manualData.waist) : '',
+      hip: manualData.hip !== undefined ? String(manualData.hip) : '',
+      tattoos: manualData.tattoos || '',
+      piercings: manualData.piercings || '',
+      breast_type: manualData.breast_type || '',
+      same_sex_only: manualData.same_sex_only || '',
+    };
+    setInitialForm(initialized);
+    setForm(initialized);
+  }
 
   const handleChange = (key, val) => {
     setForm(prev => ({ ...prev, [key]: val }));
@@ -267,28 +272,28 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
   return (
     <form onSubmit={handleSave} className="custom-values-form settings-tab-content">
       <div className="custom-values-header">
-        <h3 className="settings-section-title">Manual Overrides</h3>
-        <p className="settings-section-subtitle">Set your own values for performer attributes. These take priority if manual routing is selected.</p>
+        <h3 className="settings-section-title">{t('library.performerEdit.manualOverrides') || 'Manual Overrides'}</h3>
+        <p className="settings-section-subtitle">{t('library.performerEdit.manualOverridesSubtitle') || 'Set your own values for performer attributes. These take priority if manual routing is selected.'}</p>
       </div>
 
       <div className="custom-values-cards-grid">
         {/* Card 1: Profile & Identity */}
         <div className="custom-values-card">
           <div className="custom-values-card__header">
-            <h4 className="custom-values-card__title">Profile & Identity</h4>
+            <h4 className="custom-values-card__title">{t('library.performerEdit.profileIdentity') || 'Profile & Identity'}</h4>
           </div>
           <div className="custom-values-card__body">
             <div className="ui-field custom-values-field--full">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <label className="ui-field__label" style={{ margin: 0 }}>Biography</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '320px' }}>
-                  <span style={{ fontSize: 'var(--font-size-sm, 12px)', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>Language:</span>
-                  <div style={{ flex: 1 }}>
+              <div className="performer-custom-values-header-row">
+                <label className="ui-field__label performer-custom-values-biography-label">{t('library.performerEdit.biography') || 'Biography'}</label>
+                <div className="performer-custom-values-language-selector-wrapper">
+                  <span className="performer-custom-values-language-label">{t('library.performerEdit.language') || 'Language:'}</span>
+                  <div className="performer-custom-values-language-dropdown-container">
                     <Dropdown
                       options={bioLanguageOptions}
                       value={selectedBioLang}
                       onChange={e => setSelectedBioLang(e.target.value)}
-                      placeholder="Language"
+                      placeholder={t('library.performerEdit.language') || 'Language'}
                     />
                   </div>
                 </div>
@@ -318,7 +323,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
                 placeholder="- Select -"
               />
               <div className="ui-field">
-                <label className="ui-field__label">Birthday</label>
+                <label className="ui-field__label">{t('library.performerEdit.birthday') || 'Birthday'}</label>
                 <Input
                   type="date"
                   value={form.birthday}
@@ -326,7 +331,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
                 />
               </div>
               <div className="ui-field">
-                <label className="ui-field__label">Place of Birth</label>
+                <label className="ui-field__label">{t('library.performerEdit.placeOfBirth') || 'Place of Birth'}</label>
                 <Input
                   type="text"
                   placeholder="e.g. Los Angeles, California"
@@ -335,7 +340,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
                 />
               </div>
               <Dropdown
-                label="Same Sex Only"
+                label={t('library.performerEdit.sameSexOnly') || 'Same Sex Only'}
                 options={sameSexOnlyOptions}
                 value={form.same_sex_only}
                 onChange={e => handleChange('same_sex_only', e.target.value)}
@@ -348,12 +353,12 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
         {/* Card 2: Features & Appearance */}
         <div className="custom-values-card">
           <div className="custom-values-card__header">
-            <h4 className="custom-values-card__title">Features & Appearance</h4>
+            <h4 className="custom-values-card__title">{t('library.performerEdit.featuresAppearance') || 'Features & Appearance'}</h4>
           </div>
           <div className="custom-values-card__body">
             <div className="custom-values-card__grid-2">
               <div className="ui-field">
-                <label className="ui-field__label">Height (cm)</label>
+                <label className="ui-field__label">{t('library.performerEdit.heightCm') || 'Height (cm)'}</label>
                 <Input
                   type="number"
                   placeholder="e.g. 170"
@@ -363,7 +368,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
                 />
               </div>
               <div className="ui-field">
-                <label className="ui-field__label">Weight (kg)</label>
+                <label className="ui-field__label">{t('library.performerEdit.weightKg') || 'Weight (kg)'}</label>
                 <Input
                   type="number"
                   placeholder="e.g. 60"
@@ -373,7 +378,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
                 />
               </div>
               <Dropdown
-                label="Hair Color"
+                label={t('library.details.hairColor') || 'Hair Color'}
                 options={getDropdownOptions(hairColorOptions, form.hair_color)}
                 value={form.hair_color}
                 onChange={e => handleChange('hair_color', e.target.value)}
@@ -381,7 +386,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
                 searchable
               />
               <Dropdown
-                label="Eye Color"
+                label={t('library.details.eyeColor') || 'Eye Color'}
                 options={getDropdownOptions(eyeColorOptions, form.eye_color)}
                 value={form.eye_color}
                 onChange={e => handleChange('eye_color', e.target.value)}
@@ -389,7 +394,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
                 searchable
               />
               <Dropdown
-                label="Ethnicity"
+                label={t('library.details.ethnicity') || 'Ethnicity'}
                 options={getDropdownOptions(ethnicityOptions, form.ethnicity)}
                 value={form.ethnicity}
                 onChange={e => handleChange('ethnicity', e.target.value)}
@@ -403,12 +408,12 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
         {/* Card 3: Body & Measurements */}
         <div className="custom-values-card">
           <div className="custom-values-card__header">
-            <h4 className="custom-values-card__title">Body & Measurements</h4>
+            <h4 className="custom-values-card__title">{t('library.performerEdit.bodyMeasurements') || 'Body & Measurements'}</h4>
           </div>
           <div className="custom-values-card__body">
             <div className="custom-values-card__grid-2">
               <div className="ui-field">
-                <label className="ui-field__label">Measurements (Preview)</label>
+                <label className="ui-field__label">{t('library.performerEdit.measurementsPreview') || 'Measurements (Preview)'}</label>
                 <Input
                   type="text"
                   placeholder="e.g. 34B-24-34"
@@ -417,14 +422,14 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
                 />
               </div>
               <Dropdown
-                label="Breast Type"
+                label={t('library.details.breastType') || 'Breast Type'}
                 options={breastTypeOptions}
                 value={form.breast_type}
                 onChange={e => handleChange('breast_type', e.target.value)}
                 placeholder="- Select -"
               />
               <div className="ui-field">
-                <label className="ui-field__label">Cup Size</label>
+                <label className="ui-field__label">{t('library.performerEdit.cupSize') || 'Cup Size'}</label>
                 <Input
                   type="text"
                   placeholder="e.g. B"
@@ -440,7 +445,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
                 </datalist>
               </div>
               <div className="ui-field">
-                <label className="ui-field__label">Band Size</label>
+                <label className="ui-field__label">{t('library.performerEdit.bandSize') || 'Band Size'}</label>
                 <Input
                   type="number"
                   placeholder="e.g. 34"
@@ -453,7 +458,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
                 />
               </div>
               <div className="ui-field">
-                <label className="ui-field__label">Waist (inches)</label>
+                <label className="ui-field__label">{t('library.performerEdit.waistInches') || 'Waist (inches)'}</label>
                 <Input
                   type="number"
                   placeholder="e.g. 24"
@@ -466,7 +471,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
                 />
               </div>
               <div className="ui-field">
-                <label className="ui-field__label">Hip (inches)</label>
+                <label className="ui-field__label">{t('library.performerEdit.hipInches') || 'Hip (inches)'}</label>
                 <Input
                   type="number"
                   placeholder="e.g. 34"
@@ -485,12 +490,12 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
         {/* Card 4: Modifications */}
         <div className="custom-values-card">
           <div className="custom-values-card__header">
-            <h4 className="custom-values-card__title">Modifications</h4>
+            <h4 className="custom-values-card__title">{t('library.performerEdit.modifications') || 'Modifications'}</h4>
           </div>
           <div className="custom-values-card__body">
             <div className="custom-values-card__grid-2">
               <div className="ui-field custom-values-field--full-grid">
-                <label className="ui-field__label">Tattoos</label>
+                <label className="ui-field__label">{t('library.details.tattoos') || 'Tattoos'}</label>
                 <Input
                   type="text"
                   placeholder="e.g. Rose on left shoulder"
@@ -499,7 +504,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
                 />
               </div>
               <div className="ui-field custom-values-field--full-grid">
-                <label className="ui-field__label">Piercings</label>
+                <label className="ui-field__label">{t('library.details.piercings') || 'Piercings'}</label>
                 <Input
                   type="text"
                   placeholder="e.g. Nose ring"
@@ -519,13 +524,13 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
         actions={[
           {
             key: 'reset',
-            label: 'Reset',
+            label: t('library.performerEdit.back') || 'Reset',
             onClick: handleReset,
             disabled: saveMutation.isPending,
           },
           {
             key: 'save',
-            label: saveMutation.isPending ? 'Saving...' : 'Save Changes',
+            label: saveMutation.isPending ? (t('library.performerEdit.saving') || 'Saving...') : (t('library.performerEdit.saveChanges') || 'Save Changes'),
             onClick: handleSave,
             disabled: saveMutation.isPending || Object.keys(errors).length > 0,
             variant: 'primary',

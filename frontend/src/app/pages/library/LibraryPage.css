@@ -1351,3 +1351,34 @@
   justify-content: center;
   margin-top: var(--space-2xl);
 }
+
+.library-scene-card__subtitle-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.library-scene-card__performers {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: var(--space-2);
+  flex: 1;
+}
+
+.library-scene-card__performer-link {
+  cursor: pointer;
+  color: var(--color-muted);
+  text-decoration: none;
+  transition: color var(--motion-base);
+}
+
+.library-scene-card__performer-link:hover {
+  color: var(--color-accent, var(--color-accent-blue));
+}
+
+.library-scene-card__date {
+  flex-shrink: 0;
+}
+

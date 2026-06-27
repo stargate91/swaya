@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Clapperboard } from 'lucide-react';
 import Badge from '../../../ui/Badge';
 import MediaCard from '../../../ui/MediaCard';
@@ -23,11 +23,13 @@ export default function MatchSeasonCard({
   t,
 }) {
   const posterUrl = getImageUrl(seasonEntry.poster_path, TMDB_IMAGE_SIZES.posterThumb);
+  const [prevPosterUrl, setPrevPosterUrl] = useState(posterUrl);
   const [posterError, setPosterError] = useState(false);
 
-  useEffect(() => {
+  if (prevPosterUrl !== posterUrl) {
+    setPrevPosterUrl(posterUrl);
     setPosterError(false);
-  }, [posterUrl]);
+  }
 
   return (
     <div

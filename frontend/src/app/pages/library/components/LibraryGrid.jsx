@@ -80,7 +80,7 @@ const LibraryPosterCard = memo(({
   let imageUrl;
   let ratingImdb = item.rating_imdb;
   let ratingTmdb = item.rating;
-  let ratingPorndb = item.rating_porndb;
+  let ratingPorndb;
   const isScene = isSceneMediaType(item.type) || isLibraryScenes;
 
   if (isScene || isLibraryPeople) {
@@ -152,8 +152,8 @@ const LibraryPosterCard = memo(({
     const performers = filteredPeople.slice(0, 4);
 
     subtitle = (
-      <div className="library-scene-card__subtitle-inner" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginRight: '8px', flex: 1 }}>
+      <div className="library-scene-card__subtitle-inner">
+        <span className="library-scene-card__performers">
           {performers.map((p, idx) => (
             <span key={p.id}>
               {idx > 0 && ', '}
@@ -161,11 +161,6 @@ const LibraryPosterCard = memo(({
                 role="button"
                 tabIndex={0}
                 className="library-scene-card__performer-link"
-                style={{
-                  cursor: 'pointer',
-                  color: 'var(--color-muted)',
-                  textDecoration: 'none',
-                }}
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(`/library/people/${p.id}`);
@@ -176,19 +171,13 @@ const LibraryPosterCard = memo(({
                     navigate(`/library/people/${p.id}`);
                   }
                 }}
-                onMouseEnter={(e) => {
-                  e.target.style.color = 'var(--color-accent, var(--color-accent-blue))';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.color = 'var(--color-muted)';
-                }}
               >
                 {p.name}
               </span>
             </span>
           ))}
         </span>
-        {displayDate && <span style={{ flexShrink: 0 }}>{displayDate}</span>}
+        {displayDate && <span className="library-scene-card__date">{displayDate}</span>}
       </div>
     );
 
@@ -234,14 +223,10 @@ const LibraryPosterCard = memo(({
     }
   }
 
-  const handleCardClick = () => {
-    onItemClick(item);
-  };
-
   return (
     <PosterCard
       customStyle={{ '--item-index': index }}
-      onClick={handleCardClick}
+      onClick={() => onItemClick(item)}
       isWatched={item.is_watched}
       title={title}
       subtitle={subtitle}
@@ -250,6 +235,7 @@ const LibraryPosterCard = memo(({
       backgroundColor={item.color}
       ratingImdb={ratingImdb}
       ratingTmdb={ratingTmdb}
+      ratingPorndb={ratingPorndb}
       topRightAction={topRightAction}
       badge={badge}
       topRightBadge={topRightBadge}
@@ -270,6 +256,9 @@ const TagPosterCard = memo(({
   onClick,
 }) => {
   const isPerson = isPersonMediaType(item.type);
+  const ratingImdb = item.rating_imdb;
+  const ratingTmdb = item.rating;
+  const ratingPorndb = item.rating_porndb;
   let cardProps;
   if (isPerson) {
     cardProps = {

@@ -3,13 +3,15 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, ChevronRight, ChevronLeft, Check, Eye, Play, Clapperboard, Calendar, Tv, Star, Flame, Trash2 } from 'lucide-react';
 import IconButton from '@/ui/IconButton';
 import Pill from '@/ui/Pill';
-import { buildTmdbImageUrl, TMDB_IMAGE_SIZES, resolveMediaImageUrl } from '@/lib/imageUrls';
-import { countEpisodesInNumber, formatEpisodeNumber, formatTime } from '../../../utils/detailUtils';
+import { resolveMediaImageUrl } from '@/lib/imageUrls';
+import { formatEpisodeNumber, formatTime } from '../../../utils/detailUtils';
 import { useMediaDetailContext } from '../MediaDetailContext';
 import { useTranslation as useLangTranslation } from '@/providers/LanguageContext';
 import api from '@/lib/api';
 import './SeasonsPanel.css';
 
+const LPAR = '(';
+const RPAR = ')';
 const EPISODES_BATCH_SIZE = 20;
 
 export default function SeasonsPanel() {
@@ -145,7 +147,7 @@ export default function SeasonsPanel() {
     return () => {
       cancelled = true;
     };
-  }, [activeSeason, cleanId, item?.in_library, item?.progressive_seasons, queryClient]);
+  }, [activeSeason, cleanId, item?.in_library, item?.progressive_seasons, queryClient, metadataLanguage]);
 
   const totalEpisodesCount = activeSeason?.episode_count ?? 0;
 
@@ -381,7 +383,7 @@ export default function SeasonsPanel() {
                 {(metaItems.length > 0 || episode.is_multi_episode || (episodeTmdbRating !== undefined && episodeTmdbRating !== null && episodeTmdbRating !== '')) && (
                   <div className="episode-card__meta">
                     {episode.is_multi_episode && (
-                      <Pill variant="neutral" className="episode-card__shared-pill" style={{ opacity: 0.8, fontSize: '0.65rem', padding: '0.05rem 0.35rem' }}>
+                      <Pill variant="neutral" className="episode-card__shared-pill">
                         {t('library.details.sharedFile') || 'Shared File'}
                       </Pill>
                     )}
@@ -408,10 +410,10 @@ export default function SeasonsPanel() {
                 )}
 
                 {item.is_adult && episode.peaks_history && episode.peaks_history.length > 0 && isExpanded && (
-                  <div className="episode-card__peaks-list" onClick={(e) => e.stopPropagation()}>
+                  <div className="episode-card__peaks-list" role="presentation" onClick={(e) => e.stopPropagation()}>
                     <div className="episode-card__peaks-title">
                       <Flame size={12} fill="currentColor" />
-                      <span>{t('library.details.peaksTitle') || 'Peak Moments'} ({episode.peaks_history.length})</span>
+                      <span>{t('library.details.peaksTitle') || 'Peak Moments'} {LPAR}{episode.peaks_history.length}{RPAR}</span>
                     </div>
                     <div className="episode-card__peaks-items">
                       {episode.peaks_history.map((log) => (

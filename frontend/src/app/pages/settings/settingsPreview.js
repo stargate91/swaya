@@ -130,9 +130,7 @@ const PREVIEW_EXTENSIONS = {
 };
 
 const isMoviePreviewType = (type) => type === 'movie' || type === 'adultMovie';
-const isTvPreviewType = (type) => type === 'tv' || type === 'adultTv';
 const isCollectionPreviewType = (type) => type === 'collection';
-const isSeasonLikePreviewType = (type) => type === 'season' || type === 'episode' || type === 'adultEpisode';
 
 export function generatePreview(template, type, casing, separator, customTag, isFile = true, sortOptions = null, contextOverrides = null) {
   if (!template) return '';

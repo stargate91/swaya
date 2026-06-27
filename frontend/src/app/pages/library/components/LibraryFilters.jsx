@@ -52,11 +52,12 @@ export default function LibraryFilters({
   const isTvTab = isLibraryTvTab(resolvedTab);
   const isScenesTab = isLibraryScenesTab(resolvedTab);
 
+  const yearsList = filterData?.years;
   const decades = useMemo(() => {
-    if (!filterData?.years) return [];
-    const set = new Set(filterData.years.map(y => `${Math.floor(Number(y) / 10) * 10}s`));
+    if (!yearsList) return [];
+    const set = new Set(yearsList.map(y => `${Math.floor(Number(y) / 10) * 10}s`));
     return Array.from(set).sort((a, b) => b.localeCompare(a));
-  }, [filterData?.years]);
+  }, [yearsList]);
 
 
   return (

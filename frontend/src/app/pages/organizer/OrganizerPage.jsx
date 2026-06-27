@@ -4,12 +4,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import Page from '../../ui/Page';
 import Button from '../../ui/Button';
 import SegmentedControl from '../../ui/SegmentedControl';
-import Dropdown from '../../ui/Dropdown';
 import { getFirstEnabledProvider, getOrganizerProviderOptions } from '../../lib/providerAvailability';
 import OrganizerDetailsPanel from './OrganizerDetailsPanel';
 import OrganizerHeaderPanel from './OrganizerHeaderPanel';
 import OrganizerResultsPanel from './OrganizerResultsPanel';
-import { useOrganizerCountQuery, useOrganizerQuery, useScanStatusQuery, useSettingsQuery, useStatsQuery } from '../../queries';
+import { useOrganizerCountQuery, useOrganizerQuery, useScanStatusQuery, useSettingsQuery } from '../../queries';
 import { useUi } from '../../providers/UiProvider';
 import { useTranslation } from '../../providers/LanguageContext';
 import {
@@ -35,7 +34,6 @@ export default function OrganizerPage() {
   const { t } = useTranslation();
   const { closeModal, openModal, toast } = useUi();
   const queryClient = useQueryClient();
-  const statsQuery = useStatsQuery();
   const settingsQuery = useSettingsQuery();
   const scanStatusQuery = useScanStatusQuery({
     select: (data) => ({
@@ -56,10 +54,15 @@ export default function OrganizerPage() {
   const providerOptions = useMemo(() => getOrganizerProviderOptions(scanMode, settings), [scanMode, settings]);
   const [utilityBarTarget, setUtilityBarTarget] = useState(null);
 
-  useEffect(() => {
+  const [prevScanMode, setPrevScanMode] = useState(scanMode);
+  const [prevProviderOptions, setPrevProviderOptions] = useState(providerOptions);
+
+  if (prevScanMode !== scanMode || prevProviderOptions !== providerOptions) {
+    setPrevScanMode(scanMode);
+    setPrevProviderOptions(providerOptions);
     const fallbackProvider = scanMode === 'scenes' ? 'stashdb' : 'tmdb';
     setProvider((current) => getFirstEnabledProvider(providerOptions, current || fallbackProvider));
-  }, [providerOptions, scanMode]);
+  }
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -537,7 +540,6 @@ function OrganizerPageContent({
   activeMainTab,
   activeRow,
   currentPage,
-  handleAdvanceDetailsImage,
   handleSortToggle,
   handleToggleAll,
   handleToggleDetails,

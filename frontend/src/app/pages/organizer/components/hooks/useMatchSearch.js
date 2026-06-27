@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { MEDIA_TYPES, toMetadataMediaType } from '@/lib/mediaTypes';
 import { useLibraryModeStore } from '@/stores/useLibraryModeStore';
 import { useSettingsQuery } from '@/queries';
@@ -75,18 +75,38 @@ export function useMatchSearch({ rows = [], t, toast, scanMode }) {
     const fallbackProvider = isSceneModeOrType ? 'stashdb' : 'tmdb';
     return getFirstEnabledProvider(providerOptions, fallbackProvider);
   });
-  const isTvMode = mode === MEDIA_TYPES.TV && provider !== 'porndb';
 
-  const [isSearching, setIsSearching] = useState(false);
+  const isSceneModeOrType = scanMode === 'scenes' || primaryRow?.rawType === 'scene' || primaryRow?.rawPayload?.scan_mode === 'scenes';
+  const fallbackProvider = isSceneModeOrType ? 'stashdb' : 'tmdb';
+  const nextProvider = getFirstEnabledProvider(providerOptions, provider || fallbackProvider);
 
-  useEffect(() => {
-    const isSceneModeOrType = scanMode === 'scenes' || primaryRow?.rawType === 'scene' || primaryRow?.rawPayload?.scan_mode === 'scenes';
-    const fallbackProvider = isSceneModeOrType ? 'stashdb' : 'tmdb';
-    const nextProvider = getFirstEnabledProvider(providerOptions, provider || fallbackProvider);
+  const [prevDeps, setPrevDeps] = useState({
+    scanMode,
+    rawType: primaryRow?.rawType,
+    scan_mode: primaryRow?.rawPayload?.scan_mode,
+    providerOptions,
+  });
+
+  if (
+    prevDeps.scanMode !== scanMode ||
+    prevDeps.rawType !== primaryRow?.rawType ||
+    prevDeps.scan_mode !== primaryRow?.rawPayload?.scan_mode ||
+    prevDeps.providerOptions !== providerOptions
+  ) {
+    setPrevDeps({
+      scanMode,
+      rawType: primaryRow?.rawType,
+      scan_mode: primaryRow?.rawPayload?.scan_mode,
+      providerOptions,
+    });
     if (nextProvider !== provider) {
       setProvider(nextProvider);
     }
-  }, [primaryRow?.rawPayload?.scan_mode, primaryRow?.rawType, provider, providerOptions, scanMode]);
+  }
+
+  const isTvMode = mode === MEDIA_TYPES.TV && provider !== 'porndb';
+
+  const [isSearching, setIsSearching] = useState(false);
 
   const existingCandidates = useMemo(
     () => {

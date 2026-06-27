@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Clapperboard } from 'lucide-react';
 import Badge from '@/ui/Badge';
 import MetaRow from '@/ui/MetaRow';
@@ -48,12 +48,14 @@ export default function MatchCandidateCard({
   const displayYear = getDisplayYear(candidate, mediaType);
   const candidateId = candidate.tmdb_id || candidate.id;
   const posterUrl = getImageUrl(candidate.poster_path, TMDB_IMAGE_SIZES.posterThumb);
-  const [imageError, setImageError] = useState(false);
   const isDisabled = isResolvingId === candidateId || isBrowserLoading;
+  const [prevPosterUrl, setPrevPosterUrl] = useState(posterUrl);
+  const [imageError, setImageError] = useState(false);
 
-  useEffect(() => {
+  if (prevPosterUrl !== posterUrl) {
+    setPrevPosterUrl(posterUrl);
     setImageError(false);
-  }, [posterUrl]);
+  }
 
   if (variant === 'poster') {
     if (mediaType === 'scene') {
@@ -68,7 +70,7 @@ export default function MatchCandidateCard({
           infoRight={displayYear}
         >
           {candidate.is_active && (
-            <div style={{ position: 'absolute', top: '8px', left: '8px', zIndex: 3 }}>
+            <div className="organizer-match-modal__candidate-badge-wrapper">
               {rowStatus === 'uncertain' ? (
                 <Badge family="status" variant="overlay" tone="warning" className="ui-status-badge ui-status-badge--warning ui-status-badge--overlay">
                   {t('organizer.status.uncertain')}

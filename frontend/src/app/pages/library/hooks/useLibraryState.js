@@ -14,7 +14,6 @@ import {
   isLibraryCollectionTab,
   isLibraryPeopleTab,
   isLibraryTagsTab,
-  isLibraryScenesTab,
   resolveLibraryBackendTab,
 } from '@/lib/libraryTabs';
 import { sortLibraryItems } from '../utils/librarySort';
@@ -64,7 +63,6 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
   const isCollections = isLibraryCollectionTab(activeTab);
   const isTags = isLibraryTagsTab(activeTab);
   const isPeople = isLibraryPeopleTab(activeTab);
-  const isScenes = isLibraryScenesTab(activeTab);
 
   const backendTab = useMemo(
     () => resolveLibraryBackendTab(activeTab, activeSessionMode),

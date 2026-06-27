@@ -6,31 +6,31 @@
   },
   "choice": {
     "configureNewSetup": "Configure New Setup",
-    "configureNewSetupDesc": "Start fresh and guide yourself step-by-step through setting up TMDB, OMDB, and your media library folder paths.",
+    "configureNewSetupDesc": "Start fresh and let us guide you step-by-step through setting up TMDb, OMDb, and your media folder paths.",
     "importBackupProfile": "Import Backup Profile",
-    "importBackupProfileDesc": "Load settings instantly from an existing SWAYA settings JSON configuration backup file."
+    "importBackupProfileDesc": "Instantly load your settings from an existing SWAYA backup file."
   },
   "tmdb": {
-    "requiredToContinue": "Required to continue",
-    "requiredToContinueDesc": "This is the activation step that unlocks real title matching, posters, backdrops, and cast data.",
+    "requiredToContinue": "Required to get started",
+    "requiredToContinueDesc": "We'll need this to unlock real title matching, posters, backdrops, and cast info.",
     "onlyOnce": "Only needs to be done once",
-    "onlyOnceDesc": "You need both the TMDB API Key (v3) and the Read Access Token (v4), then SWAYA remembers them.",
+    "onlyOnceDesc": "Enter both the TMDb API Key (v3) and Read Access Token (v4) once, and SWAYA will remember them for you.",
     "showMe": "Show me where to get it",
-    "openApiPage": "Open TMDB API page",
+    "openApiPage": "Open TMDb API page",
     "twoFieldsRequired": "2 fields required",
-    "apiKeyLabel": "TMDB API Key (v3)",
-    "readAccessTokenLabel": "TMDB Read Access Token (v4)"
+    "apiKeyLabel": "TMDb API Key (v3)",
+    "readAccessTokenLabel": "TMDb Read Access Token (v4)"
   },
   "omdb": {
     "optionalButRecommended": "Optional but highly recommended",
-    "optionalButRecommendedDesc": "A free OMDb API key lets you pull complete IMDb ratings and Rotten Tomatoes scores dynamically.",
+    "optionalButRecommendedDesc": "A free OMDb API key lets you pull IMDb ratings and Rotten Tomatoes scores automatically.",
     "getOmdbKey": "Get an OMDb key",
     "oneFieldRequired": "1 field required",
     "apiKeyLabel": "OMDb API Key"
   },
   "completion": {
     "title": "Setup Complete!",
-    "description": "SWAYA is now configured and ready to organize your media files. Click Finish to save and open your dashboard."
+    "description": "SWAYA is all set up and ready to organize your media! Click Finish to save and open your dashboard."
   },
   "folder": {
     "pathsRequired": "Paths required",
@@ -42,7 +42,7 @@
     "requiredOneTimeSetup": "Required one-time setup",
     "whyThisIsRequired": "Why this is required",
     "guidedModeActive": "Guided mode active",
-    "scanningLimited": "Without TMDB, scanning stays limited to technical file data only.",
+    "scanningLimited": "Without TMDb, we can only read basic file info like size and format.",
     "closeGuide": "Close guide",
     "back": "Back",
     "ready": "Ready",
@@ -53,8 +53,8 @@
     "requiredOneTimeSetup": "Required one-time setup",
     "whyThisIsRequired": "Why this is required",
     "guidedModeActive": "Guided mode active",
-    "ratingsPurposeDesc": "SWAYA uses OMDb for IMDb, Metascore, and Rotten Tomatoes ratings during enrichment.",
-    "ratingsMetricsDesc": "Ratings provide the metrics displayed on movie details.",
+    "ratingsPurposeDesc": "SWAYA uses OMDb to fetch IMDb, Metascore, and Rotten Tomatoes ratings when fetching details.",
+    "ratingsMetricsDesc": "These ratings are what you see on the movie and show detail pages.",
     "closeGuide": "Close guide",
     "back": "Back",
     "ready": "Ready",

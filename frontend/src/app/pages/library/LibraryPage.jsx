@@ -1,6 +1,5 @@
 import Page from '@/ui/Page';
 import LibraryPagination from './components/LibraryPagination';
-import NavButton from '@/ui/NavButton';
 import { useLibraryState } from './hooks/useLibraryState';
 import { useLibraryModals } from './hooks/useLibraryModals';
 import LibraryHeader from './components/LibraryHeader';
@@ -8,7 +7,6 @@ import LibraryFilters from './components/LibraryFilters';
 import LibraryBulkImportBanner from './components/LibraryBulkImportBanner';
 import { useLibraryBulkImport } from './hooks/useLibraryBulkImport';
 import LibraryGrid from './components/LibraryGrid';
-import UtilityBarPortal from '../../../components/UtilityBarPortal';
 import { useDeleteTagMutation } from '@/queries';
 import { useUi } from '@/providers/UiProvider';
 import { useEffect, useMemo, useState } from 'react';

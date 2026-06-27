@@ -170,6 +170,9 @@ class PlaybackService:
 
             title = loc.title if loc else item.filename
             
+            from app.infrastructure.playback.playback_monitor import active_sessions
+            is_active = item.id in active_sessions
+            
             results.append({
                 "id": log.id,
                 "media_item_id": item.id,
@@ -182,6 +185,7 @@ class PlaybackService:
                 "resume_position": override.resume_position if override else 0,
                 "duration": int(item.duration) if item.duration else 0,
                 "is_watched": override.is_watched if override else False,
+                "is_active": is_active,
             })
 
         return WatchedHistoryResponse(

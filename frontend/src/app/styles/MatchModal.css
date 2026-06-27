@@ -1004,6 +1004,13 @@
   border-color: color-mix(in srgb, var(--color-accent) 42%, transparent) !important;
 }
 
+.organizer-match-modal__candidate-badge-wrapper {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 3;
+}
+
 
 
 

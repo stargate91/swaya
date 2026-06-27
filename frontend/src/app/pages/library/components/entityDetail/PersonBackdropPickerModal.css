@@ -118,3 +118,17 @@
 .person-backdrop-picker__empty {
   grid-column: 1 / -1;
 }
+
+.person-backdrop-picker__default-tab-content {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-6);
+}
+
+.person-backdrop-picker__fallback-card {
+  max-width: 360px;
+  width: 100%;
+  margin: 0 auto;
+}
+

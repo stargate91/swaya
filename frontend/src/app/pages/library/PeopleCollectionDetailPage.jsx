@@ -72,6 +72,13 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
         if (e.deltaY > 0 && !isScrolled) {
           setIsScrolled(true);
         } else if (e.deltaY < 0 && isScrolled) {
+          const isInsideSection = e.target.closest('.person-credits-section-container');
+          if (isInsideSection) {
+            const scrollable = isInsideSection.querySelector('.person-credits-discover-grid-wrapper, .person-credits-discover-grid');
+            if (scrollable && scrollable.scrollTop > 0) {
+              return;
+            }
+          }
           setIsScrolled(false);
         }
       }

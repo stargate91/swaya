@@ -30,7 +30,8 @@
 
 .peaks-table__header {
   display: flex;
-  background: var(--color-surface-glass-strong, rgba(255, 255, 255, 0.05));
+  --header-bg: var(--color-surface-glass-strong, rgba(255, 255, 255, 0.05));
+  background: var(--header-bg);
   border-bottom: 1px solid var(--media-detail-panel-card-border);
   padding: var(--space-sm) var(--space-md);
   font-size: var(--font-size-xs, 12px);
@@ -55,7 +56,8 @@
 }
 
 .peaks-table__row:hover {
-  background-color: var(--color-surface-glass, rgba(255, 255, 255, 0.03));
+  --row-hover-bg: var(--color-surface-glass, rgba(255, 255, 255, 0.03));
+  background-color: var(--row-hover-bg);
 }
 
 .peaks-table__row + .peaks-table__row {
@@ -89,17 +91,22 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2xs);
-  background: color-mix(in srgb, var(--color-accent-blue, #3b82f6) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-accent-blue, #3b82f6) 30%, transparent);
-  color: var(--color-accent-blue, #3b82f6);
+  --pill-bg: color-mix(in srgb, var(--color-accent-blue, #3b82f6) 12%, transparent);
+  background: var(--pill-bg);
+  --pill-border: 1px solid color-mix(in srgb, var(--color-accent-blue, #3b82f6) 30%, transparent);
+  border: var(--pill-border);
+  --pill-color: var(--color-accent-blue, #3b82f6);
+  color: var(--pill-color);
   font-weight: 700;
   font-size: 10px;
-  padding: 1px 6px;
+  --pill-padding: 1px 6px;
+  padding: var(--pill-padding);
   border-radius: 4px;
 }
 
 .peak-position-pill__icon {
-  color: var(--color-accent-blue, #3b82f6);
+  --pill-icon-color: var(--color-accent-blue, #3b82f6);
+  color: var(--pill-icon-color);
 }
 
 .peaks-table__empty-cell {
@@ -122,7 +129,7 @@
   border: none;
   color: var(--color-text-muted);
   cursor: pointer;
-  padding: 4px;
+  padding: var(--space-1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -131,6 +138,8 @@
 }
 
 .peak-delete-btn:hover {
-  color: var(--color-danger, #ef4444);
-  background: rgba(239, 68, 68, 0.1);
+  --danger-color: var(--color-danger, #ef4444);
+  color: var(--danger-color);
+  --danger-bg: rgba(239, 68, 68, 0.1);
+  background: var(--danger-bg);
 }

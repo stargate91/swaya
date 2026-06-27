@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useSettingsQuery } from '@/queries';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/providers/LanguageContext';
@@ -16,7 +15,6 @@ import Input from '@/ui/Input';
 import Button from '@/ui/Button';
 import IconButton from '@/ui/IconButton';
 import Tooltip from '@/ui/Tooltip';
-import EmptyState from '@/ui/EmptyState';
 import NavButton from '@/ui/NavButton';
 import { resolveMediaImageUrl } from '@/lib/imageUrls';
 import Spinner from '@/ui/Spinner';
@@ -24,34 +22,21 @@ import { Search, Link as LinkIcon, User, Trash2, GitFork, Star, ArrowLeft, Alert
 import Modal from '@/ui/Modal';
 
 const FemaleSilhouette = () => (
-  <div
-    className="performer-gender-silhouette performer-gender-silhouette--mask"
-    style={{
-      '--silhouette-url': 'url(/silhouettes/girl.svg)',
-      color: '#ec4899'
-    }}
-  />
+  <div className="performer-gender-silhouette performer-gender-silhouette--mask performer-gender-silhouette--female" />
 );
 
 const MaleSilhouette = () => (
-  <div
-    className="performer-gender-silhouette performer-gender-silhouette--mask"
-    style={{
-      '--silhouette-url': 'url(/silhouettes/man.svg)',
-      color: '#3b82f6'
-    }}
-  />
+  <div className="performer-gender-silhouette performer-gender-silhouette--mask performer-gender-silhouette--male" />
 );
 
 const OtherSilhouette = () => (
-  <svg viewBox="0 0 24 24" className="performer-gender-silhouette" fill="currentColor" style={{ color: '#a855f7' }}>
+  <svg viewBox="0 0 24 24" className="performer-gender-silhouette performer-gender-silhouette--other" fill="currentColor">
     <circle cx="12" cy="8" r="4" />
     <path d="M12 14c-6.1 0-10 4-10 8h20c0-4-3.9-8-10-8zm-7.9 6c.9-2.5 4-4 7.9-4s7 1.5 7.9 4H4.1z" />
   </svg>
 );
 
 export default function PerformerLinkingTab({ personId, defaultQuery = '', person: initialPerson }) {
-  const queryClient = useQueryClient();
   const { data: fetchedPerson } = usePersonDetailQuery(personId);
   const person = fetchedPerson || initialPerson;
   const { data: settings } = useSettingsQuery();
@@ -241,10 +226,10 @@ export default function PerformerLinkingTab({ personId, defaultQuery = '', perso
             className="performer-linker__back"
             icon={ArrowLeft}
           >
-            Back to Sources
+            {t('library.performerEdit.backToSources') || 'Back to Sources'}
           </NavButton>
           <span className="performer-linker__title">
-            Search {SOURCE_BUCKETS.find((b) => b.key === activeSearchSource)?.label}
+            {t('library.performerEdit.search') || 'Search'} {SOURCE_BUCKETS.find((b) => b.key === activeSearchSource)?.label}
           </span>
         </div>
 
@@ -309,7 +294,7 @@ export default function PerformerLinkingTab({ personId, defaultQuery = '', perso
                         icon={LinkIcon}
                         className="performer-linker__result-link-btn"
                       >
-                        Link
+                        {t('library.performerEdit.link') || 'Link'}
                       </Button>
                     </div>
                   </div>
@@ -317,10 +302,10 @@ export default function PerformerLinkingTab({ personId, defaultQuery = '', perso
               })}
             </div>
           ) : hasSearched ? (
-            <div className="performer-linker__placeholder">No results match the query. Try a different name.</div>
+            <div className="performer-linker__placeholder">{t('library.performerEdit.noResultsMatch') || 'No results match the query. Try a different name.'}</div>
           ) : (
             <div className="performer-linker__placeholder">
-              Type a name above and press search to locate performer data.
+              {t('library.performerEdit.typeANameHint') || 'Type a name above and press search to locate performer data.'}
             </div>
           )}
         </div>
@@ -365,11 +350,11 @@ export default function PerformerLinkingTab({ personId, defaultQuery = '', perso
                     <>
                       <div className="performer-linker-card__name">{person.name}</div>
                       <div className="performer-linker-card__ext-id" title={linkedInfo.external_id}>
-                        ID: {linkedInfo.external_id}
+                        {t('library.performerEdit.idLabel') || 'ID:'} {linkedInfo.external_id}
                       </div>
                     </>
                   ) : (
-                    <div className="performer-linker-card__unlinked-text">Not Connected</div>
+                    <div className="performer-linker-card__unlinked-text">{t('library.performerEdit.notConnected') || 'Not Connected'}</div>
                   )}
                 </div>
 
@@ -386,7 +371,7 @@ export default function PerformerLinkingTab({ personId, defaultQuery = '', perso
                             icon={GitFork}
                             className="performer-linker-card__action-btn"
                           >
-                            Split
+                            {t('library.performerEdit.split') || 'Split'}
                           </Button>
                         </Tooltip>
                         <Tooltip content="Remove profile link" side="top">
@@ -398,7 +383,7 @@ export default function PerformerLinkingTab({ personId, defaultQuery = '', perso
                             icon={Trash2}
                             className="performer-linker-card__action-btn"
                           >
-                            Remove
+                            {t('library.performerEdit.remove') || 'Remove'}
                           </Button>
                         </Tooltip>
                       </div>
@@ -411,7 +396,7 @@ export default function PerformerLinkingTab({ personId, defaultQuery = '', perso
                         icon={Star}
                         className="performer-linker-card__primary-btn"
                       >
-                        {isPrimary ? "Primary Source" : "Set Primary"}
+                        {isPrimary ? (t('library.performerEdit.primarySource') || "Primary Source") : (t('library.performerEdit.setPrimary') || "Set Primary")}
                       </Button>
                     </div>
                   ) : (
@@ -425,7 +410,7 @@ export default function PerformerLinkingTab({ personId, defaultQuery = '', perso
                       icon={Search}
                       className="performer-linker-card__link-btn"
                     >
-                      Connect
+                      {t('library.performerEdit.connect') || 'Connect'}
                     </Button>
                   )}
                 </div>
@@ -441,25 +426,25 @@ export default function PerformerLinkingTab({ personId, defaultQuery = '', perso
         variant="danger"
         icon={AlertTriangle}
         footer={
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+          <div className="performer-linker-modal-footer">
             <Button
               variant="secondary-neutral"
               onClick={() => setShowDeleteConfirm(false)}
               disabled={deleteMutation.isPending}
             >
-              Cancel
+              {t('library.performerEdit.cancel') || 'Cancel'}
             </Button>
             <Button
               variant="danger"
               onClick={executeDelete}
               disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isPending ? 'Deleting...' : (t('library.details.deletePerformerConfirmBtn') || 'Delete Performer')}
+              {deleteMutation.isPending ? (t('library.details.deleting') || 'Deleting...') : (t('library.details.deletePerformerConfirmBtn') || 'Delete Performer')}
             </Button>
           </div>
         }
       >
-        <p style={{ margin: 0, lineHeight: 1.5 }}>
+        <p className="performer-linker-modal-body">
           {t('library.details.deletePerformerWarning') || 'Are you sure you want to permanently delete this performer? All manually entered attributes, custom biographies, overrides, and ratings will be lost.'}
         </p>
       </Modal>

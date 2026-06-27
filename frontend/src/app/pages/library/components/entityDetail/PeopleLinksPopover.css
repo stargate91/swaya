@@ -10,7 +10,8 @@
   width: 280px;
   max-height: 380px;
   overflow-y: auto;
-  background-color: color-mix(in srgb, var(--color-panel-strong, #121824) 94%, transparent);
+  --popover-bg: color-mix(in srgb, var(--color-panel-strong, #121824) 94%, transparent);
+  background-color: var(--popover-bg);
   backdrop-filter: blur(16px);
   border: 1px solid color-mix(in srgb, var(--color-border-default) 45%, transparent);
   border-radius: var(--radius-md, 16px);
@@ -18,7 +19,8 @@
   z-index: 100;
   display: flex;
   flex-direction: column;
-  animation: linksPopoverFadeIn 0.16s var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+  --popover-animation: linksPopoverFadeIn 0.16s var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+  animation: var(--popover-animation);
 }
 
 @keyframes linksPopoverFadeIn {
@@ -33,7 +35,8 @@
 }
 
 .entity-detail-page__links-popover-header {
-  padding: var(--space-sm, 10px) var(--space-md, 16px);
+  --header-padding: var(--space-sm, 10px) var(--space-md, 16px);
+  padding: var(--header-padding);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -45,8 +48,10 @@
 .entity-detail-page__links-popover-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  padding: var(--space-md, 14px);
+  --popover-gap: 6px;
+  gap: var(--popover-gap);
+  --popover-grid-padding: var(--space-md, 14px);
+  padding: var(--popover-grid-padding);
 }
 
 .entity-detail-page__links-popover-item {
@@ -65,7 +70,8 @@
   text-decoration: none;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  transition: all var(--motion-fast, 0.12s);
+  --popover-transition: all var(--motion-fast, 0.12s);
+  transition: var(--popover-transition);
 }
 
 .entity-detail-page__links-popover-item:hover {

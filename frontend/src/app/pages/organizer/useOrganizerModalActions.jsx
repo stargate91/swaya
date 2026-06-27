@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { FolderOpen, Play, Search, Sliders, Trash2, X, EyeOff } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import Button from '../../ui/Button';
@@ -45,7 +45,7 @@ export function useOrganizerModalActions({
     sessionMode,
   });
 
-  const isPlayableOrganizerRow = (row) => {
+  const isPlayableOrganizerRow = useCallback((row) => {
     if (!row?.sourcePath) {
       return false;
     }
@@ -53,16 +53,16 @@ export function useOrganizerModalActions({
       return String(row.rawPayload?.category || '').toLowerCase() === 'video';
     }
     return true;
-  };
+  }, []);
 
-  const handlePreviewRow = async (row) => {
+  const handlePreviewRow = useCallback(async (row) => {
     if (!settings?.vlc_path && !settings?.mpc_path) {
       throw new Error(t('organizer.toasts.noMediaPlayerConfigured'));
     }
     await api.media.preview(row.sourcePath);
-  };
+  }, [settings, t]);
 
-  const openDeleteModal = (row) => {
+  const openDeleteModal = useCallback((row) => {
     const isExtra = row.rawType === 'extra';
     const actionCards = [
       !isExtra ? {
@@ -115,7 +115,7 @@ export function useOrganizerModalActions({
         </Button>
       ),
     });
-  };
+  }, [closeModal, handleDeleteOrganizerRow, openModal, t, toast]);
 
   const openBulkDeleteModal = (rows) => {
     const hasExtras = rows.some((row) => row.rawType === 'extra');
@@ -181,7 +181,7 @@ export function useOrganizerModalActions({
     });
   };
 
-  const openMatchModal = (row, rows = null) => {
+  const openMatchModal = useCallback((row, rows = null) => {
     const targetRows = rows || [row];
     const isBulk = targetRows.length > 1;
     openModal({
@@ -211,9 +211,9 @@ export function useOrganizerModalActions({
         </Button>
       ),
     });
-  };
+  }, [closeModal, handleResolveOrganizerRows, openModal, scanMode, t, toast]);
 
-  const openOverrideModal = (row) => {
+  const openOverrideModal = useCallback((row) => {
     openModal({
       title: t('organizer.overrideModal.title').replace('{type}', mapOrganizerTypeLabel(row.rawType, t) || ''),
       description: t('organizer.overrideModal.description'),
@@ -239,7 +239,7 @@ export function useOrganizerModalActions({
         </>
       ),
     });
-  };
+  }, [closeModal, openModal, scanMode, sessionMode, t, toast]);
 
   const openBulkOverrideModal = (rows) => {
     const type = rows[0]?.rawType || '';
@@ -326,7 +326,6 @@ export function useOrganizerModalActions({
   ], [
     t,
     dismissRows,
-    scanMode,
     openMatchModal,
     openOverrideModal,
     openDeleteModal,

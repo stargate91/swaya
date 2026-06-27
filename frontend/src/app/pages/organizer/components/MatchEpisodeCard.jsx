@@ -28,11 +28,13 @@ export default function MatchEpisodeCard({
 }) {
   const stillUrl = getImageUrl(episodeEntry.still_path, TMDB_IMAGE_SIZES.thumbnail);
   const cardRef = useRef();
+  const [prevStillUrl, setPrevStillUrl] = useState(stillUrl);
   const [stillError, setStillError] = useState(false);
 
-  useEffect(() => {
+  if (prevStillUrl !== stillUrl) {
+    setPrevStillUrl(stillUrl);
     setStillError(false);
-  }, [stillUrl]);
+  }
 
   useEffect(() => {
     if (isHighlighted && cardRef.current) {

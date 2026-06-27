@@ -179,9 +179,9 @@ def resolve_person_known_for_backdrop(
     department: Optional[str] = None,
     adult_only: bool = False,
     respect_credit_order: bool = False,
-) -> Optional[str]:
+) -> tuple[Optional[str], Optional[int], Optional[str]]:
     """Resolves the best backdrop image for a person based on their credits."""
-    candidates: List[tuple[int, str]] = []
+    candidates: List[tuple[int, str, int, str]] = []
     seen_media = set()
     max_scan = 5 if adult_only else 3
 
@@ -224,18 +224,24 @@ def resolve_person_known_for_backdrop(
 
         backdrop_path = image_processing_service.pick_backdrop_path(raw_data, preferred_language=preferred_languages[0]) if raw_data else None
         if backdrop_path:
-            candidates.append((image_processing_service.backdrop_resolution_from_raw(raw_data, backdrop_path), backdrop_path))
+            candidates.append((
+                image_processing_service.backdrop_resolution_from_raw(raw_data, backdrop_path),
+                backdrop_path,
+                parsed_credit_id,
+                media_type
+            ))
             continue
 
         fallback_backdrop = credit.get("backdrop_path")
         if fallback_backdrop:
-            candidates.append((0, fallback_backdrop))
+            candidates.append((0, fallback_backdrop, parsed_credit_id, media_type))
 
     if not candidates:
-        return None
+        return None, None, None
 
     candidates.sort(key=lambda item: item[0], reverse=True)
-    return candidates[0][1]
+    best = candidates[0]
+    return best[1], best[2], best[3]
 
 
 def merge_images(existing: Optional[list[str]], new_images: list[str]) -> list[str]:

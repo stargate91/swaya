@@ -46,6 +46,7 @@ class WatchedHistoryItem(BaseModel):
     resume_position: int
     duration: int
     is_watched: bool
+    is_active: Optional[bool] = False
 
 class WatchedHistoryResponse(BaseModel):
     items: List[WatchedHistoryItem]

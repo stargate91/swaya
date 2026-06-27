@@ -1,21 +1,24 @@
 .scraper-order-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 16px;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 }
 
 .scraper-order-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  background: var(--ui-bg-card-secondary, rgba(255, 255, 255, 0.02));
-  border: 1px solid var(--ui-border, rgba(255, 255, 255, 0.08));
+  padding: var(--space-3) var(--space-4);
+  --row-bg: var(--ui-bg-card-secondary, rgba(255, 255, 255, 0.02));
+  background: var(--row-bg);
+  --row-border: 1px solid var(--ui-border, rgba(255, 255, 255, 0.08));
+  border: var(--row-border);
   border-radius: 8px;
   cursor: grab;
   user-select: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --row-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: var(--row-transition);
 }
 
 .scraper-order-row:active {
@@ -23,24 +26,27 @@
 }
 
 .scraper-order-row:hover {
-  background: rgba(255, 255, 255, 0.05);
+  --row-hover-bg: rgba(255, 255, 255, 0.05);
+  background: var(--row-hover-bg);
   border-color: var(--color-accent);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --row-hover-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--row-hover-shadow);
 }
 
 .scraper-order-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .scraper-order-drag-handle {
   display: flex;
   align-items: center;
-  color: var(--color-muted, #888);
+  color: var(--color-muted);
   cursor: grab;
-  transition: color 0.2s ease;
+  --handle-transition: color 0.2s ease;
+  transition: var(--handle-transition);
 }
 
 .scraper-order-row:hover .scraper-order-drag-handle {
@@ -58,22 +64,24 @@
   color: var(--color-accent);
   font-size: 12px;
   font-weight: 600;
-  transition: all 0.2s ease;
+  --badge-transition: all 0.2s ease;
+  transition: var(--badge-transition);
 }
 
 .scraper-order-row:hover .scraper-order-badge {
   background: var(--color-accent);
-  color: #000;
+  --black-color: #000;
+  color: var(--black-color);
   transform: scale(1.05);
 }
 
 .scraper-order-name {
   font-size: 14px;
   font-weight: 500;
-  color: var(--color-ink, #fff);
+  color: var(--color-ink);
 }
 
 .scraper-order-actions {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
 }

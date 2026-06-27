@@ -8,7 +8,7 @@
   display: flex;
   justify-content: space-between;
   align-items: stretch;
-  height: 46px;
+  height: var(--layout-window-titlebar-height);
   border-bottom: 1px solid var(--color-border-subtle);
   background:
     linear-gradient(180deg, var(--color-panel), var(--color-panel-strong));
@@ -59,8 +59,43 @@
   -webkit-app-region: no-drag;
 }
 
+.window-titlebar__button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: var(--layout-window-titlebar-height);
+  height: var(--layout-window-titlebar-height);
+  border: none;
+  background: transparent;
+  color: var(--color-muted);
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+
+.window-titlebar__button:hover {
+  --btn-hover-bg: rgba(255, 255, 255, 0.05);
+  background: var(--btn-hover-bg);
+  color: var(--color-ink);
+}
+
+.window-titlebar__button--close:hover {
+  --close-hover-bg: #e81123;
+  background: var(--close-hover-bg) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.window-titlebar__button:active {
+  --btn-active-bg: rgba(255, 255, 255, 0.08);
+  background: var(--btn-active-bg);
+}
+
+.window-titlebar__button--close:active {
+  --close-active-bg: #f1707a;
+  background: var(--close-active-bg) !important;
+  color: var(--color-text-primary) !important;
+}
+
 .window-titlebar__button--adult-toggle {
-  margin-right: 24px;
+  margin-right: var(--space-6);
   color: var(--color-muted);
   width: 32px;
   height: 32px;
@@ -95,10 +130,8 @@
   grid-template-columns: 236px minmax(0, 1fr);
   height: 100vh;
   padding-top: var(--layout-window-titlebar-height);
-  transition:
-    grid-template-columns var(--motion-fast),
-    filter 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
-    transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --shell-transition: grid-template-columns var(--motion-fast), filter 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: var(--shell-transition);
   will-change: filter, transform;
 }
 

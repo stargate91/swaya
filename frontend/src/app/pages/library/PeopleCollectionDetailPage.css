@@ -10,7 +10,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4xl);
-  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  --trans-val: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  transition: var(--trans-val);
   will-change: transform;
 }
 
@@ -93,11 +94,14 @@
 .entity-detail-page__bottom-socials-wrapper {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background-color: color-mix(in srgb, var(--app-shell-color-panel, #1e1e24) 65%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-border-default, #32323d) 35%, transparent);
+  gap: var(--space-xs);
+  --socials-bg: color-mix(in srgb, var(--app-shell-color-panel, #1e1e24) 65%, transparent);
+  background-color: var(--socials-bg);
+  --socials-border: 1px solid color-mix(in srgb, var(--color-border-default, #32323d) 35%, transparent);
+  border: var(--socials-border);
   border-radius: 9999px;
-  padding: 5px;
+  --socials-padding: 5px;
+  padding: var(--socials-padding);
   box-shadow: 0 8px 24px color-mix(in srgb, black 25%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -121,19 +125,24 @@
   width: 38px;
   height: 38px;
   border-radius: var(--radius-md, 12px);
-  border: 1px solid color-mix(in srgb, var(--color-border-default, #32323d) 45%, transparent);
-  background-color: color-mix(in srgb, var(--app-shell-color-panel, #1e1e24) 75%, transparent);
+  --scroll-border: 1px solid color-mix(in srgb, var(--color-border-default, #32323d) 45%, transparent);
+  border: var(--scroll-border);
+  --scroll-bg: color-mix(in srgb, var(--app-shell-color-panel, #1e1e24) 75%, transparent);
+  background-color: var(--scroll-bg);
   color: var(--color-text-primary);
   cursor: pointer;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --scroll-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--scroll-shadow);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   transition: all var(--motion-base);
-  animation: bounceArrowScroll 2s infinite;
+  --scroll-animation: bounceArrowScroll 2s infinite;
+  animation: var(--scroll-animation);
 }
 
 .entity-detail-page__scroll-toggle-btn:hover {
-  background-color: color-mix(in srgb, var(--app-shell-color-panel, #1e1e24) 85%, transparent);
+  --scroll-hover-bg: color-mix(in srgb, var(--app-shell-color-panel, #1e1e24) 85%, transparent);
+  background-color: var(--scroll-hover-bg);
   border-color: color-mix(in srgb, var(--color-border-default) 70%, transparent);
   transform: scale(1.1);
   animation-play-state: paused; /* Pause bouncing on hover for cleaner interaction */
@@ -161,23 +170,25 @@
 
 .entity-detail-page__bottom-socials-wrapper:hover {
   border-color: color-mix(in srgb, var(--color-border-default) 70%, transparent);
-  background-color: color-mix(in srgb, var(--app-shell-color-panel, #1e1e24) 85%, transparent);
+  --wrapper-hover-bg: color-mix(in srgb, var(--app-shell-color-panel, #1e1e24) 85%, transparent);
+  background-color: var(--wrapper-hover-bg);
 }
 
 .entity-detail-page__bottom-socials-main {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .entity-detail-page__bottom-socials-extra {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-1);
   max-width: 0;
   opacity: 0;
   overflow: hidden;
-  transition: max-width 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  --extra-transition: max-width 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  transition: var(--extra-transition);
   pointer-events: none;
 }
 

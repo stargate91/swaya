@@ -1,5 +1,4 @@
 import { Minus, Square, X, AlertTriangle, Flame } from 'lucide-react';
-import { flushSync } from 'react-dom';
 import UtilityButton from '../ui/UtilityButton';
 import ProgressBar from '../ui/ProgressBar';
 import Button from '../ui/Button';

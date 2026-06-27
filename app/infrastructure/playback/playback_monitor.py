@@ -7,8 +7,11 @@ from app.shared_kernel.constants import PLAYBACK_CHECK_TIMEOUT
 
 logger = logging.getLogger(__name__)
 
+active_sessions = set()
+
 def monitor_playback(item_id: int, player_type: str, proc: subprocess.Popen, port: int, user_id: int):
     logger.info(f"Started playback monitoring thread for item_id={item_id}, player={player_type}, port={port}, user_id={user_id}")
+    active_sessions.add(item_id)
     last_saved_time = 0
     total_length = 0
     current_time = 0
@@ -46,6 +49,7 @@ def monitor_playback(item_id: int, player_type: str, proc: subprocess.Popen, por
     except Exception as e:
         logger.error(f"Error in monitoring: {e}")
     finally:
+        active_sessions.discard(item_id)
         if current_time > 0 and current_time != last_saved_time:
             _save_position(item_id, current_time, total_length, user_id)
 

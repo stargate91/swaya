@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { ImageOff } from 'lucide-react';
 import { useFullMetadataQuery, usePersonDetailQuery, useLibraryCollectionDetailQuery } from '@/queries/metadataQueries';
 import { useTranslation } from '@/providers/LanguageContext';
@@ -11,7 +11,6 @@ import '../detail/panels/BackdropsPanel.css'; // Reuse existing backdrop panel g
 
 export default function TMDBImageGrid({
   itemId,
-  tmdbId,
   mediaType,
   imageType = 'backdrop', // 'backdrop' | 'poster' | 'logo'
   customImages,
@@ -27,7 +26,7 @@ export default function TMDBImageGrid({
   const { locale } = useTranslation();
   const isPerson = mediaType === 'person';
   const isCollection = mediaType === 'collection';
-  const [visibleCount, setVisibleCount] = useState(() => initialVisibleCount ?? Number.POSITIVE_INFINITY);
+  const [loadMoreCount, setLoadMoreCount] = useState(0);
   const loadMoreRef = useRef(null);
   const metadataLanguage = locale === 'en' ? 'en-US' : locale;
   const normalizedMediaType = mediaType === 'tv' ? 'tv' : mediaType;
@@ -281,7 +280,6 @@ export default function TMDBImageGrid({
 
     const responseEntries = Object.entries(responseMap);
     const isBackdrop = imageType === 'backdrop';
-    const isTvBackdrop = normalizedMediaType === 'tv' && imageType === 'backdrop';
     const localeShort = String(metadataLanguage || '').split('-', 1)[0].toLowerCase();
     const allImagesMap = new Map();
 
@@ -354,13 +352,19 @@ export default function TMDBImageGrid({
     [images, currentPath, normalizedCurrent]
   );
 
-  useEffect(() => {
-    const baseVisibleCount = initialVisibleCount ?? Number.POSITIVE_INFINITY;
-    const minimumVisibleCount = selectedIndex >= 0
-      ? Math.max(baseVisibleCount, selectedIndex + 1)
-      : baseVisibleCount;
-    setVisibleCount(minimumVisibleCount);
-  }, [images, initialVisibleCount, selectedIndex]);
+  const [prevDeps, setPrevDeps] = useState({ images, initialVisibleCount, selectedIndex });
+  if (prevDeps.images !== images || prevDeps.initialVisibleCount !== initialVisibleCount || prevDeps.selectedIndex !== selectedIndex) {
+    setPrevDeps({ images, initialVisibleCount, selectedIndex });
+    setLoadMoreCount(0);
+  }
+
+  const baseVisibleCount = initialVisibleCount ?? Number.POSITIVE_INFINITY;
+  const minimumVisibleCount = selectedIndex >= 0
+    ? Math.max(baseVisibleCount, selectedIndex + 1)
+    : baseVisibleCount;
+
+  const step = visibleStep ?? initialVisibleCount ?? 16;
+  const visibleCount = Math.min(images.length, minimumVisibleCount + loadMoreCount * step);
 
   const displayedImages = useMemo(
     () => images.slice(0, visibleCount),
@@ -369,10 +373,9 @@ export default function TMDBImageGrid({
 
   const hasMore = displayedImages.length < images.length;
 
-  const handleLoadMore = () => {
-    const step = visibleStep ?? initialVisibleCount ?? 16;
-    setVisibleCount((prev) => Math.min(images.length, prev + step));
-  };
+  const handleLoadMore = useCallback(() => {
+    setLoadMoreCount((prev) => prev + 1);
+  }, []);
 
   useEffect(() => {
     if (!hasMore || !loadMoreRef.current || !Number.isFinite(visibleCount)) {
@@ -394,7 +397,7 @@ export default function TMDBImageGrid({
 
     observer.observe(loadMoreRef.current);
     return () => observer.disconnect();
-  }, [hasMore, visibleCount, images.length]);
+  }, [hasMore, visibleCount, handleLoadMore]);
 
   const handleSelectImage = (path) => {
     if (onSelect) {

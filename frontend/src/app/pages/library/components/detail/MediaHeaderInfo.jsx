@@ -40,7 +40,14 @@ export default function MediaHeaderInfo({ isFallbackGrid = false }) {
       <div className="media-detail-page__header-copy">
         <div
           className="media-detail-page__logo-container clickable"
+          role="button"
+          tabIndex={0}
           onClick={handleOpenLogoModal}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              handleOpenLogoModal();
+            }
+          }}
           title={logoUrl ? 'Change Logo' : 'Add Logo'}
         >
           {logoUrl ? (

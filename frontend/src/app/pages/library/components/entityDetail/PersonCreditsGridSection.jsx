@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 import Pill from '@/ui/Pill';
 import CreditCard from '@/ui/CreditCard';
 import api from '@/lib/api';
@@ -13,7 +13,7 @@ import './PersonCreditsShared.css';
 
 const PERSON_INITIAL_CREDITS_PAGE_SIZE = 12;
 
-export default function PersonCreditsGridSection({ title, personId, mediaType, totalCount, initialPageData, navigate, t, onPaginationData, source }) {
+export default function PersonCreditsGridSection({ personId, mediaType, totalCount, initialPageData, navigate, t, onPaginationData, source }) {
   const shouldLoad = Boolean(personId) && (Number(totalCount) > 0 || !!source);
   const queryClient = useQueryClient();
   const containerRef = useRef(null);
@@ -193,25 +193,17 @@ export default function PersonCreditsGridSection({ title, personId, mediaType, t
                 <>
                   {item.studio && (
                     <div
-                      style={{
-                        fontSize: '0.82rem',
-                        fontWeight: 600,
-                        color: 'var(--color-text-secondary)',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: 'block'
-                      }}
+                      className="person-credits-card__studio"
                       title={item.studio}
                     >
                       {item.studio}
                     </div>
                   )}
-                  <div className="ui-credit-card__meta" style={{ marginTop: '0.05rem' }}>
+                  <div className="ui-credit-card__meta person-credits-card__meta-container">
                     {item.year && <span>{item.year}</span>}
                     {item.duration && <span>{item.duration}</span>}
                     {item.resolution && (
-                      <Pill variant="accent" style={{ fontSize: '0.7rem', padding: '0.05rem 0.25rem' }}>
+                      <Pill variant="accent" className="person-credits-card__res-pill">
                         {item.resolution}
                       </Pill>
                     )}

@@ -1,30 +1,23 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import Pill from '@/ui/Pill';
-import { Layers, User, PenLine, Sliders, Heart, Check, Minus, Plus, Star, ChevronDown, Info, Bookmark } from 'lucide-react';
-import { OverviewContent } from './EntityDetailSections';
-import Tooltip from '@/ui/Tooltip';
+import { Layers, User, PenLine, Heart, Check, Minus, Plus, Info, Bookmark } from 'lucide-react';
 import './EntityDetailHeroSection.css';
+
+const TIMES_CHAR = '\u00d7';
+const DASH_CHAR = ' - ';
+const CM_CHAR = ' cm';
+const KG_CHAR = ' kg';
 
 export default function EntityDetailHeroSection({
   isPeople,
   item,
-  isScrolled,
-  onScrollArrowClick,
   mediaUrl,
-  profileLinks,
-  socialLinks = [],
-  metaPills,
-  extraMetaPills,
   overviewText,
   overviewTitle,
-  overviewEmptyText,
   displayRating,
   isActivateHovered,
-  starsStyleSheetText,
   t,
-  openModal,
   setIsActivateHovered,
   handleToggleFavorite,
   handleToggleActive,
@@ -35,7 +28,6 @@ export default function EntityDetailHeroSection({
   onMediaCardClick,
 }) {
   const navigate = useNavigate();
-  const [isAliasesExpanded, setIsAliasesExpanded] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isHoveringBar, setIsHoveringBar] = useState(false);
 
@@ -88,7 +80,7 @@ export default function EntityDetailHeroSection({
       .map(char => 127397 + char.charCodeAt(0));
     try {
       return String.fromCodePoint(...codePoints);
-    } catch (e) {
+    } catch {
       return '';
     }
   })();
@@ -218,7 +210,9 @@ export default function EntityDetailHeroSection({
                     <div key={val} className="entity-detail-page__rating-segment">
                       <div
                         className="entity-detail-page__rating-segment-fill"
-                        style={{ width: `${fill}%` }}
+                        ref={(el) => {
+                          if (el) el.style.width = `${fill}%`;
+                        }}
                       />
                     </div>
                   );
@@ -294,7 +288,7 @@ export default function EntityDetailHeroSection({
               className="entity-detail-page__sidebar-more-btn"
               onClick={() => setIsDrawerOpen(true)}
             >
-              <Info size={13} style={{ marginRight: '6px' }} />
+              <Info size={13} />
               {t('library.details.needMoreBtn') || 'Biography & Details'}
             </button>
           )}
@@ -408,10 +402,16 @@ export default function EntityDetailHeroSection({
 
         return createPortal(
           <>
-            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
             <div
               className="entity-detail-page__drawer-backdrop"
+              role="button"
+              tabIndex={-1}
               onClick={() => setIsDrawerOpen(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  setIsDrawerOpen(false);
+                }
+              }}
             />
             <div className="entity-detail-page__drawer">
               <div className="entity-detail-page__drawer-header">
@@ -421,7 +421,7 @@ export default function EntityDetailHeroSection({
                   className="entity-detail-page__drawer-close"
                   onClick={() => setIsDrawerOpen(false)}
                 >
-                  &times;
+                  {TIMES_CHAR}
                 </button>
               </div>
               <div className="entity-detail-page__drawer-content">
@@ -446,69 +446,69 @@ export default function EntityDetailHeroSection({
                     <div className="entity-detail-page__drawer-specs-grid">
                       {item.place_of_birth && (
                         <div className="entity-detail-page__specs-item entity-detail-page__specs-item--full">
-                          <span className="entity-detail-page__specs-label">Place of Birth</span>
+                          <span className="entity-detail-page__specs-label">{t('library.details.placeOfBirth')}</span>
                           <span className="entity-detail-page__specs-value">{item.place_of_birth}</span>
                         </div>
                       )}
                       {item.career_start_year && (
                         <div className="entity-detail-page__specs-item">
-                          <span className="entity-detail-page__specs-label">Active Years</span>
+                          <span className="entity-detail-page__specs-label">{t('library.details.activeYears')}</span>
                           <span className="entity-detail-page__specs-value">
-                            {item.career_start_year} - {item.career_end_year || 'Present'}
+                            {item.career_start_year}{DASH_CHAR}{item.career_end_year || t('library.details.present')}
                           </span>
                         </div>
                       )}
                       {item.height && (
                         <div className="entity-detail-page__specs-item">
-                          <span className="entity-detail-page__specs-label">Height</span>
-                          <span className="entity-detail-page__specs-value">{item.height} cm</span>
+                          <span className="entity-detail-page__specs-label">{t('library.details.height')}</span>
+                          <span className="entity-detail-page__specs-value">{item.height}{CM_CHAR}</span>
                         </div>
                       )}
                       {item.weight && (
                         <div className="entity-detail-page__specs-item">
-                          <span className="entity-detail-page__specs-label">Weight</span>
-                          <span className="entity-detail-page__specs-value">{item.weight} kg</span>
+                          <span className="entity-detail-page__specs-label">{t('library.details.weight')}</span>
+                          <span className="entity-detail-page__specs-value">{item.weight}{KG_CHAR}</span>
                         </div>
                       )}
                       {item.measurements && (
                         <div className="entity-detail-page__specs-item">
-                          <span className="entity-detail-page__specs-label">Measurements</span>
+                          <span className="entity-detail-page__specs-label">{t('library.details.measurements')}</span>
                           <span className="entity-detail-page__specs-value">{item.measurements}</span>
                         </div>
                       )}
                       {item.breast_type && (
                         <div className="entity-detail-page__specs-item">
-                          <span className="entity-detail-page__specs-label">Breast Type</span>
+                          <span className="entity-detail-page__specs-label">{t('library.details.breastType')}</span>
                           <span className="entity-detail-page__specs-value">{toTitleCase(item.breast_type)}</span>
                         </div>
                       )}
                       {item.hair_color && (
                         <div className="entity-detail-page__specs-item">
-                          <span className="entity-detail-page__specs-label">Hair Color</span>
+                          <span className="entity-detail-page__specs-label">{t('library.details.hairColor')}</span>
                           <span className="entity-detail-page__specs-value">{toTitleCase(item.hair_color)}</span>
                         </div>
                       )}
                       {item.eye_color && (
                         <div className="entity-detail-page__specs-item">
-                          <span className="entity-detail-page__specs-label">Eye Color</span>
+                          <span className="entity-detail-page__specs-label">{t('library.details.eyeColor')}</span>
                           <span className="entity-detail-page__specs-value">{toTitleCase(item.eye_color)}</span>
                         </div>
                       )}
                       {item.ethnicity && (
                         <div className="entity-detail-page__specs-item">
-                          <span className="entity-detail-page__specs-label">Ethnicity</span>
+                          <span className="entity-detail-page__specs-label">{t('library.details.ethnicity')}</span>
                           <span className="entity-detail-page__specs-value">{toTitleCase(item.ethnicity)}</span>
                         </div>
                       )}
                       {tattooVal && (
                         <div className="entity-detail-page__specs-item entity-detail-page__specs-item--full">
-                          <span className="entity-detail-page__specs-label">Tattoos</span>
+                          <span className="entity-detail-page__specs-label">{t('library.details.tattoos')}</span>
                           <span className="entity-detail-page__specs-value">{tattooVal}</span>
                         </div>
                       )}
                       {piercingVal && (
                         <div className="entity-detail-page__specs-item entity-detail-page__specs-item--full">
-                          <span className="entity-detail-page__specs-label">Piercings</span>
+                          <span className="entity-detail-page__specs-label">{t('library.details.piercings')}</span>
                           <span className="entity-detail-page__specs-value">{piercingVal}</span>
                         </div>
                       )}

@@ -128,6 +128,8 @@ class PersonDetailResponse(BaseModel):
     is_adult: bool
     profile_path: Optional[str] = None
     backdrop_path: Optional[str] = None
+    backdrop_source_tmdb_id: Optional[int] = None
+    backdrop_source_media_type: Optional[str] = None
     is_active: bool
     homepage: Optional[str] = None
     external_ids: dict[str, Any]

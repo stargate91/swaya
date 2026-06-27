@@ -48,8 +48,12 @@ export default function HistoryCard({
   return (
     <div
       className={`history-card history-card--${batch.status} ${isExpanded ? 'is-expanded' : ''}`}
-      /* eslint-disable-next-line react/forbid-dom-props */
-      style={{ '--item-index': index, '--accent-color': accentColor }}
+      ref={(el) => {
+        if (el) {
+          el.style.setProperty('--item-index', index);
+          el.style.setProperty('--accent-color', accentColor);
+        }
+      }}
     >
       <div className="history-card__main-row">
         <div className="history-card__icon-wrapper">
@@ -121,10 +125,9 @@ export default function HistoryCard({
                 size="sm"
                 className="history-card__toggle-btn"
                 onClick={() => setIsExpanded(!isExpanded)}
-                style={{ marginRight: '8px' }}
               >
                 {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                <span style={{ marginLeft: '4px' }}>
+                <span>
                   {isExpanded ? t('common.hideDetails') || 'Hide Details' : t('common.showDetails') || 'Show Details'}
                 </span>
               </Button>
