@@ -125,13 +125,13 @@ export default function usePeopleCollectionDetailController({
       '/links/bluesky.png', '/links/clip4sale.ico', '/links/allmylinks.ico',
       '/links/beacons.png', '/links/iafd.ico', '/links/babepedia.ico',
       '/links/freeones.png', '/links/data18.ico', '/links/homepage.png',
-      '/links/twitter.png',
+      '/links/twitter.png', '/links/website.svg',
     ]);
     const allLinks = externalLinks.filter(link =>
       link.iconSrc && knownIcons.has(link.iconSrc)
     );
     // Source links first (reversed: porndb → fansdb → stashdb → tmdb), then social/industry links
-    const order = ['theporndb', 'fansdb', 'stashdb', 'tmdb', 'imdb', 'website', 'instagram', 'facebook', 'x', 'tiktok', 'youtube'];
+    const order = ['theporndb', 'fansdb', 'stashdb', 'tmdb', 'imdb', 'website', 'instagram', 'facebook', 'x', 'twitter', 'tiktok', 'youtube'];
     const ordered = [];
     for (const key of order) {
       const found = allLinks.find(l => l.key === key);

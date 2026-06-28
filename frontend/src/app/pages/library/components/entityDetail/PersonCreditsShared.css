@@ -130,6 +130,7 @@
 .is-scrolled .person-credits-discover-grid-wrapper {
   overflow-y: auto;
   min-height: 0;
+  padding-top: 10px;
   padding-bottom: var(--space-6);
 }
 
@@ -205,10 +206,13 @@
   grid-column: 2;
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.01);
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  padding: 10px 12px;
-  border-radius: 12px;
+  background: color-mix(in srgb, var(--app-shell-color-panel, #1e1e24) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-border-default, #32323d) 40%, transparent);
+  padding: 24px;
+  border-radius: 20px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
   margin-bottom: var(--space-6);
 }
 
@@ -665,6 +669,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  padding-top: 10px;
 }
 
 .person-credits-discover-grid {

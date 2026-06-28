@@ -441,9 +441,6 @@ export default function EntityDetailHeroSection({
                         )}
                       </div>
                       <span className="entity-detail-page__known-for-card-title">{creditTitle}</span>
-                      {credit.character && (
-                        <span className="entity-detail-page__known-for-card-role">{credit.character}</span>
-                      )}
                     </div>
                   );
                 })}

@@ -1100,7 +1100,7 @@
 }
 
 .entity-detail-page__known-for-card {
-  flex: 0 0 92px; /* Marginally narrower to fit more items on screen */
+  flex: 0 0 108px; /* Slightly adjusted to align the bottom with the left specs divider */
   display: flex;
   flex-direction: column;
   min-width: 0;

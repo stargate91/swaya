@@ -177,88 +177,84 @@ export function buildPersonExternalLinks(item, t) {
     return [];
   }
 
-  if (Array.isArray(item.external_links) && item.external_links.length > 0) {
-    const getIconForUrl = (url) => {
-      try {
-        const hostname = new URL(url).hostname.replace('www.', '').toLowerCase();
-        if (hostname.includes('twitter.com') || hostname.includes('x.com')) return '/links/x.svg';
-        if (hostname.includes('instagram.com')) return '/links/instagram.ico';
-        if (hostname.includes('tiktok.com')) return '/links/tiktok.png';
-        if (hostname.includes('wikidata.org')) return '/links/wikidata.svg';
-        if (hostname.includes('facebook.com')) return '/links/facebook.ico';
-        if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return '/links/youtube.ico';
-        if (hostname.includes('onlyfans.com')) return '/links/onylfans.ico';
-        if (hostname.includes('fansly.com')) return '/links/fansly.png';
-        if (hostname.includes('patreon.com')) return '/links/patreon.ico';
-        if (hostname.includes('pornhub.com')) return '/links/pornhub.ico';
-        if (hostname.includes('manyvids.com')) return '/links/manyvids.ico';
-        if (hostname.includes('linktr.ee')) return '/links/linktree.png';
-        if (hostname.includes('stashdb.org')) return '/links/stashdb.png';
-        if (hostname.includes('theporndb.net') || hostname.includes('theporndb.org')) return '/links/theporndb.png';
-        if (hostname.includes('fansdb.cc') || hostname.includes('fansdb.xyz')) return '/links/fansdb.webp';
-        if (hostname.includes('threads.net')) return '/links/threads.png';
-        if (hostname.includes('twitch.tv')) return '/links/twitch.jpg';
-        if (hostname.includes('kick.com')) return '/links/kick.ico';
-        if (hostname.includes('bluesky.app')) return '/links/bluesky.png';
-        if (hostname.includes('clips4sale.com')) return '/links/clip4sale.ico';
-        if (hostname.includes('allmylinks.com')) return '/links/allmylinks.ico';
-        if (hostname.includes('beacons.ai')) return '/links/beacons.png';
-        if (hostname.includes('iafd.com')) return '/links/iafd.ico';
-        if (hostname.includes('babepedia.com')) return '/links/babepedia.ico';
-        if (hostname.includes('freeones.com')) return '/links/freeones.png';
-        if (hostname.includes('data18.com')) return '/links/data18.ico';
-      } catch {
-        /* ignore invalid URL */
-      }
-      return '/links/website.svg';
+  const getIconForUrl = (url, key) => {
+    const keyLower = String(key || '').toLowerCase();
+    if (keyLower === 'x') return '/links/x.svg';
+    if (keyLower === 'twitter') return '/links/twitter.png';
+
+    try {
+      const hostname = new URL(url).hostname.replace('www.', '').toLowerCase();
+      if (hostname.includes('twitter.com')) return '/links/twitter.png';
+      if (hostname.includes('x.com')) return '/links/x.svg';
+      if (hostname.includes('instagram.com')) return '/links/instagram.ico';
+      if (hostname.includes('tiktok.com')) return '/links/tiktok.png';
+      if (hostname.includes('wikidata.org')) return '/links/wikidata.svg';
+      if (hostname.includes('facebook.com')) return '/links/facebook.ico';
+      if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return '/links/youtube.ico';
+      if (hostname.includes('onlyfans.com')) return '/links/onylfans.ico';
+      if (hostname.includes('fansly.com')) return '/links/fansly.png';
+      if (hostname.includes('patreon.com')) return '/links/patreon.ico';
+      if (hostname.includes('pornhub.com')) return '/links/pornhub.ico';
+      if (hostname.includes('manyvids.com')) return '/links/manyvids.ico';
+      if (hostname.includes('linktr.ee')) return '/links/linktree.png';
+      if (hostname.includes('stashdb.org')) return '/links/stashdb.png';
+      if (hostname.includes('theporndb.net') || hostname.includes('theporndb.org')) return '/links/theporndb.png';
+      if (hostname.includes('fansdb.cc') || hostname.includes('fansdb.xyz')) return '/links/fansdb.webp';
+      if (hostname.includes('threads.net')) return '/links/threads.png';
+      if (hostname.includes('twitch.tv')) return '/links/twitch.jpg';
+      if (hostname.includes('kick.com')) return '/links/kick.ico';
+      if (hostname.includes('bluesky.app')) return '/links/bluesky.png';
+      if (hostname.includes('clips4sale.com')) return '/links/clip4sale.ico';
+      if (hostname.includes('allmylinks.com')) return '/links/allmylinks.ico';
+      if (hostname.includes('beacons.ai')) return '/links/beacons.png';
+      if (hostname.includes('iafd.com')) return '/links/iafd.ico';
+      if (hostname.includes('babepedia.com')) return '/links/babepedia.ico';
+      if (hostname.includes('freeones.com')) return '/links/freeones.png';
+      if (hostname.includes('data18.com')) return '/links/data18.ico';
+      if (hostname.includes('themoviedb.org')) return '/links/tmdb.png';
+      if (hostname.includes('imdb.com')) return '/links/imdb.png';
+    } catch {
+      /* ignore invalid URL */
+    }
+    return '/links/homepage.png';
+  };
+
+  const getBrandColorForKey = (key) => {
+    const colors = {
+      tmdb: 'var(--color-brand-tmdb)',
+      imdb: '#f5c518',
+      stashdb: '#081c24',
+      fansdb: '#00aff0',
+      porndb: '#ff0055',
+      onlyfans: '#00aff0',
+      fansly: '#5b93fa',
+      patreon: '#ff424d',
+      instagram: '#c13584',
+      facebook: '#1877f2',
+      twitter: '#1da1f2',
+      youtube: '#ff0000',
+      data18: '#f25b29',
+      website: '#888888',
     };
+    return colors[key?.toLowerCase()] || 'var(--color-text-primary)';
+  };
 
-    const getBrandColorForKey = (key) => {
-      const colors = {
-        tmdb: 'var(--color-brand-tmdb)',
-        imdb: '#f5c518',
-        stashdb: '#081c24',
-        fansdb: '#00aff0',
-        porndb: '#ff0055',
-        onlyfans: '#00aff0',
-        fansly: '#5b93fa',
-        patreon: '#ff424d',
-        instagram: '#c13584',
-        facebook: '#1877f2',
-        twitter: '#1da1f2',
-        youtube: '#ff0000',
-        data18: '#f25b29',
-        website: '#888888',
-      };
-      return colors[key?.toLowerCase()] || 'var(--color-text-primary)';
-    };
-
-    return item.external_links.map((link) => {
-      const href = link.url || link.profile_url;
-      return {
-        key: link.provider || link.key,
-        label: link.name || link.provider || 'Link',
-        href: href,
-        iconSrc: getIconForUrl(href),
-        brandColor: getBrandColorForKey(link.provider || link.key),
-      };
-    });
-  }
-
-  const externalIds = item.external_ids || {};
   const links = [];
   const seenUrls = new Set();
+  const seenKeys = new Set();
 
   const addLink = (linkObj) => {
     if (!linkObj.href) return;
     try {
       const normalized = new URL(linkObj.href).href.replace(/\/$/, '').toLowerCase();
-      if (seenUrls.has(normalized)) return;
+      if (seenUrls.has(normalized) || seenKeys.has(linkObj.key)) return;
       seenUrls.add(normalized);
+      seenKeys.add(linkObj.key);
       links.push(linkObj);
     } catch {
-      if (seenUrls.has(linkObj.href.toLowerCase())) return;
+      if (seenUrls.has(linkObj.href.toLowerCase()) || seenKeys.has(linkObj.key)) return;
       seenUrls.add(linkObj.href.toLowerCase());
+      seenKeys.add(linkObj.key);
       links.push(linkObj);
     }
   };
@@ -305,6 +301,24 @@ export function buildPersonExternalLinks(item, t) {
     }
   };
 
+  if (Array.isArray(item.external_links)) {
+    item.external_links.forEach((link) => {
+      const href = (link.url && String(link.url).startsWith('http')) 
+        ? link.url 
+        : (link.profile_url && String(link.profile_url).startsWith('http') ? link.profile_url : null);
+      if (!href) return;
+      const key = link.provider || link.key;
+      addLink({
+        key: key,
+        label: link.name || link.provider || 'Link',
+        href: href,
+        iconSrc: getIconForUrl(href, key),
+        brandColor: getBrandColorForKey(key),
+      });
+    });
+  }
+
+  const externalIds = item.external_ids || {};
   const tmdbId = externalIds.tmdb_id || (!item.is_adult && Number(item.id) < 100000000 ? item.id : null);
   if (tmdbId) {
     addLink({
@@ -360,12 +374,14 @@ export function buildPersonExternalLinks(item, t) {
 
   const twitterId = externalIds.twitter_id || externalIds.twitter || externalIds.x || externalIds.x_id;
   if (twitterId) {
+    const isXUrl = String(twitterId).includes('x.com') || externalIds.x || externalIds.x_id;
+    const cleanId = String(twitterId).replace(/https?:\/\/(www\.)?(twitter|x)\.com\//i, '');
     addLink({
-      key: 'x',
-      label: 'X',
-      href: String(twitterId).startsWith('http') ? twitterId : `https://x.com/${twitterId}`,
-      iconSrc: '/links/twitter.png',
-      brandColor: '#ffffff',
+      key: isXUrl ? 'x' : 'twitter',
+      label: isXUrl ? 'X' : 'Twitter',
+      href: String(twitterId).startsWith('http') ? twitterId : (isXUrl ? `https://x.com/${cleanId}` : `https://twitter.com/${cleanId}`),
+      iconSrc: isXUrl ? '/links/x.svg' : '/links/twitter.png',
+      brandColor: isXUrl ? '#ffffff' : '#1da1f2',
     });
   }
 
@@ -571,7 +587,6 @@ export function buildPersonExternalLinks(item, t) {
     });
   }
 
-  // Adult Sources specific links
   if (externalIds.stashdb_id) {
     addLink({
       key: 'stashdb',
@@ -602,42 +617,6 @@ export function buildPersonExternalLinks(item, t) {
     });
   }
 
-  const getIconForUrl = (url) => {
-    try {
-      const hostname = new URL(url).hostname.replace('www.', '').toLowerCase();
-      if (hostname.includes('twitter.com') || hostname.includes('x.com')) return '/links/x.svg';
-      if (hostname.includes('instagram.com')) return '/links/instagram.ico';
-      if (hostname.includes('tiktok.com')) return '/links/tiktok.png';
-      if (hostname.includes('wikidata.org')) return '/links/wikidata.svg';
-      if (hostname.includes('facebook.com')) return '/links/facebook.ico';
-      if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return '/links/youtube.ico';
-      if (hostname.includes('onlyfans.com')) return '/links/onylfans.ico';
-      if (hostname.includes('fansly.com')) return '/links/fansly.png';
-      if (hostname.includes('patreon.com')) return '/links/patreon.ico';
-      if (hostname.includes('pornhub.com')) return '/links/pornhub.ico';
-      if (hostname.includes('manyvids.com')) return '/links/manyvids.ico';
-      if (hostname.includes('linktr.ee')) return '/links/linktree.png';
-      if (hostname.includes('stashdb.org')) return '/links/stashdb.png';
-      if (hostname.includes('theporndb.net') || hostname.includes('theporndb.org')) return '/links/theporndb.png';
-      if (hostname.includes('fansdb.cc') || hostname.includes('fansdb.xyz')) return '/links/fansdb.webp';
-      if (hostname.includes('threads.net')) return '/links/threads.png';
-      if (hostname.includes('twitch.tv')) return '/links/twitch.jpg';
-      if (hostname.includes('kick.com')) return '/links/kick.ico';
-      if (hostname.includes('bluesky.app')) return '/links/bluesky.png';
-      if (hostname.includes('clips4sale.com')) return '/links/clip4sale.ico';
-      if (hostname.includes('allmylinks.com')) return '/links/allmylinks.ico';
-      if (hostname.includes('beacons.ai')) return '/links/beacons.png';
-      if (hostname.includes('iafd.com')) return '/links/iafd.ico';
-      if (hostname.includes('babepedia.com')) return '/links/babepedia.ico';
-      if (hostname.includes('freeones.com')) return '/links/freeones.png';
-      if (hostname.includes('data18.com')) return '/links/data18.ico';
-    } catch {
-      /* ignore invalid URL */
-    }
-    return '/links/website.svg';
-  };
-
-  // Dynamic performer links fetched from adult GraphQL
   if (Array.isArray(externalIds.urls)) {
     externalIds.urls.forEach((u, i) => {
       if (u && u.url) {
