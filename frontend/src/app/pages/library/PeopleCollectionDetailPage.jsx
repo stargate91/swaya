@@ -64,9 +64,10 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+    setIsScrolled(false);
+  }, [id]);
 
+  useEffect(() => {
     const handleWheel = (e) => {
       if (Math.abs(e.deltaY) > 5) {
         if (e.deltaY > 0 && !isScrolled) {
@@ -84,8 +85,8 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
       }
     };
 
-    el.addEventListener('wheel', handleWheel, { passive: true });
-    return () => el.removeEventListener('wheel', handleWheel);
+    window.addEventListener('wheel', handleWheel, { passive: true });
+    return () => window.removeEventListener('wheel', handleWheel);
   }, [isScrolled]);
 
   const handleScrollArrowClick = useCallback(() => {
