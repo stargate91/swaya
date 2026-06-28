@@ -1,18 +1,20 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Users, BadgeInfo, Layers3, Tags, Clapperboard,
   SlidersHorizontal, CheckCheck, Image as ImageIcon, Flame, ExternalLink,
-  Minus, Plus
+  Minus, Plus, ChevronUp, ChevronDown, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useTranslation } from '@/providers/LanguageContext';
 import { useUi } from '@/providers/UiProvider';
 import { normalizeMediaType } from '@/lib/mediaTypes';
 import UniversalImagePickerModal from './modals/UniversalImagePickerModal';
 import { buildMediaExternalLinks } from './peopleCollectionDetailUtils.jsx';
+import { API_BASE } from '@/lib/backend';
+import { resolveMediaImageUrl, buildTmdbImageUrl, TMDB_IMAGE_SIZES } from '@/lib/imageUrls';
 
 // Context
-import { MediaDetailProvider } from './components/detail/MediaDetailContext';
+import { MediaDetailProvider, useMediaDetailContext } from './components/detail/MediaDetailContext';
 
 // Hook
 import useMediaDetail from './hooks/useMediaDetail';
@@ -26,14 +28,212 @@ import UtilityBarBottomPortal from '../../../components/UtilityBarBottomPortal';
 
 // Panels
 import SeasonsPanel from './components/detail/panels/SeasonsPanel';
-import CastPanel from './components/detail/panels/CastPanel';
-import DetailsPanel from './components/detail/panels/DetailsPanel';
 import TechnicalPanel from './components/detail/panels/TechnicalPanel';
 import ExtrasPanel from './components/detail/panels/ExtrasPanel';
-import WatchedPanel from './components/detail/panels/WatchedPanel';
-import TagsPanel from './components/detail/panels/TagsPanel';
-import BackdropsPanel from './components/detail/panels/BackdropsPanel';
 import PeaksPanel from './components/detail/panels/PeaksPanel';
+import BackdropsPanel from './components/detail/panels/BackdropsPanel';
+import TagsPanel from './components/detail/panels/TagsPanel';
+import WatchedPanel from './components/detail/panels/WatchedPanel';
+
+function BespokeCastSection({ item, t, navigate }) {
+  const settings = useMediaDetailContext()?.state?.settings;
+  const isAdult = item.is_adult;
+  const genderPref = settings?.adult_gender_preference;
+
+  const filterPeople = (list) => {
+    if (!list) return [];
+    if (!isAdult || !genderPref || genderPref === 'all') return list;
+    return list.filter(person => {
+      if (genderPref === 'female') return person.gender === 1;
+      if (genderPref === 'male') return person.gender === 2;
+      return true;
+    });
+  };
+
+  const filteredDirectors = filterPeople(item.directors);
+  const filteredCast = filterPeople(item.cast);
+  const resolvePersonAvatarUrl = (path) => resolveMediaImageUrl(path, 'person', API_BASE);
+
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isShow = item?.type === 'tv' || item?.type === 'show';
+  const isSmallScreen = windowWidth <= 1400;
+  const maxTotal = isShow ? (isSmallScreen ? 6 : 7) : (isSmallScreen ? 12 : 14);
+
+  const allPeople = useMemo(() => {
+    const list = [];
+    const maxDirectors = 2;
+
+    // 1. Slice Directors (max 2)
+    const slicedDirectors = filteredDirectors ? filteredDirectors.slice(0, maxDirectors) : [];
+    slicedDirectors.forEach(p => {
+      list.push({ ...p, displayRole: t('library.people.roles.director') || 'Director' });
+    });
+
+    // 2. Dynamically calculate remaining slots for Cast
+    const remainingSlots = maxTotal - list.length;
+    const slicedCast = filteredCast ? filteredCast.slice(0, remainingSlots) : [];
+    slicedCast.forEach(p => {
+      if (!list.some(x => x.id === p.id)) {
+        list.push({ ...p, displayRole: p.character });
+      }
+    });
+
+    return list;
+  }, [filteredDirectors, filteredCast, maxTotal, t]);
+
+  if (allPeople.length === 0) return null;
+
+  return (
+    <div className="dashboard-section">
+      <h4 className="dashboard-section__title">{t('library.details.cast') || 'Cast & Crew'}</h4>
+      <div className="dashboard-cast-carousel-container">
+        <div className="dashboard-cast-grid">
+          {allPeople.map(person => (
+            <div
+              key={person.id}
+              className="dashboard-cast-card"
+              onClick={() => navigate(`/library/people/${person.id}`, { state: { allowAdult: true } })}
+            >
+              <div className="dashboard-cast-card__avatar-wrapper">
+                {person.profile_path ? (
+                  <img
+                    src={resolvePersonAvatarUrl(person.profile_path)}
+                    alt={person.name}
+                    className="dashboard-cast-card__avatar"
+                  />
+                ) : (
+                  <div className="dashboard-cast-card__avatar-fallback">
+                    <Users size={24} />
+                  </div>
+                )}
+              </div>
+              <span className="dashboard-cast-card__name">
+                {person.name}
+                {person.age_at_release != null && ` (${person.age_at_release})`}
+              </span>
+              {person.displayRole && (
+                <span className="dashboard-cast-card__role">{person.displayRole}</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BespokeDetailsSection({ item, t }) {
+  const isSceneType = item?.type === 'scene';
+  const hasImdb = !isSceneType && item?.rating_imdb != null && Number(item.rating_imdb) > 0;
+  const hasTmdb = !isSceneType && item?.rating_tmdb != null && Number(item.rating_tmdb) > 0;
+  const hasRotten = !isSceneType && item?.rating_rotten != null && item?.rating_rotten !== '';
+  const hasMeta = !isSceneType && item?.rating_meta != null && Number(item.rating_meta) > 0;
+  const hasPorndb = item?.rating_porndb != null && Number(item.rating_porndb) > 0;
+
+  const ratings = [];
+  if (hasImdb) ratings.push({ id: 'imdb', logo: '/rating/imdb.png', alt: 'IMDb', value: `${item.rating_imdb.toFixed(1)}/10` });
+  if (hasTmdb) ratings.push({ id: 'tmdb', logo: '/rating/tmdb.png', alt: 'TMDb', value: `${item.rating_tmdb.toFixed(1)}/10` });
+  if (hasRotten) ratings.push({ id: 'rotten', logo: '/rating/rottan_tomatoes.png', alt: 'Rotten Tomatoes', value: item.rating_rotten });
+  if (hasMeta) ratings.push({ id: 'meta', logo: '/rating/metacritic.png', alt: 'Metacritic', value: `${item.rating_meta}/100` });
+  if (hasPorndb) ratings.push({ id: 'porndb', logo: '/rating/theporndb.png', alt: 'ThePornDB', value: `${item.rating_porndb.toFixed(1)}/10` });
+
+  const formatCurrency = (num) => {
+    if (num === undefined || num === null || num === 0) return '-';
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 0
+    }).format(num);
+  };
+
+  const profit = item.revenue && item.budget ? item.revenue - item.budget : 0;
+  const companies = item.companies || [];
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4xl)' }}>
+      {ratings.length > 0 && (
+        <div className="dashboard-section">
+          <h4 className="dashboard-section__title">{t('library.details.ratingsSection') || 'Ratings'}</h4>
+          <div className="dashboard-ratings-grid">
+            {ratings.map(rating => (
+              <div key={rating.id} className="dashboard-rating-box">
+                <img src={rating.logo} alt={rating.alt} className="dashboard-rating-box__logo" />
+                <span className="dashboard-rating-box__value">{rating.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="dashboard-section">
+        <h4 className="dashboard-section__title">{t('library.details.details') || 'Details'}</h4>
+        <div className="dashboard-metadata-grid">
+          {item.release_date && (
+            <div className="dashboard-metadata-card">
+              <span className="dashboard-metadata-card__label">{t('library.details.releaseDate') || 'Release Date'}</span>
+              <span className="dashboard-metadata-card__value">{item.release_date}</span>
+            </div>
+          )}
+          {item.release_status && (
+            <div className="dashboard-metadata-card">
+              <span className="dashboard-metadata-card__label">{t('library.details.status') || 'Status'}</span>
+              <span className="dashboard-metadata-card__value">{item.release_status}</span>
+            </div>
+          )}
+          {item.budget > 0 && (
+            <div className="dashboard-metadata-card">
+              <span className="dashboard-metadata-card__label">{t('library.details.budget') || 'Budget'}</span>
+              <span className="dashboard-metadata-card__value">{formatCurrency(item.budget)}</span>
+            </div>
+          )}
+          {item.revenue > 0 && (
+            <div className="dashboard-metadata-card">
+              <span className="dashboard-metadata-card__label">{t('library.details.revenue') || 'Revenue'}</span>
+              <span className="dashboard-metadata-card__value">{formatCurrency(item.revenue)}</span>
+            </div>
+          )}
+          {item.budget > 0 && item.revenue > 0 && (
+            <div className="dashboard-metadata-card dashboard-metadata-card--span-2">
+              <span className="dashboard-metadata-card__label">{t('library.details.profit') || 'Profit'}</span>
+              <span className={`dashboard-metadata-card__value ${profit >= 0 ? 'dashboard-metadata-card__value--success' : 'dashboard-metadata-card__value--danger'}`}>
+                {formatCurrency(profit)}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {companies.length > 0 && !isSceneType && (
+        <div className="dashboard-section">
+          <h4 className="dashboard-section__title">
+            {item.is_adult ? (t('library.details.studio') || 'Studio') : (t('library.details.productionCompanies') || 'Production Companies')}
+          </h4>
+          <div className="dashboard-studios-list">
+            {companies.map(it => {
+              const logoUrl = it.logo_path
+                ? (it.logo_path.startsWith('http') || it.logo_path.startsWith('/media/') || it.logo_path.startsWith('data/'))
+                  ? resolveMediaImageUrl(it.logo_path, 'logo')
+                  : buildTmdbImageUrl(it.logo_path, TMDB_IMAGE_SIZES.posterThumb)
+                : null;
+              if (!logoUrl) return null;
+              return (
+                <div key={it.id} className="dashboard-studio-logo" title={it.name}>
+                  <img src={logoUrl} alt={it.name} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function MediaDetailPage({ type = 'movie' }) {
   const { id } = useParams();
@@ -53,8 +253,6 @@ export default function MediaDetailPage({ type = 'movie' }) {
 
   const { state, actions } = detailState;
   const {
-    activePanel,
-    isSideNavVisible,
     backdropUrl,
     posterUrl,
     item,
@@ -65,12 +263,38 @@ export default function MediaDetailPage({ type = 'movie' }) {
     isOwned
   } = state;
 
-  const {
-    togglePanel,
-    handleToggleSideNav
-  } = actions;
-
+  const [isScrolled, setIsScrolled] = useState(false);
   const [isSocialExpanded, setIsSocialExpanded] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    setIsScrolled(false);
+  }, [id]);
+
+  useEffect(() => {
+    const handleWheel = (e) => {
+      if (Math.abs(e.deltaY) > 5) {
+        if (e.deltaY > 0 && !isScrolled) {
+          setIsScrolled(true);
+        } else if (e.deltaY < 0 && isScrolled) {
+          const isInsideSection = e.target.closest('.media-detail-page__inline-sections');
+          if (isInsideSection) {
+            if (isInsideSection.scrollTop > 0) {
+              return;
+            }
+          }
+          setIsScrolled(false);
+        }
+      }
+    };
+
+    window.addEventListener('wheel', handleWheel, { passive: true });
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, [isScrolled]);
+
+  const handleScrollToggle = () => {
+    setIsScrolled(!isScrolled);
+  };
 
   const externalLinks = useMemo(
     () => buildMediaExternalLinks(item, t, normalizedType),
@@ -127,7 +351,7 @@ export default function MediaDetailPage({ type = 'movie' }) {
 
   const handleOpenBackdropModal = () => {
     openModal({
-      title: t('library.details.chooseBackdrop') || 'Choose Backdrop',
+      title: t('library.details.backdrops') || 'Choose Backdrop',
       variant: 'wide',
       content: (
         <MediaDetailProvider value={{ ...detailState, t, navigate, toast, type: normalizedType, id }}>
@@ -176,31 +400,6 @@ export default function MediaDetailPage({ type = 'movie' }) {
     });
   };
 
-  const renderPanelContent = () => {
-    if (!item) return null;
-
-    switch (activePanel) {
-      case 'seasons':
-        return <SeasonsPanel />;
-      case 'cast':
-        return <CastPanel />;
-      case 'details':
-        return <DetailsPanel />;
-      case 'technical':
-        return <TechnicalPanel />;
-      case 'extras':
-        return <ExtrasPanel />;
-      case 'watched':
-        return <WatchedPanel />;
-      case 'peaks':
-        return <PeaksPanel />;
-      case 'tags':
-        return <TagsPanel />;
-      default:
-        return null;
-    }
-  };
-
   if (isLoading) {
     return <DetailPageShell isLoading />;
   }
@@ -212,186 +411,119 @@ export default function MediaDetailPage({ type = 'movie' }) {
         fallbackUrl={posterUrl}
         isScene={item?.type === 'scene'}
         backLabel={t('common.back') || 'Back'}
-        activePanel={activePanel}
-        isSideNavVisible={isSideNavVisible}
-        onToggleSideNav={handleToggleSideNav}
-        onClosePanel={() => togglePanel(null)}
+        pageClassName={`media-detail-page--scroll-transition ${isScrolled ? 'is-scrolled' : ''}`}
+        containerRef={containerRef}
         topRightControls={(
-          <button
-            type="button"
-            onClick={handleOpenBackdropModal}
-            className="media-detail-page__side-nav-toggle"
-            title={t('library.details.backdrops') || 'Choose Backdrop'}
-          >
-            <ImageIcon size={18} />
-          </button>
-        )}
-        renderPanelContent={renderPanelContent}
-        sideNav={(
           <>
-            {isMovie || isScene ? (
-              <>
-                {item?.type !== 'scene' && (
-                  <button
-                    onClick={() => togglePanel('details')}
-                    className={`media-detail-page__side-nav-btn ${activePanel === 'details' ? 'active' : ''}`}
-                    title={t('library.details.details') || 'Details'}
-                  >
-                    <BadgeInfo size={20} />
-                  </button>
-                )}
-                {item?.cast && item.cast.length > 0 && (
-                  <button
-                    onClick={() => togglePanel('cast')}
-                    className={`media-detail-page__side-nav-btn ${activePanel === 'cast' ? 'active' : ''}`}
-                    title={t('library.details.cast') || 'Cast & Crew'}
-                  >
-                    <Users size={20} />
-                  </button>
-                )}
-              </>
-            ) : (
-              <>
-                {!isMovie && item?.seasons && item.seasons.length > 0 && (
-                  <button
-                    onClick={() => togglePanel('seasons')}
-                    className={`media-detail-page__side-nav-btn ${activePanel === 'seasons' ? 'active' : ''}`}
-                    title={t('library.details.seasons') || 'Seasons'}
-                  >
-                    <Layers3 size={20} />
-                  </button>
-                )}
-                <button
-                  onClick={() => togglePanel('details')}
-                  className={`media-detail-page__side-nav-btn ${activePanel === 'details' ? 'active' : ''}`}
-                  title={t('library.details.details') || 'Details'}
-                >
-                  <BadgeInfo size={20} />
-                </button>
-                {item?.cast && item.cast.length > 0 && (
-                  <button
-                    onClick={() => togglePanel('cast')}
-                    className={`media-detail-page__side-nav-btn ${activePanel === 'cast' ? 'active' : ''}`}
-                    title={t('library.details.cast') || 'Cast & Crew'}
-                  >
-                    <Users size={20} />
-                  </button>
-                )}
-              </>
-            )}
-
             <button
-              onClick={() => togglePanel('tags')}
-              className={`media-detail-page__side-nav-btn ${activePanel === 'tags' ? 'active' : ''}`}
+              type="button"
+              onClick={() => {
+                openModal({
+                  title: t('library.details.tagger') || 'Tagger',
+                  variant: 'wide',
+                  content: (
+                    <MediaDetailProvider value={{ ...detailState, t, navigate, toast, type: normalizedType, id }}>
+                      <TagsPanel />
+                    </MediaDetailProvider>
+                  ),
+                });
+              }}
+              className="media-detail-page__side-nav-toggle"
               title={t('library.details.tagger') || 'Tagger'}
             >
-              <Tags size={20} />
+              <Tags size={18} />
             </button>
-
-            {item?.extras && item.extras.length > 0 && (
-              <button
-                onClick={() => togglePanel('extras')}
-                className={`media-detail-page__side-nav-btn ${activePanel === 'extras' ? 'active' : ''}`}
-                title={t('library.details.extras') || 'Film Extras'}
-              >
-                <Clapperboard size={20} />
-              </button>
-            )}
 
             {item && (
               <button
-                onClick={() => togglePanel('watched')}
-                className={`media-detail-page__side-nav-btn ${activePanel === 'watched' ? 'active' : ''}`}
-                title={t('library.details.watchedPanel') || 'Watched Panel'}
+                type="button"
+                onClick={() => {
+                  openModal({
+                    title: t('library.details.watchedPanel') || 'Watched Panel',
+                    variant: 'wide',
+                    content: (
+                      <MediaDetailProvider value={{ ...detailState, t, navigate, toast, type: normalizedType, id }}>
+                        <WatchedPanel />
+                      </MediaDetailProvider>
+                    ),
+                  });
+                }}
+                className="media-detail-page__side-nav-toggle"
+                title={t('library.details.watchedPanel') || 'Watched stats'}
               >
-                <CheckCheck size={20} />
+                <CheckCheck size={18} />
               </button>
             )}
 
-            {item && item.is_adult && isOwned && (
-              <button
-                onClick={() => togglePanel('peaks')}
-                className={`media-detail-page__side-nav-btn ${activePanel === 'peaks' ? 'active' : ''}`}
-                title={t('library.details.peaksPanel') || 'Peaks Panel'}
-              >
-                <Flame size={20} />
-              </button>
-            )}
-
-            {(() => {
-              let links = item?.external_links || [];
-              if (links.length === 0 && item?.external_ids?.stash_id) {
-                const source = item.external_ids.source || '';
-                const url = source === 'fansdb'
-                  ? `https://fansdb.cc/scenes/${item.external_ids.stash_id}`
-                  : (source === 'porndb' || source === 'theporndb')
-                    ? `https://theporndb.net/scenes/${item.external_ids.stash_id}`
-                    : `https://stashdb.org/scenes/${item.external_ids.stash_id}`;
-                const name = source === 'fansdb' ? 'FansDB' : (source === 'porndb' || source === 'theporndb') ? 'ThePornDB' : 'StashDB';
-                links = [{ key: 'stashdb', name, url }];
-              }
-              if (links.length !== 1) {
-                return null;
-              }
-              const singleLink = links[0];
-              return (
-                <a
-                  key={singleLink.key}
-                  href={singleLink.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="media-detail-page__side-nav-btn"
-                  title={`${singleLink.name} Link`}
-                >
-                  <ExternalLink size={20} />
-                </a>
-              );
-            })()}
-
-            {hasTechnicalPanel && (
-              <button
-                onClick={() => togglePanel('technical')}
-                className={`media-detail-page__side-nav-btn ${activePanel === 'technical' ? 'active' : ''}`}
-                title={t('library.details.technicalInfo') || 'Technical Info'}
-              >
-                <SlidersHorizontal size={20} />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleOpenBackdropModal}
+              className="media-detail-page__side-nav-toggle"
+              title={t('library.details.backdrops') || 'Choose Backdrop'}
+            >
+              <ImageIcon size={18} />
+            </button>
           </>
         )}
       >
-        {(!state.logoUrl && !state.backdropUrl && state.posterUrl) ? (
-          <div className="media-detail-page__fallback-grid">
-            <div
-              className="media-detail-page__fallback-poster-col"
-              role="button"
-              tabIndex={0}
-              onClick={handleOpenPosterModal}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  handleOpenPosterModal();
-                }
-              }}
-              title={t('library.details.choosePoster') || 'Choose Poster'}
-            >
-              <img src={state.posterUrl} alt={state.title} className="media-detail-page__fallback-poster" />
+        <div className="media-detail-page__transition-wrapper">
+          <div className="media-detail-page__hero-content-section">
+            {(!state.logoUrl && !state.backdropUrl && state.posterUrl) ? (
+              <div className="media-detail-page__fallback-grid">
+                <div
+                  className="media-detail-page__fallback-poster-col"
+                  role="button"
+                  tabIndex={0}
+                  onClick={handleOpenPosterModal}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      handleOpenPosterModal();
+                    }
+                  }}
+                  title={t('library.details.choosePoster') || 'Choose Poster'}
+                >
+                  <img src={state.posterUrl} alt={state.title} className="media-detail-page__fallback-poster" />
+                </div>
+                <div className="media-detail-page__fallback-content-col">
+                  <MediaHeaderInfo isFallbackGrid={true} />
+                  <UserRatingSection />
+                  <MediaOverview />
+                </div>
+              </div>
+            ) : (
+              <>
+                <MediaHeaderInfo />
+                <UserRatingSection />
+                <MediaOverview />
+              </>
+            )}
+          </div>
+
+          <div className="media-detail-page__inline-sections">
+            <div className="media-detail-page__inline-main-col">
+              {item && <BespokeCastSection item={item} t={t} navigate={navigate} />}
             </div>
-            <div className="media-detail-page__fallback-content-col">
-              <MediaHeaderInfo isFallbackGrid={true} />
-              <UserRatingSection />
-              <MediaOverview />
+            <div className="media-detail-page__inline-side-col">
+              {/* Empty for now */}
             </div>
           </div>
-        ) : (
-          <>
-            <MediaHeaderInfo />
-            <UserRatingSection />
-            <MediaOverview />
-          </>
-        )}
+        </div>
+
         <UtilityBarBottomPortal side="left">
           <MediaActions />
         </UtilityBarBottomPortal>
+
+        <UtilityBarBottomPortal side="center">
+          <button
+            type="button"
+            className="entity-detail-page__scroll-toggle-btn"
+            onClick={handleScrollToggle}
+            title={isScrolled ? (t('library.details.backToProfile') || 'Back to Profile') : (t('library.details.scrollToCredits') || 'Scroll to Details')}
+          >
+            {isScrolled ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </button>
+        </UtilityBarBottomPortal>
+
         {socialLinks.length > 0 && (
           <UtilityBarBottomPortal side="right">
             <div className={`entity-detail-page__bottom-socials ${isSocialExpanded ? 'entity-detail-page__bottom-socials--expanded' : ''}`}>
@@ -446,3 +578,4 @@ export default function MediaDetailPage({ type = 'movie' }) {
     </MediaDetailProvider>
   );
 }
+

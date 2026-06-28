@@ -83,6 +83,27 @@ class PeopleEnrichWorker:
             except RuntimeError:
                 asyncio.run(self._enqueue_items(person_ids))
 
+    def enqueue_people(self, person_ids: List[int]) -> None:
+        if not person_ids:
+            return
+
+        if hasattr(self, "loop") and self.loop and self.loop.is_running():
+            try:
+                current_loop = asyncio.get_running_loop()
+            except RuntimeError:
+                current_loop = None
+
+            if current_loop == self.loop:
+                self.loop.create_task(self._enqueue_items(person_ids))
+            else:
+                asyncio.run_coroutine_threadsafe(self._enqueue_items(person_ids), self.loop)
+        else:
+            try:
+                loop = asyncio.get_running_loop()
+                loop.create_task(self._enqueue_items(person_ids))
+            except RuntimeError:
+                asyncio.run(self._enqueue_items(person_ids))
+
     async def _enqueue_items(self, person_ids: List[int]) -> None:
         if not self.is_running:
             await self.start()

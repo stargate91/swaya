@@ -130,6 +130,20 @@ class SceneDetailService(DetailFormatter):
         from sqlalchemy.orm import joinedload
         cast_by_name = {}
 
+        def calculate_age_at_release(birthday_str: str, release_date_str: str) -> Any:
+            if not birthday_str or not release_date_str:
+                return None
+            try:
+                from datetime import datetime
+                b_date = datetime.strptime(birthday_str[:10], "%Y-%m-%d")
+                r_date = datetime.strptime(release_date_str[:10], "%Y-%m-%d")
+                age = r_date.year - b_date.year
+                if (r_date.month, r_date.day) < (b_date.month, b_date.day):
+                    age -= 1
+                return age
+            except:
+                return None
+
         # 1. Add performers from local database match
         if match_db:
             people_links = db.query(MediaPersonLink).options(
@@ -146,7 +160,8 @@ class SceneDetailService(DetailFormatter):
                     "popularity": person.rating_porndb if person.rating_porndb is not None else person.popularity or 0,
                     "rating_porndb": person.rating_porndb,
                     "scene_count": person.scene_count,
-                    "gender": person.gender
+                    "gender": person.gender,
+                    "age_at_release": calculate_age_at_release(person.birthday, date_str)
                 }
 
         # 2. Add/merge performers from external scraper details
@@ -170,9 +185,11 @@ class SceneDetailService(DetailFormatter):
                 mapped_gender = 3
 
             person_db = db.query(Person).filter(Person.name == perf_name).first()
+            birthday_val = None
             if person_db:
                 resolved_img = self._resolve_img(person_db.local_profile_path or person_db.profile_path, "people")
                 p_id = f"local:{person_db.id}"
+                birthday_val = person_db.birthday
             else:
                 resolved_img = p_img
                 p_id = f"{provider_prefix}:{perf.get('id')}" if provider_prefix else perf.get("id")
@@ -186,7 +203,8 @@ class SceneDetailService(DetailFormatter):
                 "popularity": perf.get("rating_porndb") or 0,
                 "rating_porndb": perf.get("rating_porndb"),
                 "scene_count": perf.get("scene_count"),
-                "gender": mapped_gender
+                "gender": mapped_gender,
+                "age_at_release": calculate_age_at_release(birthday_val, date_str)
             }
 
         cast = list(cast_by_name.values())
@@ -234,7 +252,7 @@ class SceneDetailService(DetailFormatter):
                     db_updated = True
                 except:
                     pass
-            if not match_db.rating_porndb and scene_data.get("rating"):
+            if scene_data.get("rating") is not None and float(scene_data.get("rating")) > 0:
                 try:
                     match_db.rating_porndb = float(scene_data.get("rating"))
                     db_updated = True

@@ -90,7 +90,7 @@ class PornDbMovieFormatter(MovieDetailFormatter):
                     db_updated = True
                 except:
                     pass
-            if not match.rating_porndb and movie_data.get("rating"):
+            if movie_data.get("rating") is not None and float(movie_data.get("rating")) > 0:
                 try:
                     match.rating_porndb = float(movie_data.get("rating"))
                     db_updated = True
@@ -194,12 +194,12 @@ class PornDbMovieFormatter(MovieDetailFormatter):
             "year": year,
             "release_date": date_str,
             "runtime": None,
-            "rating_tmdb": 0.0,
+            "rating_tmdb": None,
             "rating_porndb": movie_data.get("rating"),
             "rating_imdb": None,
             "rating_rotten": None,
             "rating_meta": None,
-            "vote_count_tmdb": 0,
+            "vote_count_tmdb": None,
             "budget": None,
             "revenue": None,
             "companies": [{"name": movie_data.get("studio").get("name") if movie_data.get("studio") else None, "logo_path": self._resolve_img(movie_data.get("studio").get("image") if movie_data.get("studio") else None, "logos")}] if movie_data.get("studio") else [],

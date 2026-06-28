@@ -212,7 +212,7 @@ class ScraperNormalizer:
             overview = scene.get("details") or scene.get("description")
             release_date = safe_parse_date(scene.get("date"))
             
-            rating_val = scene.get("rating_porndb") if provider == "porndb" else None
+            rating_val = (scene.get("rating_porndb") if scene.get("rating_porndb") is not None else scene.get("rating")) if provider == "porndb" else None
             
             # Images
             images = scene.get("images") or []
@@ -247,7 +247,7 @@ class ScraperNormalizer:
             title = scene.get("title") or "Unknown Scene"
             overview = scene.get("description") or scene.get("details")
             release_date = safe_parse_date(scene.get("date"))
-            rating_val = scene.get("rating_porndb") if provider == "porndb" else None
+            rating_val = (scene.get("rating_porndb") if scene.get("rating_porndb") is not None else scene.get("rating")) if provider == "porndb" else None
             poster_url_temp = image_variant(scene.get("posters")) or scene.get("poster_image") or scene.get("poster") or scene.get("image")
             backdrop_url = image_variant(scene.get("background")) or image_variant(scene.get("background_back")) or scene.get("back_image") or scene.get("image") or poster_url_temp
             poster_url = poster_url_temp
@@ -395,7 +395,7 @@ class ScraperNormalizer:
             "release_date": release_date,
             "runtime": None,
             "popularity": None,
-            "rating_porndb": float(rating_val) if provider == "porndb" and rating_val is not None else None,
+            "rating_porndb": float(rating_val) if provider == "porndb" and rating_val is not None and float(rating_val) > 0 else None,
             "is_adult": True,
             "backdrop_path": backdrop_url,
             "suggested_tags": normalize_tag_names(tags_raw),

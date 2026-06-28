@@ -1,7 +1,10 @@
+import logging
 from typing import Optional, Any
 from sqlalchemy.orm import Session, joinedload
 from fastapi.responses import JSONResponse
 from datetime import datetime
+
+logger = logging.getLogger(__name__)
 
 from app.shared_kernel.enums import Provider, MediaType, ItemStatus
 from app.domains.library.models import MediaItem
@@ -213,30 +216,80 @@ class TvShowFormatter(DetailFormatter):
         local_profiles = {}
         if person_ids:
             try:
+                from sqlalchemy import or_
+                from app.shared_kernel.user_context import get_current_user_id
+                current_uid = get_current_user_id() or 1
+                quoted_pids = [f'"{pid}"' for pid in person_ids]
+                raw_pids = list(person_ids)
                 local_people = db.query(Person).filter(
-                    Person.external_ids["tmdb"].as_string().in_(list(person_ids))
+                    or_(
+                        Person.external_ids["tmdb"].as_string().in_(raw_pids),
+                        Person.external_ids["tmdb"].as_string().in_(quoted_pids)
+                    )
                 ).all()
+                
+                local_person_ids = [lp.id for lp in local_people]
+                overrides = db.query(UserOverride).filter(
+                    UserOverride.user_id == current_uid,
+                    UserOverride.person_id.in_(local_person_ids)
+                ).all()
+                override_map = {ov.person_id: ov.custom_poster for ov in overrides if ov.custom_poster}
+
                 for lp in local_people:
                     tmdb_id_str = lp.external_ids.get("tmdb")
                     if tmdb_id_str:
-                        local_profiles[int(tmdb_id_str)] = lp.local_profile_path or lp.profile_path
+                        custom_img = override_map.get(lp.id)
+                        local_profiles[int(tmdb_id_str)] = {
+                            "profile_path": custom_img or lp.local_profile_path or lp.profile_path,
+                            "birthday": lp.birthday
+                        }
+                
+                missing_birthday_ids = [lp.id for lp in local_people if lp.birthday is None]
+                if missing_birthday_ids:
+                    try:
+                        from app.domains.tasks import task_manager
+                        if task_manager.people_enrich_worker:
+                            task_manager.people_enrich_worker.enqueue_people(missing_birthday_ids)
+                    except Exception as ex:
+                        logger.error(f"Failed to auto-enqueue missing birthdays: {ex}")
             except Exception as e:
                 logger.error(f"Failed to query custom performer avatars for TV detail: {e}")
 
+        def calculate_age_at_release(birthday_str: str, release_date_str: str) -> Any:
+            if not birthday_str or not release_date_str:
+                return None
+            try:
+                from datetime import datetime
+                b_date = datetime.strptime(birthday_str[:10], "%Y-%m-%d")
+                r_date = datetime.strptime(release_date_str[:10], "%Y-%m-%d")
+                age = r_date.year - b_date.year
+                if (r_date.month, r_date.day) < (b_date.month, b_date.day):
+                    age -= 1
+                return age
+            except:
+                return None
+
+        first_air_date = tmdb_data.get("first_air_date")
+
         for creator in tmdb_data.get("created_by", []) or []:
             creator_id = creator.get("id")
-            resolved_img = local_profiles.get(creator_id) if creator_id else None
+            resolved = local_profiles.get(creator_id) if creator_id else None
+            resolved_img = resolved.get("profile_path") if resolved else None
+            birthday_str = resolved.get("birthday") if resolved else None
             directors.append({
                 "id": f"tmdb:{creator_id}" if creator_id else None,
                 "name": creator.get("name"),
                 "job": "Creator",
                 "gender": creator.get("gender"),
                 "profile_path": self._resolve_img(resolved_img or creator.get("profile_path"), "people"),
+                "age_at_release": calculate_age_at_release(birthday_str, first_air_date)
             })
             
         for actor in tv_credits.get("cast", [])[:15]:
             actor_id = actor.get("id")
-            resolved_img = local_profiles.get(actor_id) if actor_id else None
+            resolved = local_profiles.get(actor_id) if actor_id else None
+            resolved_img = resolved.get("profile_path") if resolved else None
+            birthday_str = resolved.get("birthday") if resolved else None
             character = actor.get("character")
             if not character and "roles" in actor:
                 roles = actor.get("roles", [])
@@ -248,18 +301,22 @@ class TvShowFormatter(DetailFormatter):
                 "character": character,
                 "gender": actor.get("gender"),
                 "profile_path": self._resolve_img(resolved_img or actor.get("profile_path"), "people"),
+                "age_at_release": calculate_age_at_release(birthday_str, first_air_date)
             })
             
         crew_list = tmdb_data.get("credits", {}).get("crew", [])
         for crew in crew_list:
             crew_id = crew.get("id")
-            resolved_img = local_profiles.get(crew_id) if crew_id else None
+            resolved = local_profiles.get(crew_id) if crew_id else None
+            resolved_img = resolved.get("profile_path") if resolved else None
+            birthday_str = resolved.get("birthday") if resolved else None
             crew_member = {
                 "id": f"tmdb:{crew_id}" if crew_id else None,
                 "name": crew.get("name"),
                 "job": crew.get("job"),
                 "gender": crew.get("gender"),
                 "profile_path": self._resolve_img(resolved_img or crew.get("profile_path"), "people"),
+                "age_at_release": calculate_age_at_release(birthday_str, first_air_date)
             }
             if crew.get("job") == "Director":
                 directors.append(crew_member)
@@ -328,7 +385,8 @@ class TvShowFormatter(DetailFormatter):
                     locale=ui_lang,
                     title=tmdb_data.get("name") or tmdb_data.get("original_name") or "Unknown TV Show",
                     overview=tmdb_data.get("overview"),
-                    poster_path=tmdb_data.get("poster_path")
+                    poster_path=tmdb_data.get("poster_path"),
+                    tagline=tmdb_data.get("tagline")
                 )
                 db.add(loc_db)
                 db_updated = True
@@ -341,6 +399,9 @@ class TvShowFormatter(DetailFormatter):
                     db_updated = True
                 if not loc_db.poster_path and tmdb_data.get("poster_path"):
                     loc_db.poster_path = tmdb_data.get("poster_path")
+                    db_updated = True
+                if not loc_db.tagline and tmdb_data.get("tagline"):
+                    loc_db.tagline = tmdb_data.get("tagline")
                     db_updated = True
             
             if db_updated:
@@ -470,6 +531,7 @@ class TvShowFormatter(DetailFormatter):
             "extras": extras_list,
             "imdb_id": tmdb_data.get("external_ids", {}).get("imdb_id") or (series_match.imdb_id if series_match else None),
             "title": tmdb_data.get("name") or tmdb_data.get("original_name") or "Unknown TV Show",
+            "tagline": loc_db.tagline if (loc_db and loc_db.tagline) else tmdb_data.get("tagline"),
             "logo_path": self._resolve_img(effective_logo, "logos"),
             "backdrop_path": self._resolve_img(effective_backdrop, "backdrops", size="original"),
             "poster_path": self._resolve_img(override.custom_poster if (override and override.custom_poster) else tmdb_data.get("poster_path"), "posters"),

@@ -77,6 +77,40 @@ const syncPersonProfileCaches = (queryClient, personId, data) => {
       )),
     };
   });
+
+  const cachedPerson = queryClient.getQueryData(['person-detail', personId]) || 
+                       queryClient.getQueryData(['person-detail', String(personId)]) ||
+                       queryClient.getQueryData(['person-detail', Number(personId)]);
+  const personName = (data?.name || cachedPerson?.name)?.toLowerCase();
+
+  const updateMediaDetailCache = (oldData) => {
+    if (!oldData) return oldData;
+    if (!oldData.directors && !oldData.cast) return oldData;
+    const updatePersonList = (list) => {
+      if (!list) return list;
+      return list.map((p) => {
+        const matchesId = p.id === personId || String(p.id) === String(personId);
+        const matchesPrefixedId = p.id === `local:${personId}` || p.id === `tmdb:${personId}`;
+        const matchesName = personName && p.name?.toLowerCase() === personName;
+
+        return matchesId || matchesPrefixedId || matchesName
+          ? {
+              ...p,
+              profile_path: data?.profile_path ?? p.profile_path,
+              local_profile_path: data?.local_profile_path ?? p.local_profile_path,
+            }
+          : p;
+      });
+    };
+    return {
+      ...oldData,
+      directors: updatePersonList(oldData.directors),
+      cast: updatePersonList(oldData.cast),
+    };
+  };
+
+  queryClient.setQueriesData({ queryKey: ['library-item-detail'] }, updateMediaDetailCache);
+  queryClient.setQueriesData({ queryKey: ['library-tv-detail'] }, updateMediaDetailCache);
 };
 
 const syncPersonBackdropCaches = (queryClient, personId, data) => {

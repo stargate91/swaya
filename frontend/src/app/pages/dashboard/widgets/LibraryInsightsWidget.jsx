@@ -4,7 +4,8 @@ import DashboardWidgetShell from './DashboardWidgetShell';
 import { useStatsQuery } from '../../../queries';
 
 const translateGenreLabel = (label, T) => {
-  const genreKey = `genres.${String(label || '').toLowerCase().replace(/[\s-]/g, '_')}`;
+  if (!label) return '';
+  const genreKey = `library.genres.${label}`;
   const translated = T(genreKey);
   return (translated && translated !== genreKey) ? translated : label;
 };

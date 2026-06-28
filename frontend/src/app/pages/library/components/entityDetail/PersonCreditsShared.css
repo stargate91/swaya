@@ -571,13 +571,14 @@
 
 .person-credits-card__role {
   display: block;
-  font-size: 0.68rem;
-  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  color: color-mix(in srgb, var(--color-text-primary) 70%, transparent);
   --role-mt: 2px;
   margin-top: var(--role-mt);
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+  font-weight: 500;
 }
 
 

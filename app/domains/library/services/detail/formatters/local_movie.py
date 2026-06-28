@@ -48,18 +48,51 @@ class LocalMovieFormatter(MovieDetailFormatter):
         directors = []
         writers = []
         
+        def calculate_age_at_release(birthday_str: str, release_date_str: str) -> Any:
+            if not birthday_str or not release_date_str:
+                return None
+            try:
+                from datetime import datetime
+                b_date = datetime.strptime(birthday_str[:10], "%Y-%m-%d")
+                r_date = datetime.strptime(release_date_str[:10], "%Y-%m-%d")
+                age = r_date.year - b_date.year
+                if (r_date.month, r_date.day) < (b_date.month, b_date.day):
+                    age -= 1
+                return age
+            except:
+                return None
+
         if active_match:
             people_links = db.query(MediaPersonLink).options(
                 joinedload(MediaPersonLink.person).joinedload(Person.localizations)
             ).filter(MediaPersonLink.match_id == active_match.id).all()
+            
+            local_person_ids = [link.person.id for link in people_links if link.person]
+            overrides = db.query(UserOverride).filter(
+                UserOverride.user_id == current_uid,
+                UserOverride.person_id.in_(local_person_ids)
+            ).all() if local_person_ids else []
+            override_map = {ov.person_id: ov.custom_poster for ov in overrides if ov.custom_poster}
+            release_date_str = active_match.release_date.strftime("%Y-%m-%d") if active_match.release_date else None
+
+            missing_birthday_ids = [link.person.id for link in people_links if link.person and link.person.birthday is None]
+            if missing_birthday_ids:
+                try:
+                    from app.domains.tasks import task_manager
+                    if task_manager.people_enrich_worker:
+                        task_manager.people_enrich_worker.enqueue_people(missing_birthday_ids)
+                except Exception as ex:
+                    logger.error(f"Failed to auto-enqueue missing birthdays in local movie: {ex}")
+
             for link in sorted(people_links, key=lambda x: x.order):
                 person = link.person
+                custom_img = override_map.get(person.id)
                 person_data = {
                     "id": person.id,
                     "name": person.name,
                     "character": link.character_name,
                     "job": link.role.value if hasattr(link.role, "value") else str(link.role),
-                    "profile_path": self._resolve_img(person.local_profile_path or person.profile_path, "people"),
+                    "profile_path": self._resolve_img(custom_img or person.local_profile_path or person.profile_path, "people"),
                     "popularity": (
                         person.rating_porndb
                         if person.is_adult and person.rating_porndb is not None
@@ -67,7 +100,8 @@ class LocalMovieFormatter(MovieDetailFormatter):
                     ),
                     "scene_count": person.scene_count,
                     "rating_porndb": person.rating_porndb,
-                    "gender": person.gender
+                    "gender": person.gender,
+                    "age_at_release": calculate_age_at_release(person.birthday, release_date_str)
                 }
                 if person_data["job"].lower() == "director":
                     directors.append(person_data)
@@ -227,12 +261,12 @@ class LocalMovieFormatter(MovieDetailFormatter):
             "year": active_match.release_date.year if (active_match and active_match.release_date) else None,
             "release_date": active_match.release_date.isoformat() if (active_match and active_match.release_date) else None,
             "runtime": active_match.runtime if active_match else None,
-            "rating_tmdb": active_match.rating_tmdb if active_match else 0.0,
+            "rating_tmdb": active_match.rating_tmdb if (active_match and active_match.rating_tmdb is not None) else None,
             "rating_imdb": active_match.rating_imdb if active_match else None,
             "rating_rotten": active_match.rating_rotten if active_match else None,
             "rating_meta": active_match.rating_meta if active_match else None,
             "rating_porndb": active_match.rating_porndb if active_match else None,
-            "vote_count_tmdb": active_match.vote_count_tmdb if active_match else 0,
+            "vote_count_tmdb": active_match.vote_count_tmdb if (active_match and active_match.vote_count_tmdb is not None) else None,
             "budget": active_match.budget if active_match else None,
             "revenue": active_match.revenue if active_match else None,
             "companies": [{"name": s.name, "logo_path": self._resolve_img(s.logo_path, "logos")} for s in active_match.studios] if active_match else [],

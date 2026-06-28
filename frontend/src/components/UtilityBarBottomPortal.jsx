@@ -6,7 +6,12 @@ export default function UtilityBarBottomPortal({ children, side = 'left', enable
 
   useEffect(() => {
     if (enabled) {
-      const selector = side === 'left' ? '.shell__utility-bar-bottom-left' : '.shell__utility-bar-bottom-right';
+      let selector = '.shell__utility-bar-bottom-left';
+      if (side === 'center') {
+        selector = '.shell__utility-bar-bottom-center';
+      } else if (side === 'right') {
+        selector = '.shell__utility-bar-bottom-right';
+      }
       setTargetEl(document.querySelector(selector));
     } else {
       setTargetEl(null);

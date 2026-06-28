@@ -41,15 +41,59 @@ class TmdbMovieFormatter(MovieDetailFormatter):
         local_profiles = {}
         if person_ids:
             try:
+                from sqlalchemy import or_
+                from app.domains.users.models import UserOverride
+                quoted_pids = [f'"{pid}"' for pid in person_ids]
+                raw_pids = list(person_ids)
                 local_people = db.query(Person).filter(
-                    Person.external_ids["tmdb"].as_string().in_(list(person_ids))
+                    or_(
+                        Person.external_ids["tmdb"].as_string().in_(raw_pids),
+                        Person.external_ids["tmdb"].as_string().in_(quoted_pids)
+                    )
                 ).all()
+                
+                local_person_ids = [lp.id for lp in local_people]
+                overrides = db.query(UserOverride).filter(
+                    UserOverride.user_id == current_uid,
+                    UserOverride.person_id.in_(local_person_ids)
+                ).all()
+                override_map = {ov.person_id: ov.custom_poster for ov in overrides if ov.custom_poster}
+
                 for lp in local_people:
                     tmdb_id_str = lp.external_ids.get("tmdb")
                     if tmdb_id_str:
-                        local_profiles[int(tmdb_id_str)] = lp.local_profile_path or lp.profile_path
+                        custom_img = override_map.get(lp.id)
+                        local_profiles[int(tmdb_id_str)] = {
+                            "profile_path": custom_img or lp.local_profile_path or lp.profile_path,
+                            "birthday": lp.birthday
+                        }
+                
+                missing_birthday_ids = [lp.id for lp in local_people if lp.birthday is None]
+                if missing_birthday_ids:
+                    try:
+                        from app.domains.tasks import task_manager
+                        if task_manager.people_enrich_worker:
+                            task_manager.people_enrich_worker.enqueue_people(missing_birthday_ids)
+                    except Exception as ex:
+                        logger.error(f"Failed to auto-enqueue missing birthdays: {ex}")
             except Exception as e:
                 logger.error(f"Failed to query custom performer avatars for movie detail: {e}")
+
+        def calculate_age_at_release(birthday_str: str, release_date_str: str) -> Any:
+            if not birthday_str or not release_date_str:
+                return None
+            try:
+                from datetime import datetime
+                b_date = datetime.strptime(birthday_str[:10], "%Y-%m-%d")
+                r_date = datetime.strptime(release_date_str[:10], "%Y-%m-%d")
+                age = r_date.year - b_date.year
+                if (r_date.month, r_date.day) < (b_date.month, b_date.day):
+                    age -= 1
+                return age
+            except:
+                return None
+
+        release_date = tmdb_data.get("release_date")
 
         cast = []
         directors = []
@@ -57,7 +101,9 @@ class TmdbMovieFormatter(MovieDetailFormatter):
         
         for actor in credits.get("cast", [])[:15]:
             actor_id = actor.get("id")
-            resolved_img = local_profiles.get(actor_id) if actor_id else None
+            resolved = local_profiles.get(actor_id) if actor_id else None
+            resolved_img = resolved.get("profile_path") if resolved else None
+            birthday_str = resolved.get("birthday") if resolved else None
             cast.append({
                 "id": f"tmdb:{actor_id}" if actor_id else None,
                 "name": actor.get("name"),
@@ -65,26 +111,28 @@ class TmdbMovieFormatter(MovieDetailFormatter):
                 "job": "Actor",
                 "profile_path": self._resolve_img(resolved_img or actor.get("profile_path"), "people"),
                 "popularity": actor.get("popularity", 0),
-                "gender": actor.get("gender")
+                "gender": actor.get("gender"),
+                "age_at_release": calculate_age_at_release(birthday_str, release_date)
             })
         
         for crew in credits.get("crew", []):
             crew_id = crew.get("id")
-            resolved_img = local_profiles.get(crew_id) if crew_id else None
+            resolved = local_profiles.get(crew_id) if crew_id else None
+            resolved_img = resolved.get("profile_path") if resolved else None
+            birthday_str = resolved.get("birthday") if resolved else None
             crew_member = {
                 "id": f"tmdb:{crew_id}" if crew_id else None,
                 "name": crew.get("name"),
                 "job": crew.get("job"),
                 "profile_path": self._resolve_img(resolved_img or crew.get("profile_path"), "people"),
                 "popularity": crew.get("popularity", 0),
-                "gender": crew.get("gender")
+                "gender": crew.get("gender"),
+                "age_at_release": calculate_age_at_release(birthday_str, release_date)
             }
             if crew.get("job") == "Director":
                 directors.append(crew_member)
             elif crew.get("job") in ("Writer", "Screenplay"):
                 writers.append(crew_member)
-        
-        release_date = tmdb_data.get("release_date")
         year = None
         if release_date:
             try:

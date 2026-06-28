@@ -361,6 +361,16 @@
   pointer-events: auto;
 }
 
+.shell__utility-bar-bottom-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  height: 100%;
+  pointer-events: auto;
+}
+
 .shell__utility-bar-bottom-right {
   display: flex;
   align-items: center;
