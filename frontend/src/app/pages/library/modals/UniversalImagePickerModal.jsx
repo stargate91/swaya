@@ -226,6 +226,48 @@ export default function UniversalImagePickerModal({
         </div>
       )}
 
+      {isScene && (imageType === 'poster' || imageType === 'backdrop') && (
+        <div className="scene-image-picker-options">
+          <h4 className="scene-image-picker-title">
+            {imageType === 'poster'
+              ? (t('library.details.availablePosters') || 'Available Posters')
+              : (t('library.details.availableBackdrops') || 'Available Backdrops')}
+          </h4>
+          <div className="scene-image-picker-grid">
+            {(() => {
+              const options = [];
+              if (item?.original_backdrop_path) {
+                options.push({
+                  path: item.original_backdrop_path,
+                  label: t('library.details.originalSceneStill') || 'Original Scene Still',
+                  alt: 'Original Still',
+                });
+              }
+
+              return options.map((opt, idx) => (
+                <div 
+                  key={idx}
+                  className={`scene-image-picker-card ${selectedPath === opt.path ? 'active' : ''}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleSelectTmdbImage(opt.path)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      handleSelectTmdbImage(opt.path);
+                    }
+                  }}
+                >
+                  <div className="scene-image-picker-img-wrapper backdrop-variant">
+                    <img src={resolveMediaImageUrl(opt.path, imageType)} alt={opt.alt} />
+                  </div>
+                  <span className="scene-image-picker-label">{opt.label}</span>
+                </div>
+              ));
+            })()}
+          </div>
+        </div>
+      )}
+
       {sources.length > 1 && (
         <div className="universal-image-picker__source-filter">
           <span className="universal-image-picker__source-label">{t('library.details.imageSource') || 'Image Source'}{COLON_CHAR}</span>

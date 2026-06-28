@@ -2,10 +2,11 @@ import logging
 from typing import Any
 from fastapi.responses import JSONResponse
 
-from app.shared_kernel.enums import Provider
+from app.shared_kernel.enums import Provider, MediaType
 from app.domains.users.models import UserOverride
 from app.application.library.schemas import MovieDetailResponse
 from app.domains.library.services.detail.formatters.base import MovieDetailFormatter
+from app.domains.metadata.models import MetadataMatch
 
 from app.domains.people.models import Person
 
@@ -70,6 +71,57 @@ class PornDbMovieFormatter(MovieDetailFormatter):
             
         poster_url = movie_data.get("poster")
         backdrop_url = None
+
+        match = db.query(MetadataMatch).filter(
+            MetadataMatch.provider == Provider.PORNDB,
+            MetadataMatch.external_id == str(porndb_id),
+            MetadataMatch.media_type == MediaType.MOVIE
+        ).first()
+
+        if match:
+            db_updated = False
+            if not match.backdrop_path and backdrop_url:
+                match.backdrop_path = backdrop_url
+                db_updated = True
+            if not match.release_date and date_str:
+                from datetime import datetime
+                try:
+                    match.release_date = datetime.strptime(date_str, "%Y-%m-%d")
+                    db_updated = True
+                except:
+                    pass
+            if not match.rating_porndb and movie_data.get("rating"):
+                try:
+                    match.rating_porndb = float(movie_data.get("rating"))
+                    db_updated = True
+                except:
+                    pass
+            
+            loc_db = next((l for l in match.localizations if l.locale == "en"), None)
+            if not loc_db:
+                from app.domains.metadata.models import MetadataLocalization
+                loc_db = MetadataLocalization(
+                    match_id=match.id,
+                    locale="en",
+                    title=movie_data.get("title") or "Unknown Movie",
+                    overview=movie_data.get("description"),
+                    poster_path=poster_url
+                )
+                db.add(loc_db)
+                db_updated = True
+            else:
+                if not loc_db.title and movie_data.get("title"):
+                    loc_db.title = movie_data.get("title")
+                    db_updated = True
+                if not loc_db.overview and movie_data.get("description"):
+                    loc_db.overview = movie_data.get("description")
+                    db_updated = True
+                if not loc_db.poster_path and poster_url:
+                    loc_db.poster_path = poster_url
+                    db_updated = True
+            
+            if db_updated:
+                db.commit()
                 
         result = {
             "id": f"porndb_{porndb_id}",

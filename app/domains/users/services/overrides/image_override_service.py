@@ -36,6 +36,22 @@ class ImageOverrideService:
             subfolder = "logos"
 
         if path and (path.startswith("/") or path.startswith(("http://", "https://"))):
+            from urllib.parse import urlparse, parse_qs
+            parsed = urlparse(path)
+            is_local = False
+            if "127.0.0.1" in parsed.netloc or "localhost" in parsed.netloc:
+                is_local = True
+            elif path.startswith("/media/") or path.startswith("media/"):
+                is_local = True
+
+            if is_local:
+                query_params = parse_qs(parsed.query)
+                if "url" in query_params:
+                    path = query_params["url"][0]
+                else:
+                    path = os.path.basename(parsed.path)
+
+        if path and (path.startswith("/") or path.startswith(("http://", "https://"))):
             try:
                 if self.image_downloader:
                     url = self.image_downloader.get_download_url(path, subfolder)

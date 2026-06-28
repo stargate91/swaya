@@ -378,10 +378,20 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
   const isOwned = item && item.in_library !== false;
   const isTracked = Boolean(item?.is_tracked);
   const trackedExternalId = !isOwned
-    ? (isScene ? (item?.external_ids?.stash_id || cleanId) : Number(item?.tv_tmdb_id || item?.tmdb_id || cleanId || 0))
+    ? (isScene 
+        ? (item?.external_ids?.stash_id || cleanId) 
+        : (cleanId.startsWith('porndb_') || cleanId.startsWith('fansdb_') ? cleanId : Number(item?.tv_tmdb_id || item?.tmdb_id || cleanId || 0))
+      )
     : 0;
   const trackedMediaType = isScene ? 'scene' : (isMovie ? 'movie' : 'tv');
-  const canToggleTracked = !isOwned && (isScene ? !!trackedExternalId : (Number.isFinite(trackedExternalId) && trackedExternalId > 0));
+  const canToggleTracked = !isOwned && (
+    isScene 
+      ? !!trackedExternalId 
+      : (typeof trackedExternalId === 'string' && (trackedExternalId.startsWith('porndb_') || trackedExternalId.startsWith('fansdb_'))
+          ? true 
+          : (Number.isFinite(trackedExternalId) && trackedExternalId > 0)
+        )
+  );
 
   const getIsTvWatched = () => {
     if (!item?.seasons) return false;
@@ -390,9 +400,9 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
     if (episodes.length === 0) return false;
     return episodes.every(e => e.is_watched);
   };
-  const isWatched = isMovie ? item?.is_watched : getIsTvWatched();
+  const isWatched = (isMovie || isScene) ? item?.is_watched : getIsTvWatched();
 
-  const canToggleWatched = isMovie
+  const canToggleWatched = (isMovie || isScene)
     ? Boolean(item)
     : Boolean(
       item?.seasons
@@ -450,7 +460,7 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
   };
 
   const handlePlayClick = () => {
-    if (isMovie) {
+    if (isMovie || isScene) {
       playMutation.mutate(item.id);
     } else if (nextEpisodeInfo) {
       playMutation.mutate(nextEpisodeInfo.episode.id);
@@ -458,7 +468,7 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
   };
 
   const handleToggleWatched = () => {
-    if (isMovie) {
+    if (isMovie || isScene) {
       updateStatusMutation.mutate({
         itemId: effectiveId,
         tvId: cleanId,

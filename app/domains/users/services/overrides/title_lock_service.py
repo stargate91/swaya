@@ -86,23 +86,34 @@ class TitleLockService:
             self.service._enrich_language_if_needed(media_item_id, m_override.custom_language)
 
         # Rating, comments, favorite
+        has_active_interaction = False
         if "user_rating" in request.model_fields_set:
             m_override.user_rating = request.user_rating
             m_override.user_rating_at = datetime.now(timezone.utc) if request.user_rating is not None else None
+            if request.user_rating is not None:
+                has_active_interaction = True
 
         if "user_comment" in request.model_fields_set:
             m_override.user_comment = request.user_comment
             m_override.user_comment_at = datetime.now(timezone.utc) if request.user_comment is not None else None
+            if request.user_comment:
+                has_active_interaction = True
 
         if request.is_favorite is not None:
             m_override.is_favorite = bool(request.is_favorite)
             m_override.is_favorite_at = datetime.now(timezone.utc) if m_override.is_favorite else None
+            if m_override.is_favorite:
+                has_active_interaction = True
 
         if request.is_watched is not None:
             m_override.is_watched = bool(request.is_watched)
             if m_override.is_watched:
                 m_override.watch_count = max(m_override.watch_count or 0, 1)
                 m_override.last_watched_at = datetime.now(timezone.utc)
+                has_active_interaction = True
+
+        if has_active_interaction:
+            m_override.is_tracked = True
 
         if request.resume_position is not None:
             p_override.resume_position = int(request.resume_position or 0)
@@ -249,6 +260,7 @@ class TitleLockService:
                 if is_watched:
                     override.watch_count = max(override.watch_count or 0, 1)
                     override.last_watched_at = parsed_date
+                    override.is_tracked = True
                 else:
                     override.watch_count = 0
                     override.last_watched_at = None
@@ -263,5 +275,32 @@ class TitleLockService:
             raise NotFoundException("Target item not found")
 
         override.is_tracked = is_tracked
+        
+        if is_tracked:
+            media_type = None
+            if override.metadata_match:
+                m_type = override.metadata_match.media_type
+                media_type = m_type.value if hasattr(m_type, "value") else str(m_type)
+            
+            from app.infrastructure.scrapers.support.gateway import scraper_gateway
+            if media_type == 'scene':
+                from app.domains.library.services.detail.scene_detail_service import SceneDetailService
+                try:
+                    SceneDetailService(self.db, scraper_gateway).get_scene_detail(item_id)
+                except Exception as e:
+                    logger.error(f"Auto-enrich failed for scene {item_id}: {e}")
+            elif media_type == 'tv':
+                from app.domains.library.services.detail.tv_detail_service import TvDetailService
+                try:
+                    TvDetailService(self.db, scraper_gateway).get_library_tv_detail(item_id)
+                except Exception as e:
+                    logger.error(f"Auto-enrich failed for tv {item_id}: {e}")
+            elif media_type == 'movie':
+                from app.domains.library.services.detail.movie_detail_service import MovieDetailService
+                try:
+                    MovieDetailService(self.db, scraper_gateway).get_library_item_detail(item_id)
+                except Exception as e:
+                    logger.error(f"Auto-enrich failed for movie {item_id}: {e}")
+
         self.db.commit()
         return {"status": "success", "item_id": item_id, "is_tracked": is_tracked}

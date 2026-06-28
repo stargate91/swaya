@@ -261,6 +261,25 @@ class ImageProcessingService(ImageServicePort):
 
         # 1. Remote URL fallback
         if path.startswith(("http://", "https://")):
+            # PornDB CDN image sizing
+            if "cdn.theporndb.net" in path and "/background/" in path and "/background/c/" not in path:
+                if size != "original":
+                    suffix = "medium"
+                    if size in ("w154", "w185", "w300", "personThumb", "posterThumb", "backdropThumb"):
+                        suffix = "small"
+                    
+                    parts = path.split("/background/")
+                    if len(parts) == 2:
+                        filename = parts[1]
+                        name, ext = os.path.splitext(filename)
+                        path = f"{parts[0]}/background/c/{name}-{suffix}{ext}"
+
+            # Auto-proxy hotlink-protected CDNs
+            hotlinked_hosts = ["mjedge.net", "gtflixtv.com", "pbnetcdn.com", "mjedge.com", "atkingdom-network.com", "sexlikereal.com"]
+            if any(host in path for host in hotlinked_hosts):
+                from urllib.parse import quote
+                return f"/api/v1/media/image-proxy?url={quote(path, safe='')}"
+
             if "image.tmdb.org/t/p/" in path:
                 parts = path.split("/t/p/")
                 if len(parts) == 2:

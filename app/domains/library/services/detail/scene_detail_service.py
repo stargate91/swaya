@@ -212,26 +212,68 @@ class SceneDetailService(DetailFormatter):
                 UserOverride.custom_title == title
             ).first()
         
-        local_poster = None
-        local_backdrop = None
-        if match_db:
-            local_backdrop = match_db.local_backdrop_path
-            loc_db = next((l for l in match_db.localizations if l.locale == "en"), None)
-            if loc_db:
-                local_poster = loc_db.local_poster_path
-
-        genres = []
-        for t in scene_data.get("tags") or []:
-            if isinstance(t, dict) and t.get("name"):
-                genres.append(t["name"])
-            elif isinstance(t, str):
-                genres.append(t)
-        
         ext_background = scene_data.get("background")
         if isinstance(ext_background, dict):
             ext_background = ext_background.get("full") or ext_background.get("large") or ext_background.get("medium")
         if not ext_background:
             ext_background = scene_data.get("image") or poster_url
+
+        if match_db:
+            db_updated = False
+            if not match_db.backdrop_path and ext_background:
+                match_db.backdrop_path = ext_background
+                db_updated = True
+            if not match_db.release_date and date_str:
+                from datetime import datetime
+                try:
+                    match_db.release_date = datetime.strptime(date_str, "%Y-%m-%d")
+                    db_updated = True
+                except:
+                    pass
+            if not match_db.rating_porndb and scene_data.get("rating"):
+                try:
+                    match_db.rating_porndb = float(scene_data.get("rating"))
+                    db_updated = True
+                except:
+                    pass
+            
+            loc_db = next((l for l in match_db.localizations if l.locale == "en"), None)
+            if not loc_db:
+                from app.domains.metadata.models import MetadataLocalization
+                loc_db = MetadataLocalization(
+                    match_id=match_db.id,
+                    locale="en",
+                    title=title,
+                    overview=scene_data.get("details"),
+                    poster_path=poster_url
+                )
+                db.add(loc_db)
+                db_updated = True
+            else:
+                if not loc_db.title and title:
+                    loc_db.title = title
+                    db_updated = True
+                if not loc_db.overview and scene_data.get("details"):
+                    loc_db.overview = scene_data.get("details")
+                    db_updated = True
+                if not loc_db.poster_path and poster_url:
+                    loc_db.poster_path = poster_url
+                    db_updated = True
+            
+            if db_updated:
+                db.commit()
+
+        local_poster = override.custom_poster if override else None
+        local_backdrop = override.custom_backdrop if override else None
+        local_logo = override.custom_logo if override else None
+        
+        if match_db:
+            if not local_backdrop:
+                local_backdrop = match_db.local_backdrop_path or match_db.backdrop_path
+            loc_db = next((l for l in match_db.localizations if l.locale == "en"), None)
+            if loc_db:
+                if not local_poster:
+                    local_poster = loc_db.local_poster_path or loc_db.poster_path
             
         poster_resolved = self._resolve_img(local_poster or poster_url, "posters")
         backdrop_resolved = self._resolve_img(local_backdrop or ext_background, "backdrops", size="original")
@@ -239,7 +281,7 @@ class SceneDetailService(DetailFormatter):
         result = {
             "id": f"stash_{scene_uuid}",
             "title": title,
-            "logo_path": self._resolve_img(studio_logo or parent_logo, "logos"),
+            "logo_path": self._resolve_img(local_logo or studio_logo or parent_logo, "logos"),
             "original_logo_path": studio_logo or parent_logo,
             "original_backdrop_path": poster_url,
             "original_title": None,
@@ -283,6 +325,26 @@ class SceneDetailService(DetailFormatter):
             "in_library": match_db is not None and match_db.media_item_id is not None,
             "library_item_id": match_db.media_item_id if match_db else None,
         }
+        
+        peaks_count = 0
+        peaks_history = []
+        if match_db and match_db.media_item_id:
+            from app.domains.history.models import PlaybackPeakLog
+            peaks = db.query(PlaybackPeakLog).filter(
+                PlaybackPeakLog.user_id == current_uid,
+                PlaybackPeakLog.media_item_id == match_db.media_item_id
+            ).order_by(PlaybackPeakLog.video_position.asc()).all()
+            peaks_count = len(peaks)
+            peaks_history = [
+                {
+                    "id": p.id,
+                    "video_position": p.video_position,
+                    "watched_at": p.created_at.isoformat()
+                }
+                for p in peaks
+            ]
+        result["peaks_count"] = peaks_count
+        result["peaks_history"] = peaks_history
         from app.domains.library.services.detail.external_links import generate_external_links
         result["external_links"] = generate_external_links(result["external_ids"], "scene")
         return SceneDetailResponse(**result)

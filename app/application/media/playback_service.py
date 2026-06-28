@@ -182,6 +182,7 @@ class PlaybackService:
                 "season_number": active_match.season_number if active_match else None,
                 "episode_number": active_match.episode_number if active_match else None,
                 "poster_path": self._resolve_img(loc.poster_path if loc else None, "posters"),
+                "backdrop_path": self._resolve_img(active_match.backdrop_path if active_match else None, "backdrops"),
                 "resume_position": override.resume_position if override else 0,
                 "duration": int(item.duration) if item.duration else 0,
                 "is_watched": override.is_watched if override else False,

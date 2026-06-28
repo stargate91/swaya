@@ -286,6 +286,61 @@ class TvShowFormatter(DetailFormatter):
             MetadataMatch.media_type == MediaType.TV
         ).first()
 
+        if series_match:
+            db_updated = False
+            if not series_match.backdrop_path and effective_backdrop:
+                series_match.backdrop_path = effective_backdrop
+                db_updated = True
+            
+            first_air_date = tmdb_data.get("first_air_date")
+            if not series_match.release_date and first_air_date:
+                try:
+                    series_match.release_date = datetime.strptime(first_air_date, "%Y-%m-%d")
+                    db_updated = True
+                except:
+                    pass
+            if not series_match.rating_tmdb and tmdb_data.get("vote_average"):
+                try:
+                    series_match.rating_tmdb = float(tmdb_data.get("vote_average"))
+                    db_updated = True
+                except:
+                    pass
+            if not series_match.vote_count_tmdb and tmdb_data.get("vote_count"):
+                try:
+                    series_match.vote_count_tmdb = int(tmdb_data.get("vote_count"))
+                    db_updated = True
+                except:
+                    pass
+            if series_match.is_adult != tmdb_data.get("adult", False):
+                series_match.is_adult = tmdb_data.get("adult", False)
+                db_updated = True
+            
+            loc_db = next((l for l in series_match.localizations if l.locale == ui_lang), None)
+            if not loc_db:
+                from app.domains.metadata.models import MetadataLocalization
+                loc_db = MetadataLocalization(
+                    match_id=series_match.id,
+                    locale=ui_lang,
+                    title=tmdb_data.get("name") or tmdb_data.get("original_name") or "Unknown TV Show",
+                    overview=tmdb_data.get("overview"),
+                    poster_path=tmdb_data.get("poster_path")
+                )
+                db.add(loc_db)
+                db_updated = True
+            else:
+                if not loc_db.title and (tmdb_data.get("name") or tmdb_data.get("original_name")):
+                    loc_db.title = tmdb_data.get("name") or tmdb_data.get("original_name")
+                    db_updated = True
+                if not loc_db.overview and tmdb_data.get("overview"):
+                    loc_db.overview = tmdb_data.get("overview")
+                    db_updated = True
+                if not loc_db.poster_path and tmdb_data.get("poster_path"):
+                    loc_db.poster_path = tmdb_data.get("poster_path")
+                    db_updated = True
+            
+            if db_updated:
+                db.commit()
+
         keywords_list = []
         if tmdb_data.get("keywords"):
             raw_kws = tmdb_data.get("keywords", {})

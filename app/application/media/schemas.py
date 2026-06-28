@@ -43,6 +43,7 @@ class WatchedHistoryItem(BaseModel):
     season_number: Optional[int] = None
     episode_number: Optional[int] = None
     poster_path: Optional[str] = None
+    backdrop_path: Optional[str] = None
     resume_position: int
     duration: int
     is_watched: bool

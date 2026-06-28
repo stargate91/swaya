@@ -232,3 +232,98 @@ def track_item(item_id: str, db: Session = Depends(get_db)):
 @catalog_router.post("/library/item/{item_id}/untrack")
 def untrack_item(item_id: str, db: Session = Depends(get_db)):
     return OverridesService(db, DbMediaResolver(db)).track_item(item_id, False)
+
+@catalog_router.post("/library/item/{item_id}/peaks")
+def add_item_peak(item_id: str, db: Session = Depends(get_db)):
+    from app.shared_kernel.user_context import get_current_user_id
+    from app.infrastructure.media.db_media_resolver import DbMediaResolver
+    from app.domains.history.models import PlaybackPeakLog
+    from app.domains.users.models import UserOverride
+    
+    current_uid = get_current_user_id() or 1
+    resolver = DbMediaResolver(db)
+    media_item_id, metadata_match_id = resolver.resolve_ids(item_id)
+    
+    if not media_item_id:
+        raise HTTPException(status_code=404, detail="Local media item not found")
+        
+    video_position = 0
+    override = None
+    if metadata_match_id:
+        override = db.query(UserOverride).filter(
+            UserOverride.user_id == current_uid,
+            UserOverride.metadata_match_id == metadata_match_id
+        ).first()
+    if not override and media_item_id:
+        override = db.query(UserOverride).filter(
+            UserOverride.user_id == current_uid,
+            UserOverride.media_item_id == media_item_id
+        ).first()
+        
+    if override and override.resume_position:
+        video_position = int(override.resume_position)
+        
+    peak = PlaybackPeakLog(
+        user_id=current_uid,
+        media_item_id=media_item_id,
+        video_position=video_position
+    )
+    db.add(peak)
+    db.commit()
+    
+    peaks = db.query(PlaybackPeakLog).filter(
+        PlaybackPeakLog.user_id == current_uid,
+        PlaybackPeakLog.media_item_id == media_item_id
+    ).order_by(PlaybackPeakLog.video_position.asc()).all()
+    
+    return {
+        "peaks_count": len(peaks),
+        "peaks_history": [
+            {
+                "id": p.id,
+                "video_position": p.video_position,
+                "watched_at": p.created_at.isoformat()
+            }
+            for p in peaks
+        ]
+    }
+
+@catalog_router.delete("/library/item/{item_id}/peaks/{log_id}")
+def delete_item_peak(item_id: str, log_id: int, db: Session = Depends(get_db)):
+    from app.shared_kernel.user_context import get_current_user_id
+    from app.infrastructure.media.db_media_resolver import DbMediaResolver
+    from app.domains.history.models import PlaybackPeakLog
+    
+    current_uid = get_current_user_id() or 1
+    resolver = DbMediaResolver(db)
+    media_item_id, _ = resolver.resolve_ids(item_id)
+    
+    if not media_item_id:
+        raise HTTPException(status_code=404, detail="Local media item not found")
+        
+    peak = db.query(PlaybackPeakLog).filter(
+        PlaybackPeakLog.id == log_id,
+        PlaybackPeakLog.user_id == current_uid,
+        PlaybackPeakLog.media_item_id == media_item_id
+    ).first()
+    
+    if peak:
+        db.delete(peak)
+        db.commit()
+        
+    peaks = db.query(PlaybackPeakLog).filter(
+        PlaybackPeakLog.user_id == current_uid,
+        PlaybackPeakLog.media_item_id == media_item_id
+    ).order_by(PlaybackPeakLog.video_position.asc()).all()
+    
+    return {
+        "peaks_count": len(peaks),
+        "peaks_history": [
+            {
+                "id": p.id,
+                "video_position": p.video_position,
+                "watched_at": p.created_at.isoformat()
+            }
+            for p in peaks
+        ]
+    }

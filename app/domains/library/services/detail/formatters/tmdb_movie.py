@@ -118,6 +118,60 @@ class TmdbMovieFormatter(MovieDetailFormatter):
             MetadataMatch.media_type == MediaType.MOVIE
         ).first()
 
+        if match:
+            db_updated = False
+            if not match.backdrop_path and effective_backdrop:
+                match.backdrop_path = effective_backdrop
+                db_updated = True
+            if not match.release_date and release_date:
+                from datetime import datetime
+                try:
+                    match.release_date = datetime.strptime(release_date, "%Y-%m-%d")
+                    db_updated = True
+                except:
+                    pass
+            if not match.rating_tmdb and tmdb_data.get("vote_average"):
+                try:
+                    match.rating_tmdb = float(tmdb_data.get("vote_average"))
+                    db_updated = True
+                except:
+                    pass
+            if not match.vote_count_tmdb and tmdb_data.get("vote_count"):
+                try:
+                    match.vote_count_tmdb = int(tmdb_data.get("vote_count"))
+                    db_updated = True
+                except:
+                    pass
+            if match.is_adult != tmdb_data.get("adult", False):
+                match.is_adult = tmdb_data.get("adult", False)
+                db_updated = True
+            
+            loc_db = next((l for l in match.localizations if l.locale == ui_lang), None)
+            if not loc_db:
+                from app.domains.metadata.models import MetadataLocalization
+                loc_db = MetadataLocalization(
+                    match_id=match.id,
+                    locale=ui_lang,
+                    title=tmdb_data.get("title") or tmdb_data.get("original_title") or "Unknown Movie",
+                    overview=tmdb_data.get("overview"),
+                    poster_path=tmdb_data.get("poster_path")
+                )
+                db.add(loc_db)
+                db_updated = True
+            else:
+                if not loc_db.title and (tmdb_data.get("title") or tmdb_data.get("original_title")):
+                    loc_db.title = tmdb_data.get("title") or tmdb_data.get("original_title")
+                    db_updated = True
+                if not loc_db.overview and tmdb_data.get("overview"):
+                    loc_db.overview = tmdb_data.get("overview")
+                    db_updated = True
+                if not loc_db.poster_path and tmdb_data.get("poster_path"):
+                    loc_db.poster_path = tmdb_data.get("poster_path")
+                    db_updated = True
+            
+            if db_updated:
+                db.commit()
+
         belongs_to_col = tmdb_data.get("belongs_to_collection")
         collection_data = None
         if belongs_to_col:
@@ -186,8 +240,29 @@ class TmdbMovieFormatter(MovieDetailFormatter):
             "resume_position": override.resume_position if override else 0,
             "last_watched_at": override.last_watched_at.isoformat() if override and override.last_watched_at else None,
             "playback_logs": [],
-            "in_library": False,
+            "in_library": match is not None and match.media_item_id is not None,
+            "library_item_id": match.media_item_id if (match and match.media_item_id) else None,
         }
+        
+        peaks_count = 0
+        peaks_history = []
+        if match and match.media_item_id:
+            from app.domains.history.models import PlaybackPeakLog
+            peaks = db.query(PlaybackPeakLog).filter(
+                PlaybackPeakLog.user_id == current_uid,
+                PlaybackPeakLog.media_item_id == match.media_item_id
+            ).order_by(PlaybackPeakLog.video_position.asc()).all()
+            peaks_count = len(peaks)
+            peaks_history = [
+                {
+                    "id": p.id,
+                    "video_position": p.video_position,
+                    "watched_at": p.created_at.isoformat()
+                }
+                for p in peaks
+            ]
+        result["peaks_count"] = peaks_count
+        result["peaks_history"] = peaks_history
         
         ext_ids = {
             "tmdb": tmdb_id

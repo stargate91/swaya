@@ -139,7 +139,7 @@ class DbMediaResolver(
                             if media_type.lower() == 'tv':
                                 resolved_type = MediaType.TV
                     # Create a placeholder match record to link the override to
-                    match = MetadataMatch(provider=Provider.TMDB, external_id=tmdb_id, media_type=resolved_type)
+                    match = MetadataMatch(provider=Provider.TMDB, external_id=tmdb_id, media_type=resolved_type, is_adult=False)
                     self.db.add(match)
                     self.db.flush()
                 metadata_match_id = match.id
@@ -155,12 +155,28 @@ class DbMediaResolver(
             elif provider_prefix in ("porndb", "theporndb"):
                 provider = Provider.PORNDB
                 
+            resolved_media_type = MediaType.SCENE
+            if media_type:
+                try:
+                    resolved_media_type = MediaType(media_type.lower())
+                except ValueError:
+                    if media_type.lower() == 'movie':
+                        resolved_media_type = MediaType.MOVIE
+                    elif media_type.lower() == 'tv':
+                        resolved_media_type = MediaType.TV
+
             match = self.db.query(MetadataMatch).filter(
                 MetadataMatch.provider == provider,
-                MetadataMatch.external_id == scene_id
+                MetadataMatch.external_id == scene_id,
+                MetadataMatch.media_type == resolved_media_type
             ).first()
             if not match:
-                match = MetadataMatch(provider=provider, external_id=scene_id, media_type=MediaType.SCENE)
+                match = MetadataMatch(
+                    provider=provider, 
+                    external_id=scene_id, 
+                    media_type=resolved_media_type,
+                    is_adult=True
+                )
                 self.db.add(match)
                 self.db.flush()
             metadata_match_id = match.id

@@ -419,6 +419,11 @@
   margin-right: var(--space-4);
   position: relative;
   z-index: 2;
+  transition: width 0.2s ease;
+}
+
+.watched-history-card__poster-wrapper.is-scene {
+  width: 128px;
 }
 
 .watched-history-card__poster {

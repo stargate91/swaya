@@ -338,6 +338,15 @@ export const useUpdateMediaStatusMutation = () => {
       queryClient.setQueryData(['library-item-detail', variables.itemId], updateDetailCache);
       queryClient.setQueryData(['library-tv-detail', variables.itemId], updateDetailCache);
 
+      queryClient.invalidateQueries({ queryKey: ['full-metadata', variables.itemId] });
+      queryClient.invalidateQueries({ queryKey: ['library-item-detail', variables.itemId] });
+      queryClient.invalidateQueries({ queryKey: ['library-tv-detail', variables.itemId] });
+
+      const cleanId = String(variables.itemId).replace('tv_', '');
+      queryClient.invalidateQueries({ queryKey: ['full-metadata', cleanId] });
+      queryClient.invalidateQueries({ queryKey: ['library-item-detail', cleanId] });
+      queryClient.invalidateQueries({ queryKey: ['library-tv-detail', cleanId] });
+
       if (variables.tvId) {
         queryClient.setQueryData(['library-tv-detail', variables.tvId], updateDetailCache);
         queryClient.setQueryData(['library-tv-detail', `tv_${variables.tvId}`], updateDetailCache);
@@ -345,6 +354,8 @@ export const useUpdateMediaStatusMutation = () => {
         queryClient.setQueryData(['library-item-detail', `tv_${variables.tvId}`], updateDetailCache);
         queryClient.invalidateQueries({ queryKey: ['library-tv-detail', variables.tvId] });
         queryClient.invalidateQueries({ queryKey: ['library-tv-detail', `tv_${variables.tvId}`] });
+        queryClient.invalidateQueries({ queryKey: ['library-item-detail', variables.tvId] });
+        queryClient.invalidateQueries({ queryKey: ['library-item-detail', `tv_${variables.tvId}`] });
       }
 
       // Update matching items in the library query cache instead of invalidating everything
@@ -614,8 +625,12 @@ export const useAddPeakMutation = () => {
           peaks_history: data.peaks_history,
         };
       };
+      const cleanId = String(itemId).replace('tv_', '');
       queryClient.setQueryData(['library-item-detail', itemId], updateData);
+      queryClient.setQueryData(['library-item-detail', cleanId], updateData);
       queryClient.setQueryData(['library-tv-detail', itemId], updateData);
+      queryClient.invalidateQueries({ queryKey: ['library-item-detail', itemId] });
+      queryClient.invalidateQueries({ queryKey: ['library-item-detail', cleanId] });
       queryClient.invalidateQueries({ queryKey: ['library-tv-detail'] });
     },
   });
@@ -634,8 +649,12 @@ export const useDeletePeakMutation = () => {
           peaks_history: data.peaks_history,
         };
       };
+      const cleanId = String(variables.itemId).replace('tv_', '');
       queryClient.setQueryData(['library-item-detail', variables.itemId], updateData);
+      queryClient.setQueryData(['library-item-detail', cleanId], updateData);
       queryClient.setQueryData(['library-tv-detail', variables.itemId], updateData);
+      queryClient.invalidateQueries({ queryKey: ['library-item-detail', variables.itemId] });
+      queryClient.invalidateQueries({ queryKey: ['library-item-detail', cleanId] });
       queryClient.invalidateQueries({ queryKey: ['library-tv-detail'] });
     },
   });

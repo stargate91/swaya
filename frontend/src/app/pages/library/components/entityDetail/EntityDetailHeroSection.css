@@ -1429,9 +1429,9 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  --flag-bg: rgba(10, 12, 16, 0.45);
+  --flag-bg: rgba(10, 12, 16, 0.65);
   background: var(--flag-bg);
-  --flag-border: 1px solid rgba(255, 255, 255, 0.1);
+  --flag-border: 1px solid rgba(255, 255, 255, 0.25);
   border: var(--flag-border);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -1445,7 +1445,7 @@
   --flag-pb: 2px;
   padding-bottom: var(--flag-pb); /* Fine-tunes vertical text/emoji alignment to nudge it upward */
   box-sizing: border-box;
-  opacity: 0.65; /* Not too flashy, blends into image */
+  opacity: 0.85; /* Not too flashy, blends into image */
   --flag-transition: opacity 0.25s cubic-bezier(0.25, 1, 0.5, 1), transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
   transition: var(--flag-transition);
   pointer-events: none; /* Make sure it doesn't block image clicks */

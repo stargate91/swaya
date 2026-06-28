@@ -28,6 +28,41 @@ class PerformerAssetManager:
             raise HTTPException(status_code=404, detail="Person not found")
 
         user_id = get_current_user_id() or 1
+        
+        if backdrop_path and (backdrop_path.startswith("/") or backdrop_path.startswith(("http://", "https://"))):
+            from urllib.parse import urlparse, parse_qs
+            parsed = urlparse(backdrop_path)
+            is_local = False
+            if "127.0.0.1" in parsed.netloc or "localhost" in parsed.netloc:
+                is_local = True
+            elif backdrop_path.startswith("/media/") or backdrop_path.startswith("media/"):
+                is_local = True
+
+            if is_local:
+                query_params = parse_qs(parsed.query)
+                if "url" in query_params:
+                    backdrop_path = query_params["url"][0]
+                else:
+                    backdrop_path = os.path.basename(parsed.path)
+
+        if backdrop_path and (backdrop_path.startswith("/") or backdrop_path.startswith(("http://", "https://"))):
+            try:
+                from app.infrastructure.tasks.tasks_image_download_adapter import TasksImageDownloadAdapter
+                downloader = TasksImageDownloadAdapter()
+                url = downloader.get_download_url(backdrop_path, "backdrops")
+                if url:
+                    import re
+                    from urllib.parse import urlparse
+                    basename = os.path.basename(urlparse(backdrop_path).path)
+                    ext = os.path.splitext(basename)[1].lower() or ".jpg"
+                    prefix = f"user_override_{user_id}_person_backdrop_{person_id}"
+                    safe_prefix = re.sub(r"[^A-Za-z0-9_.-]+", "_", prefix).strip("_")
+                    filename = f"{safe_prefix}_{basename}{ext}"
+                    downloader.download_now(url, "backdrops", filename)
+                    backdrop_path = filename
+            except Exception as e:
+                logger.error(f"Failed to download person backdrop override image: {e}")
+
         self.library_port.update_person_user_override(
             user_id=user_id,
             person_id=person_id,
@@ -87,6 +122,41 @@ class PerformerAssetManager:
             raise HTTPException(status_code=404, detail="Person not found")
 
         user_id = get_current_user_id() or 1
+        
+        if profile_path and (profile_path.startswith("/") or profile_path.startswith(("http://", "https://"))):
+            from urllib.parse import urlparse, parse_qs
+            parsed = urlparse(profile_path)
+            is_local = False
+            if "127.0.0.1" in parsed.netloc or "localhost" in parsed.netloc:
+                is_local = True
+            elif profile_path.startswith("/media/") or profile_path.startswith("media/"):
+                is_local = True
+
+            if is_local:
+                query_params = parse_qs(parsed.query)
+                if "url" in query_params:
+                    profile_path = query_params["url"][0]
+                else:
+                    profile_path = os.path.basename(parsed.path)
+
+        if profile_path and (profile_path.startswith("/") or profile_path.startswith(("http://", "https://"))):
+            try:
+                from app.infrastructure.tasks.tasks_image_download_adapter import TasksImageDownloadAdapter
+                downloader = TasksImageDownloadAdapter()
+                url = downloader.get_download_url(profile_path, "people")
+                if url:
+                    import re
+                    from urllib.parse import urlparse
+                    basename = os.path.basename(urlparse(profile_path).path)
+                    ext = os.path.splitext(basename)[1].lower() or ".jpg"
+                    prefix = f"user_override_{user_id}_person_{person_id}"
+                    safe_prefix = re.sub(r"[^A-Za-z0-9_.-]+", "_", prefix).strip("_")
+                    filename = f"{safe_prefix}_{basename}{ext}"
+                    downloader.download_now(url, "people", filename)
+                    profile_path = filename
+            except Exception as e:
+                logger.error(f"Failed to download person profile override image: {e}")
+
         self.library_port.update_person_user_override(
             user_id=user_id,
             person_id=person_id,

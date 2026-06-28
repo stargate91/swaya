@@ -11,6 +11,7 @@ import { useUi } from '@/providers/UiProvider';
 import { useHistoryQuery, useUndoMutation, useScanStatusQuery, useWatchedHistoryQuery, usePlayMediaMutation } from '@/queries';
 import { RotateCcw, AlertTriangle, Play, CheckCircle2, Clock, Tv, Film } from 'lucide-react';
 import { API_BASE } from '@/lib/backend';
+import { resolveMediaImageUrl } from '@/lib/imageUrls';
 import HistoryCard from './components/HistoryCard';
 import './HistoryPage.css';
 
@@ -21,12 +22,6 @@ const DASH = ' - ';
 const SLASH = ' / ';
 const S_CHAR = 'S';
 const E_CHAR = 'E';
-
-const getPosterUrl = (path) => {
-  if (!path) return '';
-  if (path.startsWith('http')) return path;
-  return `${API_BASE}${path}`;
-};
 
 const formatTime = (seconds) => {
   if (!seconds) return '0:00';
@@ -238,9 +233,12 @@ export default function HistoryPage() {
     return (
       <div className="watched-history-list">
         {watchedHistory.map((log, index) => {
-          const isMovie = log.type === 'movie';
-          const poster = isMovie ? log.poster_path : (log.tv_poster_path || log.poster_path);
-          const posterUrl = getPosterUrl(poster);
+          const isSingle = log.type === 'movie' || log.type === 'scene';
+          const isScene = log.type === 'scene';
+          const poster = isScene
+            ? (log.backdrop_path || log.poster_path)
+            : (isSingle ? log.poster_path : (log.tv_poster_path || log.poster_path));
+          const posterUrl = poster ? resolveMediaImageUrl(poster, isScene ? 'backdrop' : 'poster') : '';
           const percent = log.duration > 0 ? Math.round((log.resume_position / log.duration) * 100) : 0;
 
           return (
@@ -251,19 +249,24 @@ export default function HistoryPage() {
                 if (el) el.style.setProperty('--item-index', index);
               }}
             >
-              <div className="watched-history-card__poster-wrapper">
+              <div className={`watched-history-card__poster-wrapper ${isScene ? 'is-scene' : ''}`}>
                 {posterUrl ? (
-                  <img src={posterUrl} alt="" className="watched-history-card__poster" />
+                  <img 
+                    src={posterUrl} 
+                    alt="" 
+                    className="watched-history-card__poster" 
+                    onError={(e) => console.error("History image failed:", { src: posterUrl, log, e })}
+                  />
                 ) : (
                   <div className="watched-history-card__poster-placeholder">
-                    {isMovie ? <Film size={18} /> : <Tv size={18} />}
+                    {isSingle ? <Film size={18} /> : <Tv size={18} />}
                   </div>
                 )}
               </div>
 
               <div className="watched-history-card__content">
                 <div className="watched-history-card__header">
-                  {isMovie ? (
+                  {isSingle ? (
                     <div className="watched-history-card__title-group">
                       <h3 className="watched-history-card__title">{log.title}</h3>
                       {log.year && <span className="watched-history-card__year">{LPAR}{log.year}{RPAR}</span>}

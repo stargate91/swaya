@@ -55,14 +55,15 @@ export const formatEpisodeNumber = (epNum) => {
   }
 
   if (str.includes('-')) {
-    return str.split('-').map(s => s.trim()).filter(Boolean).join('-');
+    const parts = str.split('-').map(s => s.trim()).filter(Boolean);
+    return parts.length > 0 ? parts.join('-') : '';
   }
 
   return str;
 };
 
 export const formatTime = (secs) => {
-  if (!secs) return '';
+  if (secs === undefined || secs === null) return '';
   const h = Math.floor(secs / 3600);
   const m = Math.floor((secs % 3600) / 60);
   const s = Math.round(secs % 60);
