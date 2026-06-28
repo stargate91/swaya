@@ -340,6 +340,34 @@
   pointer-events: auto;
 }
 
+.shell__utility-bar-bottom {
+  position: absolute;
+  bottom: 28px;
+  right: var(--space-7);
+  left: var(--space-7);
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+  height: 44px;
+  pointer-events: none;
+}
+
+.shell__utility-bar-bottom-left {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  pointer-events: auto;
+}
+
+.shell__utility-bar-bottom-right {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  pointer-events: auto;
+}
+
 .shell__utility-bar-center {
   position: absolute;
   left: 50%;

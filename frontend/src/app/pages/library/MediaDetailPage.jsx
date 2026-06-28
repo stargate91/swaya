@@ -22,6 +22,7 @@ import UserRatingSection from './components/detail/UserRatingSection';
 import MediaOverview from './components/detail/MediaOverview';
 import MediaActions from './components/detail/MediaActions';
 import DetailPageShell from './components/detail/DetailPageShell';
+import UtilityBarBottomPortal from '../../../components/UtilityBarBottomPortal';
 
 // Panels
 import SeasonsPanel from './components/detail/panels/SeasonsPanel';
@@ -324,8 +325,8 @@ export default function MediaDetailPage({ type = 'movie' }) {
                 const url = source === 'fansdb'
                   ? `https://fansdb.cc/scenes/${item.external_ids.stash_id}`
                   : (source === 'porndb' || source === 'theporndb')
-                  ? `https://theporndb.net/scenes/${item.external_ids.stash_id}`
-                  : `https://stashdb.org/scenes/${item.external_ids.stash_id}`;
+                    ? `https://theporndb.net/scenes/${item.external_ids.stash_id}`
+                    : `https://stashdb.org/scenes/${item.external_ids.stash_id}`;
                 const name = source === 'fansdb' ? 'FansDB' : (source === 'porndb' || source === 'theporndb') ? 'ThePornDB' : 'StashDB';
                 links = [{ key: 'stashdb', name, url }];
               }
@@ -388,13 +389,32 @@ export default function MediaDetailPage({ type = 'movie' }) {
             <MediaOverview />
           </>
         )}
-        <MediaActions />
+        <UtilityBarBottomPortal side="left">
+          <MediaActions />
+        </UtilityBarBottomPortal>
         {socialLinks.length > 0 && (
-          <div className={`entity-detail-page__bottom-socials ${isSocialExpanded ? 'entity-detail-page__bottom-socials--expanded' : ''}`}>
-            <div className="entity-detail-page__bottom-socials-wrapper">
-              {hasExtraSocials && (
-                <div className="entity-detail-page__bottom-socials-extra">
-                  {extraSocialLinks.map((link) => (
+          <UtilityBarBottomPortal side="right">
+            <div className={`entity-detail-page__bottom-socials ${isSocialExpanded ? 'entity-detail-page__bottom-socials--expanded' : ''}`}>
+              <div className="entity-detail-page__bottom-socials-wrapper">
+                {hasExtraSocials && (
+                  <div className="entity-detail-page__bottom-socials-extra">
+                    {extraSocialLinks.map((link) => (
+                      <a
+                        key={link.key}
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="entity-detail-page__bottom-social-btn"
+                        title={link.label}
+                      >
+                        <img src={link.iconSrc || '/links/website.svg'} alt={link.label} />
+                      </a>
+                    ))}
+                  </div>
+                )}
+
+                <div className="entity-detail-page__bottom-socials-main">
+                  {mainSocialLinks.map((link) => (
                     <a
                       key={link.key}
                       href={link.href}
@@ -407,35 +427,20 @@ export default function MediaDetailPage({ type = 'movie' }) {
                     </a>
                   ))}
                 </div>
-              )}
 
-              <div className="entity-detail-page__bottom-socials-main">
-                {mainSocialLinks.map((link) => (
-                  <a
-                    key={link.key}
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="entity-detail-page__bottom-social-btn"
-                    title={link.label}
+                {hasExtraSocials && (
+                  <button
+                    type="button"
+                    className="entity-detail-page__bottom-social-toggle"
+                    onClick={() => setIsSocialExpanded(!isSocialExpanded)}
+                    title={isSocialExpanded ? (t('common.less') || 'Show Less') : (t('common.more') || 'Show More')}
                   >
-                    <img src={link.iconSrc || '/links/website.svg'} alt={link.label} />
-                  </a>
-                ))}
+                    {isSocialExpanded ? <Minus size={14} /> : <Plus size={14} />}
+                  </button>
+                )}
               </div>
-
-              {hasExtraSocials && (
-                <button
-                  type="button"
-                  className="entity-detail-page__bottom-social-toggle"
-                  onClick={() => setIsSocialExpanded(!isSocialExpanded)}
-                  title={isSocialExpanded ? (t('common.less') || 'Show Less') : (t('common.more') || 'Show More')}
-                >
-                  {isSocialExpanded ? <Minus size={14} /> : <Plus size={14} />}
-                </button>
-              )}
             </div>
-          </div>
+          </UtilityBarBottomPortal>
         )}
       </DetailPageShell>
     </MediaDetailProvider>

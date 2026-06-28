@@ -134,6 +134,10 @@ export default function AppShell() {
           }>
             <Outlet />
           </Suspense>
+          <footer className="shell__utility-bar-bottom">
+            <div className="shell__utility-bar-bottom-left" aria-label="Context bottom-left actions placeholder" />
+            <div className="shell__utility-bar-bottom-right" aria-label="Context bottom-right actions placeholder" />
+          </footer>
         </main>
       </div>
       <AppClosePrompt />
