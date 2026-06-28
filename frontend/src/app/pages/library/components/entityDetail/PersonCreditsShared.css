@@ -219,6 +219,7 @@
   border-radius: 12px;
   --row-library-border: 1px solid rgba(255, 255, 255, 0.03);
   border: var(--row-library-border);
+  margin-bottom: var(--space-6);
 }
 
 .person-credits-row__header {
@@ -625,17 +626,18 @@
 
 .person-credits-discover-group {
   display: flex;
-  flex-direction: column;
-  --group-gap: 6px;
-  gap: var(--group-gap);
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-sm);
 }
 
 .person-credits-discover-group-title {
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   color: var(--color-text-muted);
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .person-credits-discover-buttons {
@@ -777,11 +779,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-height: 28px;
 }
 
 .person-credits-row-title-style {
   border-bottom: none !important;
   padding-bottom: 0 !important;
+  margin: 0 !important;
+  display: flex;
+  align-items: center;
 }
 
 .person-credits-discover-groups-style {
@@ -791,7 +797,6 @@
   padding-top: var(--layout-pt);
   --layout-bt: 1px solid rgba(255, 255, 255, 0.05);
   border-top: var(--layout-bt);
-  margin-bottom: var(--space-3);
 }
 
 .person-credits-discover-groups-discover-style {

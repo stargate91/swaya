@@ -106,6 +106,13 @@ class TvSeasonFormatter(DetailFormatter):
                             if not last_watched_at or sov.last_watched_at.isoformat() > last_watched_at:
                                 last_watched_at = sov.last_watched_at.isoformat()
             
+            playback_logs = []
+            if local_item:
+                playback_logs = [
+                    {"id": log.id, "watched_at": log.watched_at.isoformat()}
+                    for log in sorted(local_item.playback_logs or [], key=lambda x: x.watched_at, reverse=True)
+                ]
+
             episodes.append({
                 "id": f"tmdb_{tv_tmdb_id_int}_{season_number}_{ep_num}",
                 "episode_number": ep_num,
@@ -125,6 +132,7 @@ class TvSeasonFormatter(DetailFormatter):
                 "in_library": local_item is not None,
                 "is_missing": local_item is None,
                 "is_multi_episode": is_multi_episode,
+                "playback_logs": playback_logs,
             })
             
         local_count = sum(1 for ep in all_episodes if ep.get("episode_number") in local_episodes_map)

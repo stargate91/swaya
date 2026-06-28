@@ -1,4 +1,4 @@
-import { PenLine, Star } from 'lucide-react';
+import { PenLine } from 'lucide-react';
 import Pill from '@/ui/Pill';
 import { useMediaDetailContext } from './MediaDetailContext';
 import './UserRatingSection.css';
@@ -8,7 +8,6 @@ export default function UserRatingSection() {
   const { state, actions, t } = useMediaDetailContext();
   const {
     displayRating,
-    starsStyleSheetText,
     verticalBarText
   } = state;
 
@@ -33,28 +32,33 @@ export default function UserRatingSection() {
 
         {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div
-          className="rating-stars-container"
+          className="rating-segmented-bar"
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           onMouseUp={handleClick}
+          role="slider"
+          tabIndex={0}
+          aria-label={t('library.details.yourRating') || 'Your Rating'}
+          aria-valuemin={0}
+          aria-valuemax={10}
+          aria-valuenow={displayRating ?? 0}
         >
-          <div className="rating-stars-underlay">
-            <Star size={18} strokeWidth={2.3} />
-            <Star size={18} strokeWidth={2.3} />
-            <Star size={18} strokeWidth={2.3} />
-            <Star size={18} strokeWidth={2.3} />
-            <Star size={18} strokeWidth={2.3} />
-          </div>
-          <style>{starsStyleSheetText}</style>
-          <div className="rating-stars-overlay rating-stars-overlay-dynamic">
-            <div className="rating-stars-overlay-inner">
-              <Star size={18} fill="currentColor" />
-              <Star size={18} fill="currentColor" />
-              <Star size={18} fill="currentColor" />
-              <Star size={18} fill="currentColor" />
-              <Star size={18} fill="currentColor" />
-            </div>
-          </div>
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((val) => {
+            let fill = 0;
+            if (displayRating >= val) {
+              fill = 100;
+            } else if (displayRating > val - 1) {
+              fill = (displayRating - (val - 1)) * 100;
+            }
+            return (
+              <div key={val} className="rating-segment">
+                <div
+                  className="rating-segment-fill"
+                  style={{ width: `${fill}%` }}
+                />
+              </div>
+            );
+          })}
         </div>
         <span className={`user-rating-label ${displayRating !== undefined && displayRating !== null ? 'has-value' : ''}`}>
           {displayRating !== undefined && displayRating !== null

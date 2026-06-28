@@ -111,6 +111,7 @@ class TitleLockService:
                 m_override.is_watched = True
                 m_override.watch_count = max(m_override.watch_count or 0, 1)
                 has_active_interaction = True
+                self._track_parent_tv_show_if_episode(str(item_id), media_item_id, metadata_match_id)
             else:
                 m_override.is_watched = False
                 m_override.watch_count = 0
@@ -268,6 +269,7 @@ class TitleLockService:
                     if watched_at:
                         override.last_watched_at = parsed_date
                     override.is_tracked = True
+                    self._track_parent_tv_show_if_episode(str(item_id), override.media_item_id, override.metadata_match_id)
                 else:
                     if override.last_watched_at is not None:
                         continue
@@ -314,3 +316,37 @@ class TitleLockService:
 
         self.db.commit()
         return {"status": "success", "item_id": item_id, "is_tracked": is_tracked}
+
+    def _track_parent_tv_show_if_episode(self, item_id: str, media_item_id: Optional[int], metadata_match_id: Optional[int]):
+        tv_tmdb_id = None
+        # 1. Try parsing from string ID
+        if isinstance(item_id, str) and item_id.startswith("tmdb_"):
+            parts = item_id.split("_")
+            if len(parts) >= 3:
+                tv_tmdb_id = parts[1]
+        
+        # 2. Try looking up database match hierarchy
+        if not tv_tmdb_id:
+            from app.domains.metadata.models import MetadataMatch
+            from app.shared_kernel.enums import MediaType
+            match = None
+            if metadata_match_id:
+                match = self.db.query(MetadataMatch).filter(MetadataMatch.id == metadata_match_id).first()
+            elif media_item_id:
+                match = self.db.query(MetadataMatch).join(MetadataMatch.media_items).filter(
+                    MetadataMatch.media_items.any(id=media_item_id)
+                ).first()
+            
+            if match and match.media_type == MediaType.EPISODE:
+                season_match = self.db.query(MetadataMatch).filter(MetadataMatch.id == match.parent_id).first()
+                if season_match:
+                    series_match = self.db.query(MetadataMatch).filter(MetadataMatch.id == season_match.parent_id).first()
+                    if series_match and series_match.media_type == MediaType.TV:
+                        tv_tmdb_id = series_match.external_id
+
+        if tv_tmdb_id:
+            tv_show_id = f"tmdb_{tv_tmdb_id}"
+            try:
+                self.track_item(tv_show_id, True)
+            except Exception as e:
+                logger.error(f"Auto-enrich/track for parent TV show {tv_show_id} failed: {e}")

@@ -186,6 +186,16 @@ class BaseQueryBuilder:
             loc = match.localizations[0] if match.localizations else None
             item = match.media_item
             
+            in_library = item is not None
+            if match.media_type == MediaType.TV:
+                has_local_eps = self.db.query(MetadataMatch).filter(
+                    MetadataMatch.media_item_id != None,
+                    MetadataMatch.parent_id.in_(
+                        self.db.query(MetadataMatch.id).filter(MetadataMatch.parent_id == match.id)
+                    )
+                ).first() is not None
+                in_library = has_local_eps
+            
             o = overrides_dict.get(match.id)
             title = (o.custom_title if (o and o.custom_title) else None) or (loc.title if loc else (item.filename if item else "Unknown"))
             poster_path = (o.custom_poster if (o and o.custom_poster) else None) or (loc.local_poster_path if (loc and loc.local_poster_path) else (loc.poster_path if loc else None))
@@ -226,7 +236,7 @@ class BaseQueryBuilder:
                 "path": item.current_path if item else None,
                 "duration": (item.duration or 0.0) if item else 0.0,
                 "size": (item.size or 0) if item else 0,
-                "in_library": item is not None,
+                "in_library": in_library,
                 "release_date": match.release_date.isoformat() if match.release_date else None,
                 "user_rating": o.user_rating if o else None,
                 "people": people_list,

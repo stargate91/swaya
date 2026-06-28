@@ -1,33 +1,38 @@
-.rating-stars-container {
-  position: relative;
+.rating-segmented-bar {
+  display: flex;
+  width: 120px;
+  height: 10px;
+  gap: 3px;
   cursor: pointer;
-  display: inline-flex;
-  flex: 0 0 auto;
-  width: 106px;
+  outline: none;
+  align-items: center;
 }
 
-.rating-stars-underlay {
-  display: flex;
-  gap: var(--space-2xs);
-  color: color-mix(in srgb, var(--color-text-primary) 58%, var(--color-text-muted));
-}
-
-.rating-stars-overlay {
-  display: flex;
-  position: absolute;
-  top: 0;
-  left: 0;
+.rating-segment {
+  flex: 1;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
   overflow: hidden;
-  white-space: nowrap;
-  color: var(--color-brand-imdb);
-  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: all 0.2s ease;
 }
 
-.rating-stars-overlay-inner {
-  display: flex;
-  gap: var(--space-2xs);
-  width: 106px;
-  flex-shrink: 0;
+.rating-segmented-bar:hover .rating-segment {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.rating-segment-fill {
+  height: 100%;
+  background: var(--color-accent-blue);
+  opacity: 0.85;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease, width 0.12s ease;
+}
+
+.rating-segmented-bar:hover .rating-segment-fill {
+  opacity: 1;
+  box-shadow: 0 0 6px var(--color-accent-blue);
 }
 
 .user-rating-label {

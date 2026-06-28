@@ -251,8 +251,8 @@ export const useUpdateMediaStatusMutation = () => {
       await queryClient.cancelQueries({ queryKey: ['library'] });
 
       // Snapshot previous values
-      const prevTv = queryClient.getQueryData(['library-tv-detail', targetId]);
-      const prevItem = queryClient.getQueryData(['library-item-detail', targetId]);
+      const prevTvQueries = queryClient.getQueriesData({ queryKey: ['library-tv-detail', targetId] });
+      const prevItemQueries = queryClient.getQueriesData({ queryKey: ['library-item-detail', targetId] });
       const prevLibraryList = queryClient.getQueriesData({ queryKey: ['library'] });
 
       const updates = {};
@@ -263,18 +263,22 @@ export const useUpdateMediaStatusMutation = () => {
 
       // Optimistically update details
       if (Object.keys(updates).length > 0) {
-        if (prevTv) {
-          queryClient.setQueryData(['library-tv-detail', targetId], {
-            ...prevTv,
-            ...updates
-          });
-        }
-        if (prevItem) {
-          queryClient.setQueryData(['library-item-detail', targetId], {
-            ...prevItem,
-            ...updates
-          });
-        }
+        prevTvQueries.forEach(([queryKey, queryData]) => {
+          if (queryData) {
+            queryClient.setQueryData(queryKey, {
+              ...queryData,
+              ...updates
+            });
+          }
+        });
+        prevItemQueries.forEach(([queryKey, queryData]) => {
+          if (queryData) {
+            queryClient.setQueryData(queryKey, {
+              ...queryData,
+              ...updates
+            });
+          }
+        });
 
         // Optimistically update lists
         prevLibraryList.forEach(([queryKey, queryData]) => {
@@ -306,14 +310,18 @@ export const useUpdateMediaStatusMutation = () => {
         });
       }
 
-      return { prevTv, prevItem, prevLibraryList, targetId };
+      return { prevTvQueries, prevItemQueries, prevLibraryList, targetId };
     },
     onError: (err, variables, context) => {
-      if (context?.prevTv) {
-        queryClient.setQueryData(['library-tv-detail', context.targetId], context.prevTv);
+      if (context?.prevTvQueries) {
+        context.prevTvQueries.forEach(([queryKey, queryData]) => {
+          queryClient.setQueryData(queryKey, queryData);
+        });
       }
-      if (context?.prevItem) {
-        queryClient.setQueryData(['library-item-detail', context.targetId], context.prevItem);
+      if (context?.prevItemQueries) {
+        context.prevItemQueries.forEach(([queryKey, queryData]) => {
+          queryClient.setQueryData(queryKey, queryData);
+        });
       }
       if (context?.prevLibraryList) {
         context.prevLibraryList.forEach(([queryKey, queryData]) => {

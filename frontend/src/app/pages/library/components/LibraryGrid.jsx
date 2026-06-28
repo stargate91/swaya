@@ -356,15 +356,14 @@ export default function LibraryGrid({
 
     if (playMutation.isPending) return;
 
-    if (isLibraryMovieTab(resolvedTab) || isLibraryScenesTab(resolvedTab)) {
+    const isTv = item.type === 'tv' || String(item.id).startsWith('tv_');
+    if (!isTv) {
       playMutation.mutate(item.id);
       return;
     }
 
-    if (!isLibraryTvTab(resolvedTab)) return;
-
     try {
-      const tvId = String(item.id).startsWith('tv_') ? String(item.id).slice(7) : item.id;
+      const tvId = String(item.id).replace('tv_', '').replace('tmdb_', '');
       const tvDetail = await api.library.getTvDetail(tvId);
       const nextEpisode = getNextOwnedEpisode(tvDetail);
       if (nextEpisode?.id) {
@@ -373,7 +372,7 @@ export default function LibraryGrid({
     } catch {
       // Ignore overlay play failures and leave normal card navigation intact.
     }
-  }, [playMutation, resolvedTab]);
+  }, [playMutation]);
 
   const handleItemClick = useCallback((item) => {
     if (isTags) return;

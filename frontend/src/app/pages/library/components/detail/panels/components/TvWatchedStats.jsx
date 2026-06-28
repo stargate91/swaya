@@ -22,32 +22,48 @@ export default function TvWatchedStats() {
 
   const regularSeasons = (item.seasons || []).filter(s => s.season_number > 0);
   const allEpisodes = regularSeasons.flatMap(s => s.episodes || []);
-  const totalEpisodesCount = allEpisodes.reduce((sum, ep) => sum + countEpisodesInNumber(ep.episode_number), 0);
-  const watchedEpisodesCount = allEpisodes.reduce((sum, ep) => sum + (ep.is_watched ? countEpisodesInNumber(ep.episode_number) : 0), 0);
+  const watchStats = item.watch_stats;
+
+  const totalEpisodesCount = watchStats
+    ? watchStats.total_episodes_count
+    : allEpisodes.reduce((sum, ep) => sum + countEpisodesInNumber(ep.episode_number), 0);
+
+  const watchedEpisodesCount = watchStats
+    ? watchStats.watched_episodes_count
+    : allEpisodes.reduce((sum, ep) => sum + (ep.is_watched ? countEpisodesInNumber(ep.episode_number) : 0), 0);
+
   const completionPercentage = totalEpisodesCount > 0
     ? Math.round((watchedEpisodesCount / totalEpisodesCount) * 100)
     : 0;
 
-  const inProgressEpisodes = allEpisodes.filter(e => e.resume_position > 0);
+  const inProgressEpisodes = watchStats
+    ? watchStats.in_progress_episodes
+    : allEpisodes.filter(e => e.resume_position > 0);
+
   const isInProgress = inProgressEpisodes.length > 0;
 
-  const allPlaybackLogs = [];
-  regularSeasons.forEach(season => {
-    (season.episodes || []).forEach(episode => {
-      if (episode.playback_logs && episode.playback_logs.length > 0) {
-        episode.playback_logs.forEach(log => {
-          allPlaybackLogs.push({
-            ...log,
-            seasonNumber: season.season_number,
-            episodeNumber: episode.episode_number,
-            episodeTitle: episode.title,
-            episodeId: episode.id
+  const allPlaybackLogs = watchStats
+    ? watchStats.playback_logs
+    : (() => {
+        const logs = [];
+        regularSeasons.forEach(season => {
+          (season.episodes || []).forEach(episode => {
+            if (episode.playback_logs && episode.playback_logs.length > 0) {
+              episode.playback_logs.forEach(log => {
+                logs.push({
+                  ...log,
+                  seasonNumber: season.season_number,
+                  episodeNumber: episode.episode_number,
+                  episodeTitle: episode.title,
+                  episodeId: episode.id
+                });
+              });
+            }
           });
         });
-      }
-    });
-  });
-  allPlaybackLogs.sort((a, b) => new Date(b.watched_at) - new Date(a.watched_at));
+        logs.sort((a, b) => new Date(b.watched_at) - new Date(a.watched_at));
+        return logs;
+      })();
 
   const tvLastWatched = allPlaybackLogs.length > 0 ? allPlaybackLogs[0].watched_at : null;
 
@@ -94,13 +110,16 @@ export default function TvWatchedStats() {
           </div>
           {isInProgress && (
             <div className="specs-card specs-card--span-2">
-              <span className="specs-card__label">{t('library.details.inProgressEpisodes') || 'In Progress'}</span>
+              <span className="specs-card__label">{t('library.details.inProgressEpisodes') || 'Episodes in Progress'}</span>
               <span className="specs-card__value specs-card__value--in-progress">
                 {inProgressEpisodes.map((ep, idx) => {
                   const epNumStr = ep.episode_number
                     ? (ep.episode_number.toString().includes('.') ? ep.episode_number : String(ep.episode_number).padStart(2, '0'))
                     : '';
-                  const epProgressText = `S${epNumStr} • ${ep.title} (${formatTime(ep.resume_position)})`;
+                  const seasonPrefix = ep.season_number !== undefined
+                    ? `S${String(ep.season_number).padStart(2, '0')}E${epNumStr}`
+                    : `S${epNumStr}`;
+                  const epProgressText = `${seasonPrefix} • ${ep.title} (${formatTime(ep.resume_position)})`;
                   return (
                     <div key={ep.id || idx}>
                       {epProgressText}

@@ -27,9 +27,6 @@ class CreditsPrioritizer:
 
         prioritized.sort(
             key=lambda entry: (
-                0 if entry.get("is_known_for") else 1,
-                entry.get("known_for_rank", 10**9),
-                0 if entry.get("in_library") else 1,
                 -(int(entry.get("year") or 0))
             )
         )

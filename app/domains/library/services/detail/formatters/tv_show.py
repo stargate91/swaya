@@ -5,8 +5,9 @@ from datetime import datetime
 
 from app.shared_kernel.enums import Provider, MediaType, ItemStatus
 from app.domains.library.models import MediaItem
-from app.domains.metadata.models import MetadataMatch
+from app.domains.metadata.models import MetadataMatch, MetadataLocalization
 from app.domains.users.models import UserOverride
+from app.domains.history.models import PlaybackLog
 from app.shared_kernel.constants import DEFAULT_FALLBACK_LANGUAGE
 from app.domains.library.services.detail._detail_formatter import DetailFormatter
 
@@ -322,7 +323,6 @@ class TvShowFormatter(DetailFormatter):
             
             loc_db = next((l for l in series_match.localizations if l.locale == ui_lang), None)
             if not loc_db:
-                from app.domains.metadata.models import MetadataLocalization
                 loc_db = MetadataLocalization(
                     match_id=series_match.id,
                     locale=ui_lang,
@@ -361,6 +361,107 @@ class TvShowFormatter(DetailFormatter):
             trailer_key = youtube_trailers[0].get("key")
 
         from app.shared_kernel.genre_utils import split_genres as _split_genres
+
+        # Compute TV show level watch stats globally
+        from app.shared_kernel.user_context import get_current_user_id
+        current_uid = get_current_user_id()
+
+        episode_matches = db.query(MetadataMatch).filter(
+            MetadataMatch.provider == Provider.TMDB,
+            MetadataMatch.media_type == MediaType.EPISODE,
+            MetadataMatch.external_id == str(tv_tmdb_id_int)
+        ).all()
+        episode_match_ids = [m.id for m in episode_matches]
+        local_item_ids = [item.id for item in local_items]
+
+        overrides = db.query(UserOverride).filter(
+            UserOverride.user_id == current_uid,
+            (UserOverride.metadata_match_id.in_(episode_match_ids)) | (UserOverride.media_item_id.in_(local_item_ids))
+        ).all() if (episode_match_ids or local_item_ids) else []
+
+        playback_logs_db = db.query(PlaybackLog).filter(
+            PlaybackLog.media_item_id.in_(local_item_ids)
+        ).order_by(PlaybackLog.watched_at.desc()).all() if local_item_ids else []
+
+        localizations = db.query(MetadataLocalization).filter(
+            MetadataLocalization.match_id.in_(episode_match_ids)
+        ).all() if episode_match_ids else []
+        loc_map = {l.match_id: l.title for l in localizations if l.title}
+
+        item_episodes_map = {}
+        for item in local_items:
+            eps = []
+            for match in item.matches:
+                if match.season_number is not None and match.episode_number is not None:
+                    ep_num = match.episode_number
+                    if isinstance(ep_num, list):
+                        for num in ep_num:
+                            eps.append((match.season_number, num))
+                    else:
+                        eps.append((match.season_number, int(ep_num)))
+            item_episodes_map[item.id] = eps
+
+        playback_logs = []
+        for log in playback_logs_db:
+            eps = item_episodes_map.get(log.media_item_id, [])
+            for s_num, ep_num in eps:
+                match = next((m for m in episode_matches if m.season_number == s_num and m.episode_number == ep_num), None)
+                ep_title = loc_map.get(match.id) if match else None
+                if not ep_title:
+                    ep_title = f"Episode {ep_num}"
+                playback_logs.append({
+                    "id": f"{log.id}_{s_num}_{ep_num}",
+                    "watched_at": log.watched_at.isoformat(),
+                    "seasonNumber": s_num,
+                    "episodeNumber": ep_num,
+                    "episodeTitle": ep_title,
+                    "episodeId": f"tmdb_{tv_tmdb_id_int}_{s_num}_{ep_num}" if not match else str(match.media_item_id or f"tmdb_{tv_tmdb_id_int}_{s_num}_{ep_num}")
+                })
+
+        in_progress_episodes = []
+        for o in overrides:
+            if o.resume_position > 0 and not o.is_watched:
+                s_num = None
+                ep_num = None
+                ep_title = None
+                if o.metadata_match_id:
+                    match = next((m for m in episode_matches if m.id == o.metadata_match_id), None)
+                    if match:
+                        s_num = match.season_number
+                        ep_num = match.episode_number
+                        ep_title = loc_map.get(match.id)
+                elif o.media_item_id:
+                    eps = item_episodes_map.get(o.media_item_id, [])
+                    if eps:
+                        s_num, ep_num = eps[0]
+                        match = next((m for m in episode_matches if m.season_number == s_num and m.episode_number == ep_num), None)
+                        if match:
+                            ep_title = loc_map.get(match.id)
+                
+                if s_num is not None and ep_num is not None:
+                    if not ep_title:
+                        ep_title = f"Episode {ep_num}"
+                    in_progress_episodes.append({
+                        "id": f"tmdb_{tv_tmdb_id_int}_{s_num}_{ep_num}",
+                        "episode_number": ep_num,
+                        "title": ep_title,
+                        "resume_position": o.resume_position,
+                        "season_number": s_num
+                    })
+
+        watched_episodes_set = set()
+        for o in overrides:
+            if o.is_watched:
+                if o.metadata_match_id:
+                    match = next((m for m in episode_matches if m.id == o.metadata_match_id), None)
+                    if match:
+                        watched_episodes_set.add((match.season_number, match.episode_number))
+                elif o.media_item_id:
+                    eps = item_episodes_map.get(o.media_item_id, [])
+                    for s_num, ep_num in eps:
+                        watched_episodes_set.add((s_num, ep_num))
+        watched_episodes_count = len(watched_episodes_set)
+
         result = {
             "id": f"tmdb_{tv_tmdb_id_int}",
             "tv_tmdb_id": tv_tmdb_id_int,
@@ -398,6 +499,12 @@ class TvShowFormatter(DetailFormatter):
             "is_tracked": override.is_tracked if override else False,
             "in_library": len(local_items) > 0,
             "progressive_seasons": True,
+            "watch_stats": {
+                "total_episodes_count": tmdb_data.get("number_of_episodes") or 0,
+                "watched_episodes_count": watched_episodes_count,
+                "in_progress_episodes": in_progress_episodes,
+                "playback_logs": playback_logs,
+            },
         }
         ext_ids = {
             "tmdb": tv_tmdb_id_int

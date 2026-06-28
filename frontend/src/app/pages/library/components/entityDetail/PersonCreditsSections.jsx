@@ -21,12 +21,12 @@ function PersonCreditsRow({
       {items.map((item) => {
         const creditTitle = item.title || item.name || 'Unknown';
         const resolvedSource = item.source || (item.rating_porndb ? 'porndb' : (item.stash_id ? 'stashdb' : (item.fansdb_id ? 'fansdb' : 'tmdb')));
-        
+
         const posterPath = isScene
           ? (item.backdrop_path || item.local_backdrop_path || item.poster_path || item.local_poster_path)
           : (item.poster_path || item.local_poster_path || item.backdrop_path || item.local_backdrop_path);
         const posterUrl = posterPath ? resolveDetailsImageUrl(posterPath, API_BASE, isScene ? 'backdrop' : 'poster') : null;
-        
+
         const handleCardClick = () => {
           const itemType = item.media_type || item.type;
           const isSceneType = itemType === 'scene' || itemType === 'scenes';
@@ -51,7 +51,7 @@ function PersonCreditsRow({
         };
 
         return (
-          <div 
+          <div
             key={`${item.id}-${item.type || mediaType}`}
             className="person-credits-card"
             onClick={handleCardClick}
@@ -65,11 +65,11 @@ function PersonCreditsRow({
           >
             <div className="person-credits-card__poster-container">
               {posterUrl ? (
-                <img 
-                  src={posterUrl} 
-                  alt={creditTitle} 
-                  className="person-credits-card__poster" 
-                  loading="lazy" 
+                <img
+                  src={posterUrl}
+                  alt={creditTitle}
+                  className="person-credits-card__poster"
+                  loading="lazy"
                   onError={(e) => console.error("Image load failed in Row:", { src: posterUrl, resolvedSource, creditTitle, e })}
                 />
               ) : (
@@ -88,7 +88,7 @@ function PersonCreditsRow({
                 </div>
               )}
             </div>
-            
+
             <span className="person-credits-card__title" title={creditTitle}>{creditTitle}</span>
             {item.character && (
               <span className="person-credits-card__role" title={item.character}>{item.character}</span>
@@ -252,9 +252,9 @@ export default function PersonCreditsSections({ id, item, navigate, t }) {
           activeGridQuery.fetchNextPage();
         }
       },
-      { 
+      {
         root: sentinel.closest('.person-credits-discover-grid-wrapper'),
-        threshold: 0.1 
+        threshold: 0.1
       }
     );
 
@@ -273,47 +273,50 @@ export default function PersonCreditsSections({ id, item, navigate, t }) {
 
   return (
     <div className="person-credits-section-container">
-      {/* STATE 1: MY LIBRARY ("I Have") */}
       {viewMode === 'library' && myLibraryTabs.length > 0 && (
-        <div className="person-credits-row person-credits-row--library">
-          <div className="person-credits-discover-header person-credits-discover-header-layout">
-            <h4 className="person-credits-row__title person-credits-row-title-style">{t('library.details.inLibrary') || 'My Library'}</h4>
-            
-            {/* Toggle button to switch to Discover mode */}
-            <button 
-              type="button"
-              className="person-credits-row__mode-switch-btn"
-              onClick={() => setViewMode('discover')}
-            >
-              {t('library.details.wantToDiscover') || 'Want to discover?'}
-            </button>
-          </div>
+        <>
+          <div className="person-credits-row--library">
+            <div className="person-credits-discover-header person-credits-discover-header-layout">
+              <h4 className="person-credits-row__title person-credits-row-title-style">{t('library.details.inLibrary') || 'My Library'}</h4>
 
-          <div className="person-credits-discover-groups person-credits-discover-groups-style">
-            <div className="person-credits-discover-group">
-              <div className="person-credits-discover-buttons">
-                {myLibraryTabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    className={`discover-btn ${activeLibraryTab === tab.id ? 'active' : ''}`}
-                    onClick={() => setActiveLibraryTab(tab.id)}
-                  >
-                    {tab.label}
-                    <span className="person-credits-tab-count person-credits-tab-count-style">{tab.items.length}</span>
-                  </button>
-                ))}
+              {/* Toggle button to switch to Discover mode */}
+              <button
+                type="button"
+                className="person-credits-row__mode-switch-btn"
+                onClick={() => setViewMode('discover')}
+              >
+                {t('library.details.wantToDiscover') || 'Want to discover?'}
+              </button>
+            </div>
+
+            <div className="person-credits-discover-groups person-credits-discover-groups-style">
+              <div className="person-credits-discover-group">
+                <div className="person-credits-discover-buttons">
+                  {myLibraryTabs.map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      className={`discover-btn ${activeLibraryTab === tab.id ? 'active' : ''}`}
+                      onClick={() => setActiveLibraryTab(tab.id)}
+                    >
+                      {tab.label}
+                      <span className="person-credits-tab-count person-credits-tab-count-style">{tab.items.length}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
 
-          <PersonCreditsRow
-            items={activeLibraryItems}
-            mediaType={activeLibraryTab}
-            navigate={navigate}
-            t={t}
-          />
-        </div>
+          <div className="person-credits-discover-grid-wrapper">
+            <PersonCreditsRow
+              items={activeLibraryItems}
+              mediaType={activeLibraryTab}
+              navigate={navigate}
+              t={t}
+            />
+          </div>
+        </>
       )}
 
       {/* STATE 2: DISCOVER PICKER PANEL & INFINITE GRID */}
@@ -321,11 +324,11 @@ export default function PersonCreditsSections({ id, item, navigate, t }) {
         <>
           <div className="person-credits-discover-panel">
             <div className="person-credits-discover-header person-credits-discover-header-layout">
-              <span className="person-credits-discover-label person-credits-row-title-style">{t('library.details.discoverFilmography') || 'Discover Filmography'}</span>
-              
+              <h4 className="person-credits-row__title person-credits-row-title-style">{t('library.details.discoverFilmography') || 'Discover Filmography'}</h4>
+
               {/* Back to Library button (only shown if user has library items) */}
               {myLibraryTabs.length > 0 && (
-                <button 
+                <button
                   type="button"
                   className="person-credits-row__mode-switch-btn"
                   onClick={() => setViewMode('library')}
@@ -334,15 +337,15 @@ export default function PersonCreditsSections({ id, item, navigate, t }) {
                 </button>
               )}
             </div>
-            
+
             <div className="person-credits-discover-groups person-credits-discover-groups-discover-style">
               {hasMovies && (
                 <div className="person-credits-discover-group">
                   <span className="person-credits-discover-group-title">{t('library.details.movies') || 'Movies'}</span>
                   <div className="person-credits-discover-buttons">
                     {hasTmdbMovies && (
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className={`discover-btn ${activeDiscoverTab === 'movies_tmdb' ? 'active' : ''}`}
                         onClick={() => setActiveDiscoverTab('movies_tmdb')}
                       >
@@ -350,8 +353,8 @@ export default function PersonCreditsSections({ id, item, navigate, t }) {
                       </button>
                     )}
                     {item?.is_adult && hasPornDb && (
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className={`discover-btn ${activeDiscoverTab === 'movies_porndb' ? 'active' : ''}`}
                         onClick={() => setActiveDiscoverTab('movies_porndb')}
                       >
@@ -366,8 +369,8 @@ export default function PersonCreditsSections({ id, item, navigate, t }) {
                 <div className="person-credits-discover-group">
                   <span className="person-credits-discover-group-title">{t('library.details.tvShows') || 'TV Shows'}</span>
                   <div className="person-credits-discover-buttons">
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className={`discover-btn ${activeDiscoverTab === 'tv' ? 'active' : ''}`}
                       onClick={() => setActiveDiscoverTab('tv')}
                     >
@@ -382,8 +385,8 @@ export default function PersonCreditsSections({ id, item, navigate, t }) {
                   <span className="person-credits-discover-group-title">{t('library.details.scenes') || 'Scenes'}</span>
                   <div className="person-credits-discover-buttons">
                     {hasStashDb && (
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className={`discover-btn ${activeDiscoverTab === 'scenes_stashdb' ? 'active' : ''}`}
                         onClick={() => setActiveDiscoverTab('scenes_stashdb')}
                       >
@@ -391,8 +394,8 @@ export default function PersonCreditsSections({ id, item, navigate, t }) {
                       </button>
                     )}
                     {hasFansDb && (
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className={`discover-btn ${activeDiscoverTab === 'scenes_fansdb' ? 'active' : ''}`}
                         onClick={() => setActiveDiscoverTab('scenes_fansdb')}
                       >
@@ -400,8 +403,8 @@ export default function PersonCreditsSections({ id, item, navigate, t }) {
                       </button>
                     )}
                     {item?.is_adult && hasPornDb && (
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         className={`discover-btn ${activeDiscoverTab === 'scenes_porndb' ? 'active' : ''}`}
                         onClick={() => setActiveDiscoverTab('scenes_porndb')}
                       >
@@ -417,111 +420,113 @@ export default function PersonCreditsSections({ id, item, navigate, t }) {
           {/* DISCOVER INFINITE GRID */}
           {activeDiscoverTab && (
             <div className="person-credits-discover-grid-wrapper">
-          <div className={`person-credits-discover-grid ${isSceneGrid ? 'grid-16-9' : 'grid-2-3'}`}>
-            {accumulatedItems.map((credit) => {
-              const creditTitle = credit.title || credit.name || 'Unknown';
-              const resolvedSource = credit.source || activeSource || (credit.rating_porndb ? 'porndb' : (credit.stash_id ? 'stashdb' : (credit.fansdb_id ? 'fansdb' : 'tmdb')));
-              const posterPath = isSceneGrid
-                ? (credit.backdrop_path || credit.local_backdrop_path || credit.poster_path || credit.local_poster_path)
-                : (credit.poster_path || credit.local_poster_path || credit.backdrop_path || credit.local_backdrop_path);
-              const posterUrl = posterPath ? resolveDetailsImageUrl(posterPath, API_BASE, isSceneGrid ? 'backdrop' : 'poster') : null;
+              <div className={`person-credits-discover-grid ${isSceneGrid ? 'grid-16-9' : 'grid-2-3'}`}>
+                {accumulatedItems.map((credit) => {
+                  const creditTitle = credit.title || credit.name || 'Unknown';
+                  const resolvedSource = credit.source || activeSource || (credit.rating_porndb ? 'porndb' : (credit.stash_id ? 'stashdb' : (credit.fansdb_id ? 'fansdb' : 'tmdb')));
+                  const posterPath = isSceneGrid
+                    ? (credit.backdrop_path || credit.local_backdrop_path || credit.poster_path || credit.local_poster_path)
+                    : (credit.poster_path || credit.local_poster_path || credit.backdrop_path || credit.local_backdrop_path);
+                  const posterUrl = posterPath ? resolveDetailsImageUrl(posterPath, API_BASE, isSceneGrid ? 'backdrop' : 'poster') : null;
 
-              const handleCardClick = () => {
-                const itemType = credit.media_type || credit.type;
-                const isSceneType = itemType === 'scene' || itemType === 'scenes';
-                if (isSceneType) {
-                  const prefix = resolvedSource === 'porndb' || resolvedSource === 'theporndb' ? 'porndb' : (resolvedSource === 'fansdb' ? 'fansdb' : 'stash');
-                  const sceneId = credit.in_library ? (credit.library_item_id || credit.id) : `${prefix}_${credit.stash_id || credit.id}`;
-                  navigate(`/library/scene/${sceneId}`, { state: { allowAdult: true } });
-                  return;
-                }
-
-                const isTv = itemType === 'tv' || itemType === 'tvshows';
-                if (isTv) {
-                  const tvId = credit.library_tv_tmdb_id || credit.tv_tmdb_id || credit.tmdb_id || credit.id;
-                  navigate(`/library/tv/${tvId}`, { state: { allowAdult: true } });
-                  return;
-                }
-
-                const movieId = credit.in_library
-                  ? (credit.library_item_id || credit.id)
-                  : (resolvedSource === 'porndb' ? `porndb_${credit.tmdb_id || credit.id}` : `tmdb_${credit.tmdb_id || credit.id}`);
-                navigate(`/library/movie/${movieId}`, { state: { allowAdult: true } });
-              };
-
-
-              return (
-                <div 
-                  key={`${credit.id}-${credit.type || activeMediaType}-discover`}
-                  className="person-credits-card"
-                  onClick={handleCardClick}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      handleCardClick();
+                  const handleCardClick = () => {
+                    const itemType = credit.media_type || credit.type;
+                    const isSceneType = itemType === 'scene' || itemType === 'scenes';
+                    if (isSceneType) {
+                      const prefix = resolvedSource === 'porndb' || resolvedSource === 'theporndb' ? 'porndb' : (resolvedSource === 'fansdb' ? 'fansdb' : 'stash');
+                      const sceneId = credit.in_library ? (credit.library_item_id || credit.id) : `${prefix}_${credit.stash_id || credit.id}`;
+                      navigate(`/library/scene/${sceneId}`, { state: { allowAdult: true } });
+                      return;
                     }
-                  }}
-                >
-                  <div className="person-credits-card__poster-container">
-                    {posterUrl ? (
-                      <img 
-                        src={posterUrl} 
-                        alt={creditTitle} 
-                        className="person-credits-card__poster" 
-                        loading="lazy" 
-                        onError={(e) => console.error("Image load failed in Grid:", { src: posterUrl, resolvedSource, creditTitle, e })}
-                      />
-                    ) : (
-                      <div className="person-credits-card__placeholder">
-                        <Layers size={22} />
-                      </div>
-                    )}
 
-                    {/* Discrete Source Logo Badge */}
-                    <span className={`person-credits-card__source-badge source-${resolvedSource}`}>
-                      {resolvedSource === 'porndb' || resolvedSource === 'theporndb' ? 'PornDB' : resolvedSource === 'stashdb' ? 'Stash' : resolvedSource === 'fansdb' ? 'Fans' : 'TMDb'}
-                    </span>
+                    const isTv = itemType === 'tv' || itemType === 'tvshows';
+                    if (isTv) {
+                      const tvId = credit.library_tv_tmdb_id || credit.tv_tmdb_id || credit.tmdb_id || credit.id;
+                      navigate(`/library/tv/${tvId}`, { state: { allowAdult: true } });
+                      return;
+                    }
 
-                    {/* "In Library" bookmark badge */}
-                    {credit.in_library && (
-                      <div className="person-credits-card__library-badge" title={t('library.details.inLibrary') || 'In Library'}>
-                        <Bookmark size={10} />
+                    const movieId = credit.in_library
+                      ? (credit.library_item_id || credit.id)
+                      : (resolvedSource === 'porndb' ? `porndb_${credit.tmdb_id || credit.id}` : `tmdb_${credit.tmdb_id || credit.id}`);
+                    navigate(`/library/movie/${movieId}`, { state: { allowAdult: true } });
+                  };
+
+
+                  return (
+                    <div
+                      key={`${credit.id}-${credit.type || activeMediaType}-discover`}
+                      className="person-credits-card"
+                      onClick={handleCardClick}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          handleCardClick();
+                        }
+                      }}
+                    >
+                      <div className="person-credits-card__poster-container">
+                        {posterUrl ? (
+                          <img
+                            src={posterUrl}
+                            alt={creditTitle}
+                            className="person-credits-card__poster"
+                            loading="lazy"
+                            onError={(e) => console.error("Image load failed in Grid:", { src: posterUrl, resolvedSource, creditTitle, e })}
+                          />
+                        ) : (
+                          <div className="person-credits-card__placeholder">
+                            <Layers size={22} />
+                          </div>
+                        )}
+
+                        {/* Discrete Source Logo Badge */}
+                        {credit.in_library && (
+                          <span className={`person-credits-card__source-badge source-${resolvedSource}`}>
+                            {resolvedSource === 'porndb' || resolvedSource === 'theporndb' ? 'PornDB' : resolvedSource === 'stashdb' ? 'Stash' : resolvedSource === 'fansdb' ? 'Fans' : 'TMDb'}
+                          </span>
+                        )}
+
+                        {/* "In Library" bookmark badge */}
+                        {credit.in_library && (
+                          <div className="person-credits-card__library-badge" title={t('library.details.inLibrary') || 'In Library'}>
+                            <Bookmark size={10} />
+                          </div>
+                        )}
                       </div>
-                    )}
+
+                      <span className="person-credits-card__title" title={creditTitle}>{creditTitle}</span>
+                      {credit.character && (
+                        <span className="person-credits-card__role" title={credit.character}>{credit.character}</span>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Skeletons on loading page */}
+                {isFetchingNextPage && Array.from({ length: 12 }).map((_, idx) => (
+                  <div
+                    key={`loading-skeleton-${idx}`}
+                    className={`person-credits-card skeleton-card`}
+                  >
+                    <div className="person-credits-card__poster-container skeleton-shimmer" />
                   </div>
-                  
-                  <span className="person-credits-card__title" title={creditTitle}>{creditTitle}</span>
-                  {credit.character && (
-                    <span className="person-credits-card__role" title={credit.character}>{credit.character}</span>
-                  )}
-                </div>
-              );
-            })}
-
-            {/* Skeletons on loading page */}
-            {isFetchingNextPage && Array.from({ length: 12 }).map((_, idx) => (
-              <div 
-                key={`loading-skeleton-${idx}`} 
-                className={`person-credits-card skeleton-card`}
-              >
-                <div className="person-credits-card__poster-container skeleton-shimmer" />
+                ))}
               </div>
-            ))}
-          </div>
 
-          {/* Sentinel element to trigger next page load */}
-          {hasMore && <div ref={observerRef} className="person-credits-grid__sentinel" />}
+              {/* Sentinel element to trigger next page load */}
+              {hasMore && <div ref={observerRef} className="person-credits-grid__sentinel" />}
 
-          {!hasMore && accumulatedItems.length > 0 && (
-            <div className="person-credits-grid__finished">
-              {t('library.details.finishedCredits') || 'All credits loaded.'}
+              {!hasMore && accumulatedItems.length > 0 && (
+                <div className="person-credits-grid__finished">
+                  {t('library.details.finishedCredits') || 'All credits loaded.'}
+                </div>
+              )}
             </div>
           )}
-        </div>
+        </>
       )}
-      </>
-    )}
     </div>
   );
 }
