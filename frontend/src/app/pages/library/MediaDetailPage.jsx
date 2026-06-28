@@ -1,12 +1,15 @@
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Users, BadgeInfo, Layers3, Tags, Clapperboard,
-  SlidersHorizontal, CheckCheck, Image as ImageIcon, Flame, ExternalLink
+  SlidersHorizontal, CheckCheck, Image as ImageIcon, Flame, ExternalLink,
+  Minus, Plus
 } from 'lucide-react';
 import { useTranslation } from '@/providers/LanguageContext';
 import { useUi } from '@/providers/UiProvider';
 import { normalizeMediaType } from '@/lib/mediaTypes';
 import UniversalImagePickerModal from './modals/UniversalImagePickerModal';
+import { buildMediaExternalLinks } from './peopleCollectionDetailUtils.jsx';
 
 // Context
 import { MediaDetailProvider } from './components/detail/MediaDetailContext';
@@ -65,6 +68,61 @@ export default function MediaDetailPage({ type = 'movie' }) {
     togglePanel,
     handleToggleSideNav
   } = actions;
+
+  const [isSocialExpanded, setIsSocialExpanded] = useState(false);
+
+  const externalLinks = useMemo(
+    () => buildMediaExternalLinks(item, t, normalizedType),
+    [item, t, normalizedType]
+  );
+
+  const socialLinks = useMemo(() => {
+    if (!item) return [];
+    const knownIcons = new Set([
+      '/links/tmdb.png', '/links/stashdb.png', '/links/fansdb.webp', '/links/theporndb.png',
+      '/links/imdb.png', '/links/instagram.ico', '/links/instagram.svg',
+      '/links/facebook.ico', '/links/facebook.svg', '/links/x.svg',
+      '/links/tiktok.png', '/links/tiktok.svg', '/links/youtube.ico', '/links/youtube.svg',
+      '/links/onylfans.ico', '/links/fansly.png', '/links/pornhub.ico',
+      '/links/manyvids.ico', '/links/patreon.ico', '/links/linktree.png',
+      '/links/threads.png', '/links/twitch.jpg', '/links/kick.ico',
+      '/links/bluesky.png', '/links/clip4sale.ico', '/links/allmylinks.ico',
+      '/links/beacons.png', '/links/iafd.ico', '/links/babepedia.ico',
+      '/links/freeones.png', '/links/data18.ico', '/links/homepage.png',
+      '/links/twitter.png', '/links/website.svg',
+    ]);
+    const allLinks = externalLinks.filter(link =>
+      link.iconSrc && knownIcons.has(link.iconSrc)
+    );
+    const order = ['theporndb', 'fansdb', 'stashdb', 'tmdb', 'imdb', 'website', 'instagram', 'facebook', 'x', 'twitter', 'tiktok', 'youtube'];
+    const ordered = [];
+    for (const key of order) {
+      const found = allLinks.find(l => l.key === key);
+      if (found) {
+        ordered.push(found);
+      }
+    }
+    for (const link of allLinks) {
+      if (!order.includes(link.key)) {
+        ordered.push(link);
+      }
+    }
+    const seenIcons = new Set();
+    const uniqueLinks = [];
+    for (const link of ordered) {
+      if (!link.iconSrc) continue;
+      const isGeneric = link.iconSrc.includes('homepage') || link.iconSrc.includes('website');
+      if (isGeneric || !seenIcons.has(link.iconSrc)) {
+        seenIcons.add(link.iconSrc);
+        uniqueLinks.push(link);
+      }
+    }
+    return uniqueLinks;
+  }, [externalLinks, item]);
+
+  const hasExtraSocials = socialLinks.length > 4;
+  const mainSocialLinks = hasExtraSocials ? socialLinks.slice(0, 4) : socialLinks;
+  const extraSocialLinks = hasExtraSocials ? socialLinks.slice(4) : [];
 
   const handleOpenBackdropModal = () => {
     openModal({
@@ -331,6 +389,54 @@ export default function MediaDetailPage({ type = 'movie' }) {
           </>
         )}
         <MediaActions />
+        {socialLinks.length > 0 && (
+          <div className={`entity-detail-page__bottom-socials ${isSocialExpanded ? 'entity-detail-page__bottom-socials--expanded' : ''}`}>
+            <div className="entity-detail-page__bottom-socials-wrapper">
+              {hasExtraSocials && (
+                <div className="entity-detail-page__bottom-socials-extra">
+                  {extraSocialLinks.map((link) => (
+                    <a
+                      key={link.key}
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="entity-detail-page__bottom-social-btn"
+                      title={link.label}
+                    >
+                      <img src={link.iconSrc || '/links/website.svg'} alt={link.label} />
+                    </a>
+                  ))}
+                </div>
+              )}
+
+              <div className="entity-detail-page__bottom-socials-main">
+                {mainSocialLinks.map((link) => (
+                  <a
+                    key={link.key}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="entity-detail-page__bottom-social-btn"
+                    title={link.label}
+                  >
+                    <img src={link.iconSrc || '/links/website.svg'} alt={link.label} />
+                  </a>
+                ))}
+              </div>
+
+              {hasExtraSocials && (
+                <button
+                  type="button"
+                  className="entity-detail-page__bottom-social-toggle"
+                  onClick={() => setIsSocialExpanded(!isSocialExpanded)}
+                  title={isSocialExpanded ? (t('common.less') || 'Show Less') : (t('common.more') || 'Show More')}
+                >
+                  {isSocialExpanded ? <Minus size={14} /> : <Plus size={14} />}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </DetailPageShell>
     </MediaDetailProvider>
   );

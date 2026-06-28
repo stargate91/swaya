@@ -907,3 +907,145 @@ export function enrichKnownForItems(knownForItems, movies, tv) {
     };
   });
 }
+
+export function buildMediaExternalLinks(item, t, type) {
+  if (!item) return [];
+
+  const getIconForUrl = (url, key) => {
+    const keyLower = String(key || '').toLowerCase();
+    if (keyLower === 'x') return '/links/x.svg';
+    if (keyLower === 'twitter') return '/links/twitter.png';
+
+    try {
+      const hostname = new URL(url).hostname.replace('www.', '').toLowerCase();
+      if (hostname.includes('twitter.com')) return '/links/twitter.png';
+      if (hostname.includes('x.com')) return '/links/x.svg';
+      if (hostname.includes('instagram.com')) return '/links/instagram.ico';
+      if (hostname.includes('tiktok.com')) return '/links/tiktok.png';
+      if (hostname.includes('wikidata.org')) return '/links/wikidata.svg';
+      if (hostname.includes('facebook.com')) return '/links/facebook.ico';
+      if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return '/links/youtube.ico';
+      if (hostname.includes('onlyfans.com')) return '/links/onylfans.ico';
+      if (hostname.includes('fansly.com')) return '/links/fansly.png';
+      if (hostname.includes('patreon.com')) return '/links/patreon.ico';
+      if (hostname.includes('pornhub.com')) return '/links/pornhub.ico';
+      if (hostname.includes('manyvids.com')) return '/links/manyvids.ico';
+      if (hostname.includes('linktr.ee')) return '/links/linktree.png';
+      if (hostname.includes('stashdb.org')) return '/links/stashdb.png';
+      if (hostname.includes('theporndb.net') || hostname.includes('theporndb.org')) return '/links/theporndb.png';
+      if (hostname.includes('fansdb.cc') || hostname.includes('fansdb.xyz')) return '/links/fansdb.webp';
+      if (hostname.includes('threads.net')) return '/links/threads.png';
+      if (hostname.includes('twitch.tv')) return '/links/twitch.jpg';
+      if (hostname.includes('kick.com')) return '/links/kick.ico';
+      if (hostname.includes('bluesky.app')) return '/links/bluesky.png';
+      if (hostname.includes('clips4sale.com')) return '/links/clip4sale.ico';
+      if (hostname.includes('allmylinks.com')) return '/links/allmylinks.ico';
+      if (hostname.includes('beacons.ai')) return '/links/beacons.png';
+      if (hostname.includes('iafd.com')) return '/links/iafd.ico';
+      if (hostname.includes('babepedia.com')) return '/links/babepedia.ico';
+      if (hostname.includes('freeones.com')) return '/links/freeones.png';
+      if (hostname.includes('data18.com')) return '/links/data18.ico';
+      if (hostname.includes('themoviedb.org')) return '/links/tmdb.png';
+      if (hostname.includes('imdb.com')) return '/links/imdb.png';
+    } catch {
+      /* ignore invalid URL */
+    }
+    return '/links/homepage.png';
+  };
+
+  const getBrandColorForKey = (key) => {
+    const colors = {
+      tmdb: 'var(--color-brand-tmdb)',
+      imdb: '#f5c518',
+      stashdb: '#081c24',
+      fansdb: '#00aff0',
+      porndb: '#ff0055',
+      onlyfans: '#00aff0',
+      fansly: '#5b93fa',
+      patreon: '#ff424d',
+      instagram: '#c13584',
+      facebook: '#1877f2',
+      twitter: '#1da1f2',
+      youtube: '#ff0000',
+      data18: '#f25b29',
+      website: '#888888',
+    };
+    return colors[key?.toLowerCase()] || 'var(--color-text-primary)';
+  };
+
+  const links = [];
+  const seenUrls = new Set();
+  const seenKeys = new Set();
+
+  const addLink = (linkObj) => {
+    if (!linkObj.href) return;
+    try {
+      const normalized = new URL(linkObj.href).href.replace(/\/$/, '').toLowerCase();
+      if (seenUrls.has(normalized) || seenKeys.has(linkObj.key)) return;
+      seenUrls.add(normalized);
+      seenKeys.add(linkObj.key);
+      links.push(linkObj);
+    } catch {
+      if (seenUrls.has(linkObj.href.toLowerCase()) || seenKeys.has(linkObj.key)) return;
+      seenUrls.add(linkObj.href.toLowerCase());
+      seenKeys.add(linkObj.key);
+      links.push(linkObj);
+    }
+  };
+
+  // 1. Database external_links first
+  if (Array.isArray(item.external_links)) {
+    item.external_links.forEach((link) => {
+      const href = (link.url && String(link.url).startsWith('http')) 
+        ? link.url 
+        : (link.profile_url && String(link.profile_url).startsWith('http') ? link.profile_url : null);
+      if (!href) return;
+      const key = link.provider || link.key;
+      addLink({
+        key: key,
+        label: link.name || link.provider || 'Link',
+        href: href,
+        iconSrc: getIconForUrl(href, key),
+        brandColor: getBrandColorForKey(key),
+      });
+    });
+  }
+
+  // 2. Fallbacks from ids
+  const externalIds = item.external_ids || {};
+  const tmdbId = item.tmdb_id || item.tv_tmdb_id || externalIds.tmdb || externalIds.tmdb_id;
+  if (tmdbId) {
+    const pathSegment = type === 'tv' ? 'tv' : 'movie';
+    addLink({
+      key: 'tmdb',
+      label: t('library.details.tmdb') || 'TMDb',
+      href: `https://www.themoviedb.org/${pathSegment}/${tmdbId}`,
+      iconSrc: '/links/tmdb.png',
+      brandColor: 'var(--color-brand-tmdb)',
+    });
+  }
+
+  const imdbId = item.imdb_id || externalIds.imdb || externalIds.imdb_id;
+  if (imdbId) {
+    addLink({
+      key: 'imdb',
+      label: t('library.details.imdb') || 'IMDb',
+      href: `https://www.imdb.com/title/${imdbId}`,
+      iconSrc: '/links/imdb.png',
+      brandColor: 'var(--color-brand-imdb)',
+    });
+  }
+
+  if (item.homepage) {
+    addLink({
+      key: 'website',
+      label: t('library.details.website') || 'Website',
+      href: item.homepage,
+      iconSrc: '/links/homepage.png',
+      brandColor: 'var(--color-text-primary)',
+    });
+  }
+
+  return links;
+}
+
