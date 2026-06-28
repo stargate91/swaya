@@ -221,7 +221,7 @@ class TvShowFormatter(DetailFormatter):
             creator_id = creator.get("id")
             resolved_img = local_profiles.get(creator_id) if creator_id else None
             directors.append({
-                "id": creator_id,
+                "id": f"tmdb:{creator_id}" if creator_id else None,
                 "name": creator.get("name"),
                 "job": "Creator",
                 "gender": creator.get("gender"),
@@ -237,7 +237,7 @@ class TvShowFormatter(DetailFormatter):
                 if roles:
                     character = ", ".join(filter(None, [r.get("character") for r in roles]))
             cast.append({
-                "id": actor_id,
+                "id": f"tmdb:{actor_id}" if actor_id else None,
                 "name": actor.get("name"),
                 "character": character,
                 "gender": actor.get("gender"),
@@ -249,7 +249,7 @@ class TvShowFormatter(DetailFormatter):
             crew_id = crew.get("id")
             resolved_img = local_profiles.get(crew_id) if crew_id else None
             crew_member = {
-                "id": crew_id,
+                "id": f"tmdb:{crew_id}" if crew_id else None,
                 "name": crew.get("name"),
                 "job": crew.get("job"),
                 "gender": crew.get("gender"),

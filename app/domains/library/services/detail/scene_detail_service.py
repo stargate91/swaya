@@ -27,7 +27,25 @@ class SceneDetailService(DetailFormatter):
             provider_prefix = parts[0].lower()
             scene_uuid = parts[1]
         else:
-            scene_uuid = item_id
+            if str(item_id).isdigit():
+                from app.domains.library.models import MediaItem
+                from app.domains.metadata.models import MetadataMatch
+                item = db.query(MediaItem).filter(MediaItem.id == int(item_id)).first()
+                if item:
+                    match_db = db.query(MetadataMatch).filter(
+                        MetadataMatch.media_item_id == item.id,
+                        MetadataMatch.media_type == MediaType.SCENE
+                    ).first()
+                    if match_db:
+                        p_val = match_db.provider.value if hasattr(match_db.provider, "value") else str(match_db.provider)
+                        provider_prefix = p_val.lower()
+                        scene_uuid = match_db.external_id
+                    else:
+                        scene_uuid = item_id
+                else:
+                    scene_uuid = item_id
+            else:
+                scene_uuid = item_id
 
         import re
         is_uuid = bool(re.match(r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", scene_uuid))
@@ -252,6 +270,7 @@ class SceneDetailService(DetailFormatter):
             "user_comment": override.user_comment if override else None,
             "external_ids": {
                 "stash_id": scene_uuid,
+                "source": provider_prefix or "stash",
             },
             "custom_tags": [t.name for t in override.tags] if (override and override.tags) else [],
             "suggested_tags": [t.get("name") for t in scene_data.get("tags") or [] if t.get("name")] if scene_data.get("tags") else (match_db.suggested_tags if (match_db and match_db.suggested_tags) else []),

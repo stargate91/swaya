@@ -78,6 +78,21 @@ class PerformerDetailReader:
                 person = query.filter(Person.id == p_id).first()
             except (ValueError, TypeError):
                 pass
+        elif person_id_str.startswith("tmdb:"):
+            try:
+                tmdb_id_val = person_id_str.split(":", 1)[1]
+                person = query.filter(
+                    Person.external_ids["tmdb"].as_string() == tmdb_id_val
+                ).first()
+                if not person:
+                    res = self.add_person_tmdb(tmdb_id_val)
+                    if res and res.get("status") == "success":
+                        query_new = db.query(Person)
+                        if load_localizations:
+                            query_new = query_new.options(joinedload(Person.localizations))
+                        person = query_new.filter(Person.id == res["id"]).first()
+            except Exception as e:
+                logger.error(f"Error dynamically importing person via tmdb prefix {person_id_str}: {e}")
         elif ":" not in person_id_str:
             try:
                 p_id = int(person_id_str)

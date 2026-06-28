@@ -59,7 +59,7 @@ class TmdbMovieFormatter(MovieDetailFormatter):
             actor_id = actor.get("id")
             resolved_img = local_profiles.get(actor_id) if actor_id else None
             cast.append({
-                "id": actor_id,
+                "id": f"tmdb:{actor_id}" if actor_id else None,
                 "name": actor.get("name"),
                 "character": actor.get("character"),
                 "job": "Actor",
@@ -72,7 +72,7 @@ class TmdbMovieFormatter(MovieDetailFormatter):
             crew_id = crew.get("id")
             resolved_img = local_profiles.get(crew_id) if crew_id else None
             crew_member = {
-                "id": crew_id,
+                "id": f"tmdb:{crew_id}" if crew_id else None,
                 "name": crew.get("name"),
                 "job": crew.get("job"),
                 "profile_path": self._resolve_img(resolved_img or crew.get("profile_path"), "people"),

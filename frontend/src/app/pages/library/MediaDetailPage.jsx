@@ -261,11 +261,23 @@ export default function MediaDetailPage({ type = 'movie' }) {
 
             {item?.external_ids?.stash_id && (
               <a
-                href={item.external_ids.source === 'fansdb' ? `https://fansdb.cc/scenes/${item.external_ids.stash_id}` : `https://stashdb.org/scenes/${item.external_ids.stash_id}`}
+                href={
+                  item.external_ids.source === 'fansdb'
+                    ? `https://fansdb.cc/scenes/${item.external_ids.stash_id}`
+                    : (item.external_ids.source === 'porndb' || item.external_ids.source === 'theporndb')
+                    ? `https://theporndb.net/scenes/${item.external_ids.stash_id}`
+                    : `https://stashdb.org/scenes/${item.external_ids.stash_id}`
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="media-detail-page__side-nav-btn"
-                title={item.external_ids.source === 'fansdb' ? 'FansDB Link' : 'StashDB Link'}
+                title={
+                  item.external_ids.source === 'fansdb'
+                    ? 'FansDB Link'
+                    : (item.external_ids.source === 'porndb' || item.external_ids.source === 'theporndb')
+                    ? 'ThePornDB Link'
+                    : 'StashDB Link'
+                }
               >
                 <ExternalLink size={20} />
               </a>
