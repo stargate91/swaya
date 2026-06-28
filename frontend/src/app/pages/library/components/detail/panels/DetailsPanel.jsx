@@ -261,26 +261,7 @@ export default function DetailsPanel() {
 
 
 
-      {Array.isArray(item?.external_links) && item.external_links.length > 1 && (
-        <div className="details-panel__section">
-          <h4 className="details-panel__section-title">
-            {t('library.details.externalLinks') || 'External Links'}
-          </h4>
-          <div className="external-links-container">
-            {item.external_links.map((link) => (
-              <a
-                key={link.key}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`external-link-btn external-link-btn--${link.key}`}
-              >
-                {link.name}
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       {Array.isArray(item?.keywords) && item.keywords.filter(Boolean).length > 0 && (
         <div className="details-panel__section">
