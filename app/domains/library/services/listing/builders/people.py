@@ -42,6 +42,10 @@ class PeopleQueryBuilder:
             people_items.sort(key=lambda item: (-(item.user_rating if item.user_rating is not None else item.rating or 0.0), -(item.library_count or 0), (item.name or "").lower()))
         elif params.sort_by in ("user_rating_asc", "popularity_asc"):
             people_items.sort(key=lambda item: ((item.user_rating if item.user_rating is not None else item.rating or 0.0), (item.library_count or 0), (item.name or "").lower()))
+        elif params.sort_by in ("birthday", "birthday_desc"):
+            people_items.sort(key=lambda item: (item.birthday or "0000-00-00", (item.name or "").lower()), reverse=True)
+        elif params.sort_by == "birthday_asc":
+            people_items.sort(key=lambda item: (item.birthday or "9999-99-99", (item.name or "").lower()))
         elif params.sort_by in ("name_desc", "title_desc"):
             people_items.sort(key=lambda item: (item.name or "").lower(), reverse=True)
         else:
@@ -71,6 +75,7 @@ class PeopleQueryBuilder:
                 "is_favorite": item.is_favorite,
                 "is_active": item.is_active,
                 "gender": item.gender,
+                "birthday": item.birthday,
                 "library_count": item.library_count,
                 "people_role": item.people_role,
                 "is_adult_person": item.is_adult_person,

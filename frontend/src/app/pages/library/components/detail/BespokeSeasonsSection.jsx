@@ -1,9 +1,10 @@
 /* eslint-disable react/jsx-no-literals, react-hooks/set-state-in-effect */
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   ChevronRight, ChevronLeft, Check, Eye, Play,
-  Clapperboard, Calendar, Tv, Star, Flame, Trash2
+  Clapperboard, Calendar, Tv, Star, Flame, Trash2, X
 } from 'lucide-react';
 import IconButton from '@/ui/IconButton';
 import Pill from '@/ui/Pill';
@@ -24,6 +25,14 @@ export default function BespokeSeasonsSection() {
   const { item, cleanId, nextEpisodeInfo } = state;
   const { updateStatusMutation, playMutation, bulkUpdateWatchedMutation, addPeakMutation, deletePeakMutation } = mutations;
   const queryClient = useQueryClient();
+
+  const [lightboxUrl, setLightboxUrl] = useState(null);
+
+  const handleOpenLightbox = (url) => {
+    if (url) {
+      setLightboxUrl(url);
+    }
+  };
 
   const seasonsList = useMemo(() => item?.seasons || [], [item?.seasons]);
   const seasonsCount = seasonsList.length;
@@ -143,6 +152,8 @@ export default function BespokeSeasonsSection() {
 
   const getPosterUrl = (path) => path ? resolveMediaImageUrl(path, 'poster') : '';
   const getStillUrl = (path) => path ? resolveMediaImageUrl(path, 'still') : '';
+  const getOriginalPosterUrl = (path) => path ? resolveMediaImageUrl(path, 'originalPoster') : '';
+  const getOriginalStillUrl = (path) => path ? resolveMediaImageUrl(path, 'originalStill') : '';
 
   const isSeasonWatched = useMemo(() => {
     return episodes.length > 0 && episodes.every((ep) => ep.is_watched);
@@ -213,7 +224,11 @@ export default function BespokeSeasonsSection() {
         <div className="bespoke-browser-card__body bespoke-browser-card__body--season">
           {/* Left Column: Large Season Poster */}
           <div className="bespoke-season-detail-card__poster-col">
-            <div className="bespoke-season-detail-card__poster-wrapper">
+            <div
+              className="bespoke-season-detail-card__poster-wrapper"
+              style={{ cursor: getPosterUrl(activeSeason.poster_path) ? 'pointer' : 'default' }}
+              onClick={() => handleOpenLightbox(getOriginalPosterUrl(activeSeason.poster_path))}
+            >
               {getPosterUrl(activeSeason.poster_path) ? (
                 <img
                   src={getPosterUrl(activeSeason.poster_path)}
@@ -345,7 +360,11 @@ export default function BespokeSeasonsSection() {
 
             {/* Left Column: Large Cinematic 16:9 Still */}
             <div className="bespoke-episode-detail-card__still-col">
-              <div className="bespoke-episode-detail-card__still-wrapper">
+              <div
+                className="bespoke-episode-detail-card__still-wrapper"
+                style={{ cursor: getStillUrl(activeEpisode.still_path) ? 'pointer' : 'default' }}
+                onClick={() => handleOpenLightbox(getOriginalStillUrl(activeEpisode.still_path))}
+              >
                 {getStillUrl(activeEpisode.still_path) ? (
                   <img
                     src={getStillUrl(activeEpisode.still_path)}
@@ -502,6 +521,40 @@ export default function BespokeSeasonsSection() {
           </div>
         )}
       </div>
+      {lightboxUrl && typeof document !== 'undefined' ? createPortal(
+        <div
+          className="organizer-details__lightbox"
+          role="button"
+          tabIndex={0}
+          aria-label={t('common.close') || 'Close image preview'}
+          onClick={() => setLightboxUrl(null)}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              setLightboxUrl(null);
+            }
+          }}
+        >
+          <button
+            type="button"
+            className="organizer-details__lightbox-close"
+            aria-label={t('common.close') || 'Close image preview'}
+            onClick={(event) => {
+              event.stopPropagation();
+              setLightboxUrl(null);
+            }}
+          >
+            <X size={18} />
+          </button>
+          <img
+            src={lightboxUrl}
+            alt="Enlarged preview"
+            className="organizer-details__lightbox-image"
+            onClick={(event) => event.stopPropagation()}
+          />
+        </div>,
+        document.body
+      ) : null}
     </div>
   );
 }
