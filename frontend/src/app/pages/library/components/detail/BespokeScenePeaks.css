@@ -56,103 +56,97 @@
   font-style: italic;
 }
 
-/* Horizontal scroller layout and buttons (flex layout next to the container) */
-.bespoke-scene-peaks-scroller-wrapper {
+/* Vertical list layout */
+.bespoke-scene-peaks-list {
   display: flex;
-  align-items: center;
-  width: 100%;
-  --local-gap: 6px;
+  flex-direction: column;
+  --local-gap: 4px;
   gap: var(--local-gap);
+  max-height: 176px; /* Approx 5 items */
+  overflow-y: auto;
+  padding-right: 2px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
 }
 
-.bespoke-scene-peaks-row {
-  flex: 1;
-  min-width: 0;
+.bespoke-scene-peaks-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.bespoke-scene-peaks-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bespoke-scene-peaks-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+}
+
+.bespoke-scene-peaks-item {
   display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  --local-gap: 6px;
-  gap: var(--local-gap);
-}
-
-.bespoke-scene-peaks-row::-webkit-scrollbar {
-  display: none;
-}
-
-.bespoke-scene-peaks-pill {
-  flex-shrink: 0;
-  display: inline-flex;
+  justify-content: space-between;
   align-items: center;
-  --local-gap: 5px;
-  gap: var(--local-gap);
-  padding: 4px var(--space-sm);
-  background: color-mix(in srgb, #ef4444 8%, rgba(255, 255, 255, 0.02));
-  border: 1px solid color-mix(in srgb, #ef4444 20%, var(--color-border-default));
-  border-radius: var(--radius-md, 6px);
-  color: color-mix(in srgb, #ef4444 85%, white);
-  font-size: 11px;
-  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: var(--radius-md, 8px);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--color-border-default);
+  transition: all 0.15s ease;
+}
+
+.bespoke-scene-peaks-item--playable {
   cursor: pointer;
-  --local-transition: all 0.15s ease;
-  transition: var(--local-transition);
 }
 
-.bespoke-scene-peaks-pill:hover {
-  background: color-mix(in srgb, #ef4444 15%, rgba(255, 255, 255, 0.05));
-  border-color: color-mix(in srgb, #ef4444 40%, var(--color-border-strong));
+.bespoke-scene-peaks-item--playable:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--color-border-strong);
   transform: translateY(-1px);
 }
 
-.bespoke-scene-peaks-pill-icon {
-  opacity: 0.9;
+.bespoke-scene-peaks-item-left {
+  display: flex;
+  align-items: center;
+  --local-gap: 8px;
+  gap: var(--local-gap);
 }
 
-.bespoke-scene-peaks-pill-time {
-  user-select: none;
+.bespoke-scene-peaks-item-icon {
+  color: #ef4444;
 }
 
-.bespoke-scene-peaks-pill-delete {
+.bespoke-scene-peaks-item-time {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.bespoke-scene-peaks-item-right {
+  display: flex;
+  align-items: center;
+  --local-gap: 12px;
+  gap: var(--local-gap);
+}
+
+.bespoke-scene-peaks-item-date {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.bespoke-scene-peaks-item-delete {
   background: transparent;
   border: none;
-  color: inherit;
+  color: var(--color-text-muted);
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  opacity: 0.6;
-  --local-transition: opacity 0.15s ease, transform 0.15s ease;
-  transition: var(--local-transition);
-}
-
-.bespoke-scene-peaks-pill-delete:hover {
-  opacity: 1;
-  transform: scale(1.15);
-}
-
-.bespoke-scene-peaks-scroller-btn {
-  flex-shrink: 0;
-  z-index: 10;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--color-border-default);
-  color: var(--color-text-secondary);
-  border-radius: 999px;
-  width: 20px;
-  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  opacity: 0.8;
-  --local-transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
-  transition: var(--local-transition);
   padding: 0;
+  transition: color 0.15s ease, transform 0.15s ease;
 }
 
-.bespoke-scene-peaks-scroller-btn:hover {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.15);
-  color: var(--color-text-primary);
+.bespoke-scene-peaks-item-delete:hover {
+  color: #ef4444;
+  transform: scale(1.1);
 }

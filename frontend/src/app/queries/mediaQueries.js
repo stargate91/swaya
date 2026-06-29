@@ -660,8 +660,61 @@ export const useToggleTrackedMutation = () => {
 export const useAddPeakMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (itemId) => api.media.addPeak(itemId),
-    onSuccess: (data, itemId) => {
+    mutationFn: (variables) => {
+      const itemId = typeof variables === 'object' ? variables.itemId : variables;
+      return api.media.addPeak(itemId);
+    },
+    onMutate: async (variables) => {
+      const { itemId, tvId } = typeof variables === 'object' ? variables : { itemId: variables, tvId: null };
+      const targets = [itemId, tvId].filter(Boolean);
+      
+      for (const id of targets) {
+        const clean = String(id).replace('tv_', '');
+        await queryClient.cancelQueries({ queryKey: ['library-item-detail', id] });
+        await queryClient.cancelQueries({ queryKey: ['library-item-detail', clean] });
+      }
+
+      const contextSnapshot = {};
+      targets.forEach(id => {
+        const clean = String(id).replace('tv_', '');
+        contextSnapshot[id] = queryClient.getQueryData(['library-item-detail', id]);
+        contextSnapshot[clean] = queryClient.getQueryData(['library-item-detail', clean]);
+      });
+
+      const optimisticUpdate = (oldData) => {
+        if (!oldData) return oldData;
+        const currentCount = oldData.peaks_count || 0;
+        const currentHistory = oldData.peaks_history || [];
+        const tempPeak = {
+          id: 'temp-' + Date.now(),
+          video_position: 0,
+          watched_at: new Date().toISOString(),
+          isOptimistic: true,
+        };
+        return {
+          ...oldData,
+          peaks_count: currentCount + 1,
+          peaks_history: [...currentHistory, tempPeak].sort((a, b) => a.video_position - b.video_position),
+        };
+      };
+
+      targets.forEach(id => {
+        const clean = String(id).replace('tv_', '');
+        queryClient.setQueryData(['library-item-detail', id], optimisticUpdate);
+        queryClient.setQueryData(['library-item-detail', clean], optimisticUpdate);
+      });
+
+      return { contextSnapshot };
+    },
+    onError: (err, variables, context) => {
+      if (context?.contextSnapshot) {
+        Object.entries(context.contextSnapshot).forEach(([key, val]) => {
+          queryClient.setQueryData(['library-item-detail', key], val);
+        });
+      }
+    },
+    onSuccess: (data, variables) => {
+      const { itemId, tvId } = typeof variables === 'object' ? variables : { itemId: variables, tvId: null };
       const updateData = (oldData) => {
         if (!oldData) return oldData;
         return {
@@ -670,12 +723,15 @@ export const useAddPeakMutation = () => {
           peaks_history: data.peaks_history,
         };
       };
-      const cleanId = String(itemId).replace('tv_', '');
-      queryClient.setQueryData(['library-item-detail', itemId], updateData);
-      queryClient.setQueryData(['library-item-detail', cleanId], updateData);
-      queryClient.setQueryData(['library-tv-detail', itemId], updateData);
-      queryClient.invalidateQueries({ queryKey: ['library-item-detail', itemId] });
-      queryClient.invalidateQueries({ queryKey: ['library-item-detail', cleanId] });
+      const targets = [itemId, tvId].filter(Boolean);
+      targets.forEach(id => {
+        const clean = String(id).replace('tv_', '');
+        queryClient.setQueryData(['library-item-detail', id], updateData);
+        queryClient.setQueryData(['library-item-detail', clean], updateData);
+        queryClient.setQueryData(['library-tv-detail', id], updateData);
+        queryClient.invalidateQueries({ queryKey: ['library-item-detail', id] });
+        queryClient.invalidateQueries({ queryKey: ['library-item-detail', clean] });
+      });
       queryClient.invalidateQueries({ queryKey: ['library-tv-detail'] });
     },
   });
@@ -686,6 +742,7 @@ export const useDeletePeakMutation = () => {
   return useMutation({
     mutationFn: ({ itemId, logId }) => api.media.deletePeak(itemId, logId),
     onSuccess: (data, variables) => {
+      const { itemId, tvId } = variables;
       const updateData = (oldData) => {
         if (!oldData) return oldData;
         return {
@@ -694,12 +751,15 @@ export const useDeletePeakMutation = () => {
           peaks_history: data.peaks_history,
         };
       };
-      const cleanId = String(variables.itemId).replace('tv_', '');
-      queryClient.setQueryData(['library-item-detail', variables.itemId], updateData);
-      queryClient.setQueryData(['library-item-detail', cleanId], updateData);
-      queryClient.setQueryData(['library-tv-detail', variables.itemId], updateData);
-      queryClient.invalidateQueries({ queryKey: ['library-item-detail', variables.itemId] });
-      queryClient.invalidateQueries({ queryKey: ['library-item-detail', cleanId] });
+      const targets = [itemId, tvId].filter(Boolean);
+      targets.forEach(id => {
+        const clean = String(id).replace('tv_', '');
+        queryClient.setQueryData(['library-item-detail', id], updateData);
+        queryClient.setQueryData(['library-item-detail', clean], updateData);
+        queryClient.setQueryData(['library-tv-detail', id], updateData);
+        queryClient.invalidateQueries({ queryKey: ['library-item-detail', id] });
+        queryClient.invalidateQueries({ queryKey: ['library-item-detail', clean] });
+      });
       queryClient.invalidateQueries({ queryKey: ['library-tv-detail'] });
     },
   });

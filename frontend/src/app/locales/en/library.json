@@ -334,6 +334,7 @@
     "activeTags": "Active Tags",
     "noTagsAssigned": "No tags assigned.",
     "suggestedTags": "Suggested Tags",
+    "playSession": "Play Session",
     "createTagFromKeyword": "Create tag from keyword",
     "allKeywordsTagged": "All keywords already exist as tags.",
     "noKeywordsAvailable": "No keywords available.",

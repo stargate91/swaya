@@ -14,7 +14,9 @@ export default function MediaActions() {
     canToggleTracked,
     isWatched,
     canToggleWatched,
-    nextEpisodeInfo
+    nextEpisodeInfo,
+    cleanId,
+    effectiveId
   } = state;
 
   const {
@@ -94,7 +96,7 @@ export default function MediaActions() {
           {(item?.is_adult && (isMovie || isScene)) && (
             <Button
               variant="ghost"
-              onClick={() => addPeakMutation.mutate(item.id)}
+              onClick={() => addPeakMutation.mutate({ itemId: effectiveId, tvId: cleanId })}
               disabled={addPeakMutation.isPending}
             >
               <Flame size={16} />

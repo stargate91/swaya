@@ -88,7 +88,16 @@ class BaseQueryBuilder:
         # Tags filter
         if params.selected_tags:
             if not joined_override:
-                query = query.outerjoin(UserOverride, and_(UserOverride.metadata_match_id == MetadataMatch.id, UserOverride.user_id == self.current_user_id))
+                query = query.outerjoin(UserOverride, and_(
+                    or_(
+                        UserOverride.metadata_match_id == MetadataMatch.id,
+                        and_(
+                            UserOverride.metadata_match_id == None,
+                            UserOverride.media_item_id == MetadataMatch.media_item_id
+                        )
+                    ),
+                    UserOverride.user_id == self.current_user_id
+                ))
                 joined_override = True
             query = query.join(user_override_tags, user_override_tags.c.user_override_id == UserOverride.id)\
                          .join(Tag, Tag.id == user_override_tags.c.tag_id)\
@@ -108,7 +117,16 @@ class BaseQueryBuilder:
                 query = query.outerjoin(MetadataLocalization, MetadataLocalization.match_id == MetadataMatch.id)
                 joined_localization = True
             if not joined_override:
-                query = query.outerjoin(UserOverride, and_(UserOverride.metadata_match_id == MetadataMatch.id, UserOverride.user_id == self.current_user_id))
+                query = query.outerjoin(UserOverride, and_(
+                    or_(
+                        UserOverride.metadata_match_id == MetadataMatch.id,
+                        and_(
+                            UserOverride.metadata_match_id == None,
+                            UserOverride.media_item_id == MetadataMatch.media_item_id
+                        )
+                    ),
+                    UserOverride.user_id == self.current_user_id
+                ))
                 joined_override = True
             
             val_col = func.coalesce(UserOverride.custom_title, MetadataLocalization.title, MediaItem.filename)
@@ -122,7 +140,16 @@ class BaseQueryBuilder:
             query = query.order_by(MetadataMatch.release_date.asc())
         elif params.sort_by in ("rating_desc", "user_rating_desc"):
             if not joined_override:
-                query = query.outerjoin(UserOverride, and_(UserOverride.metadata_match_id == MetadataMatch.id, UserOverride.user_id == self.current_user_id))
+                query = query.outerjoin(UserOverride, and_(
+                    or_(
+                        UserOverride.metadata_match_id == MetadataMatch.id,
+                        and_(
+                            UserOverride.metadata_match_id == None,
+                            UserOverride.media_item_id == MetadataMatch.media_item_id
+                        )
+                    ),
+                    UserOverride.user_id == self.current_user_id
+                ))
                 joined_override = True
             query = query.order_by(desc(func.coalesce(
                 UserOverride.user_rating,
@@ -131,7 +158,16 @@ class BaseQueryBuilder:
             )))
         elif params.sort_by == "user_rating_asc":
             if not joined_override:
-                query = query.outerjoin(UserOverride, and_(UserOverride.metadata_match_id == MetadataMatch.id, UserOverride.user_id == self.current_user_id))
+                query = query.outerjoin(UserOverride, and_(
+                    or_(
+                        UserOverride.metadata_match_id == MetadataMatch.id,
+                        and_(
+                            UserOverride.metadata_match_id == None,
+                            UserOverride.media_item_id == MetadataMatch.media_item_id
+                        )
+                    ),
+                    UserOverride.user_id == self.current_user_id
+                ))
                 joined_override = True
             query = query.order_by(func.coalesce(
                 UserOverride.user_rating,
@@ -152,12 +188,30 @@ class BaseQueryBuilder:
             query = query.order_by(MediaItem.size.asc())
         elif params.sort_by == "last_watched_desc":
             if not joined_override:
-                query = query.outerjoin(UserOverride, and_(UserOverride.metadata_match_id == MetadataMatch.id, UserOverride.user_id == self.current_user_id))
+                query = query.outerjoin(UserOverride, and_(
+                    or_(
+                        UserOverride.metadata_match_id == MetadataMatch.id,
+                        and_(
+                            UserOverride.metadata_match_id == None,
+                            UserOverride.media_item_id == MetadataMatch.media_item_id
+                        )
+                    ),
+                    UserOverride.user_id == self.current_user_id
+                ))
                 joined_override = True
             query = query.order_by(desc(UserOverride.last_watched_at))
         elif params.sort_by == "last_watched_asc":
             if not joined_override:
-                query = query.outerjoin(UserOverride, and_(UserOverride.metadata_match_id == MetadataMatch.id, UserOverride.user_id == self.current_user_id))
+                query = query.outerjoin(UserOverride, and_(
+                    or_(
+                        UserOverride.metadata_match_id == MetadataMatch.id,
+                        and_(
+                            UserOverride.metadata_match_id == None,
+                            UserOverride.media_item_id == MetadataMatch.media_item_id
+                        )
+                    ),
+                    UserOverride.user_id == self.current_user_id
+                ))
                 joined_override = True
             query = query.order_by(UserOverride.last_watched_at.asc())
 

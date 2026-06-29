@@ -181,16 +181,11 @@ export default function BespokeSceneTagger() {
                       color: `color-mix(in srgb, ${tagColor} 85%, white)`,
                     }}
                     className="bespoke-scene-tagger-pill-active"
+                    onClick={() => handleToggleTag(tagName)}
+                    title={`Remove tag: ${tagName}`}
                   >
                     <span>{tagName}</span>
-                    <button
-                      type="button"
-                      className="bespoke-scene-tagger-pill-remove"
-                      onClick={() => handleToggleTag(tagName)}
-                      title="Remove tag"
-                    >
-                      <X size={10} />
-                    </button>
+                    <X size={10} className="bespoke-scene-tagger-pill-remove-icon" />
                   </Pill>
                 );
               })}

@@ -260,8 +260,32 @@ def add_item_peak(item_id: str, db: Session = Depends(get_db)):
             UserOverride.media_item_id == media_item_id
         ).first()
         
-    if override and override.resume_position:
-        video_position = int(override.resume_position)
+    player_time = None
+    try:
+        import requests
+        r = requests.get("http://127.0.0.1:8080/requests/status.json", auth=("", "swaya"), timeout=0.1)
+        if r.status_code == 200:
+            data = r.json()
+            player_time = int(data.get("time", 0))
+    except Exception:
+        pass
+
+    if player_time is None:
+        try:
+            import requests
+            import re
+            r = requests.get("http://127.0.0.1:13579/variables.html", timeout=0.1)
+            if r.status_code == 200:
+                pos_match = re.search(r'id="position">(\d+)</p>', r.text)
+                if pos_match:
+                    player_time = int(pos_match.group(1)) // 1000
+        except Exception:
+            pass
+
+    if player_time is not None and player_time > 0:
+        video_position = player_time
+    else:
+        video_position = 0
         
     peak = PlaybackPeakLog(
         user_id=current_uid,

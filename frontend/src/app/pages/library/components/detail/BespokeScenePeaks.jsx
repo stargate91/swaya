@@ -1,84 +1,14 @@
-import { useState, useRef, useEffect } from 'react';
-import { Flame, X, ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react';
+import { Flame, X } from 'lucide-react';
 import { useMediaDetailContext } from './MediaDetailContext';
-import Pill from '@/ui/Pill';
 import { formatTime } from '../../utils/detailUtils';
 import './BespokeScenePeaks.css';
 
 const LPAR = '(';
 const RPAR = ')';
 
-function HorizontalPillList({ children }) {
-  const containerRef = useRef(null);
-  const [showLeft, setShowLeft] = useState(false);
-  const [showRight, setShowRight] = useState(false);
-
-  const checkScroll = () => {
-    const el = containerRef.current;
-    if (!el) return;
-    setShowLeft(el.scrollLeft > 1);
-    setShowRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 1);
-  };
-
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    checkScroll();
-
-    window.addEventListener('resize', checkScroll);
-    const observer = new MutationObserver(checkScroll);
-    observer.observe(el, { childList: true, subtree: true });
-
-    return () => {
-      window.removeEventListener('resize', checkScroll);
-      observer.disconnect();
-    };
-  }, []);
-
-  const handleScroll = (direction) => {
-    const el = containerRef.current;
-    if (!el) return;
-    const scrollAmount = 150;
-    el.scrollBy({
-      left: direction === 'left' ? -scrollAmount : scrollAmount,
-      behavior: 'smooth',
-    });
-  };
-
-  return (
-    <div className="bespoke-scene-peaks-scroller-wrapper">
-      {showLeft && (
-        <button
-          type="button"
-          onClick={() => handleScroll('left')}
-          className="bespoke-scene-peaks-scroller-btn bespoke-scene-peaks-scroller-btn--left"
-        >
-          <ChevronLeft size={12} />
-        </button>
-      )}
-      <div
-        ref={containerRef}
-        onScroll={checkScroll}
-        className="bespoke-scene-peaks-row bespoke-scene-peaks-row--nowrap"
-      >
-        {children}
-      </div>
-      {showRight && (
-        <button
-          type="button"
-          onClick={() => handleScroll('right')}
-          className="bespoke-scene-peaks-scroller-btn bespoke-scene-peaks-scroller-btn--right"
-        >
-          <ChevronRight size={12} />
-        </button>
-      )}
-    </div>
-  );
-}
-
 export default function BespokeScenePeaks() {
   const { state, mutations, t } = useMediaDetailContext();
-  const { item } = state;
+  const { item, cleanId, effectiveId } = state;
   const { deletePeakMutation, playMutation } = mutations;
 
   const peaks = item?.peaks_history || [];
@@ -86,7 +16,7 @@ export default function BespokeScenePeaks() {
   const handleDeletePeak = (e, logId) => {
     e.stopPropagation();
     if (deletePeakMutation.isPending) return;
-    deletePeakMutation.mutate({ itemId: item.id, logId });
+    deletePeakMutation.mutate({ itemId: effectiveId, logId, tvId: cleanId });
   };
 
   const handlePlayMedia = () => {
@@ -107,30 +37,41 @@ export default function BespokeScenePeaks() {
 
       <div className="bespoke-scene-peaks-body">
         {peaks.length > 0 ? (
-          <HorizontalPillList>
-            {peaks.map((log, index) => (
-              <div
-                key={log.id || index}
-                className="bespoke-scene-peaks-pill"
-                onClick={handlePlayMedia}
-                title="Play Video"
-              >
-                <Flame size={10} className="bespoke-scene-peaks-pill-icon" />
-                <span className="bespoke-scene-peaks-pill-time">
-                  {log.video_position != null ? formatTime(log.video_position) : '—'}
-                </span>
-                <button
-                  type="button"
-                  className="bespoke-scene-peaks-pill-delete"
-                  onClick={(e) => handleDeletePeak(e, log.id)}
-                  disabled={deletePeakMutation.isPending}
-                  title={t('library.details.deletePeakBtn') || 'Delete Peak'}
+          <div className="bespoke-scene-peaks-list">
+            {peaks.map((log, index) => {
+              const hasPosition = log.video_position != null && log.video_position > 0;
+              return (
+                <div
+                  key={log.id || index}
+                  className={`bespoke-scene-peaks-item ${hasPosition ? 'bespoke-scene-peaks-item--playable' : ''}`}
+                  onClick={hasPosition ? handlePlayMedia : undefined}
+                  title={hasPosition ? "Play Video" : undefined}
                 >
-                  <X size={10} />
-                </button>
-              </div>
-            ))}
-          </HorizontalPillList>
+                  <div className="bespoke-scene-peaks-item-left">
+                    <Flame size={11} className="bespoke-scene-peaks-item-icon" />
+                    <span className="bespoke-scene-peaks-item-time">
+                      {hasPosition ? formatTime(log.video_position) : (t('library.details.playSession') || 'Play Session')}
+                    </span>
+                  </div>
+
+                  <div className="bespoke-scene-peaks-item-right">
+                    <span className="bespoke-scene-peaks-item-date">
+                      {new Date(log.watched_at).toLocaleDateString()}
+                    </span>
+                    <button
+                      type="button"
+                      className="bespoke-scene-peaks-item-delete"
+                      onClick={(e) => handleDeletePeak(e, log.id)}
+                      disabled={deletePeakMutation.isPending}
+                      title={t('library.details.deletePeakBtn') || 'Delete Peak'}
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         ) : (
           <span className="bespoke-scene-peaks-empty-text">
             {t('library.details.noPeaks') || 'No peak moments recorded yet.'}

@@ -103,20 +103,95 @@ class LibraryFilterService:
 
     def get_tag_groups(self, is_adult: bool = False) -> List[TagGroupItem]:
         """
-        Retrieves available tag groups.
+        Retrieves available tag groups, with each tag enriched with its associated items.
         """
+        from app.shared_kernel.enums import MediaType
+        from app.domains.metadata.models import MetadataMatch, MetadataLocalization
+        from app.domains.people.models import Person
+        from app.domains.library.models import MediaItem
+        from app.domains.users.models import UserOverride
+        from app.domains.media_assets.services.images import image_processing_service
+
         tags_query = self.db.query(Tag).filter(Tag.is_adult == is_adult).all()
         if not tags_query:
             return []
-        tags = [
-            {
+
+        tags = []
+        for t in tags_query:
+            tag_data = {
                 "id": t.id,
                 "name": t.name,
                 "color": t.color,
-                "is_adult": t.is_adult
+                "is_adult": t.is_adult,
+                "movies": [],
+                "tv": [],
+                "people": [],
+                "adult": [],
+                "adult_tv": [],
+                "adult_people": [],
+                "adult_scenes": [],
             }
-            for t in tags_query
-        ]
+
+            for o in t.overrides:
+                if o.person_id:
+                    person = self.db.query(Person).filter(Person.id == o.person_id).first()
+                    if person:
+                        p_img = image_processing_service.resolve_image_url(person.profile_path, "people")
+                        p_item = {
+                            "id": person.id,
+                            "title": person.name,
+                            "name": person.name,
+                            "poster_path": p_img,
+                            "profile_path": p_img,
+                            "type": "person",
+                        }
+                        if person.is_adult:
+                            tag_data["adult_people"].append(p_item)
+                        else:
+                            tag_data["people"].append(p_item)
+                else:
+                    match = None
+                    if o.metadata_match_id:
+                        match = self.db.query(MetadataMatch).filter(MetadataMatch.id == o.metadata_match_id).first()
+                    elif o.media_item_id:
+                        match = self.db.query(MetadataMatch).filter(
+                            MetadataMatch.media_item_id == o.media_item_id,
+                            MetadataMatch.is_active == True
+                        ).first()
+
+                    if match:
+                        loc = self.db.query(MetadataLocalization).filter(MetadataLocalization.match_id == match.id).first()
+                        item = match.media_item
+
+                        title = (o.custom_title if o.custom_title else None) or (loc.title if loc else (item.filename if item else "Unknown"))
+                        poster_path = (o.custom_poster if o.custom_poster else None) or (loc.local_poster_path if (loc and loc.local_poster_path) else (loc.poster_path if loc else None))
+                        resolved_poster = image_processing_service.resolve_image_url(poster_path, "posters")
+
+                        m_item = {
+                            "id": item.id if item else f"stash_{match.external_id}" if match.media_type == MediaType.SCENE else f"tmdb_{match.external_id}",
+                            "title": title,
+                            "poster_path": resolved_poster,
+                            "type": match.media_type.value,
+                            "year": match.release_date.year if match.release_date else None,
+                            "is_favorite": o.is_favorite,
+                            "user_rating": o.user_rating,
+                        }
+
+                        if match.media_type == MediaType.MOVIE:
+                            if match.is_adult:
+                                tag_data["adult"].append(m_item)
+                            else:
+                                tag_data["movies"].append(m_item)
+                        elif match.media_type == MediaType.TV:
+                            if match.is_adult:
+                                tag_data["adult_tv"].append(m_item)
+                            else:
+                                tag_data["tv"].append(m_item)
+                        elif match.media_type == MediaType.SCENE:
+                            tag_data["adult_scenes"].append(m_item)
+
+            tags.append(tag_data)
+
         return [
             TagGroupItem(
                 id=1,

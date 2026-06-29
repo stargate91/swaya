@@ -231,12 +231,14 @@ class GroupedLibraryResponse(BaseModel):
     counts: LibraryTabCounts
 
 class TagItem(BaseModel):
+    model_config = ConfigDict(extra="allow")
     id: int
     name: str
     color: Optional[str] = None
     is_adult: bool
 
 class TagGroupItem(BaseModel):
+    model_config = ConfigDict(extra="allow")
     id: int
     name: str
     tags: List[TagItem]
