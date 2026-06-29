@@ -287,7 +287,7 @@ class LocalMovieFormatter(MovieDetailFormatter):
             "is_favorite": override.is_favorite if override else False,
             "user_rating": override.user_rating if override else None,
             "user_comment": override.user_comment if override else None,
-            "custom_tags": [t.name for t in override.tags] if (override and override.tags) else [],
+            "custom_tags": [t.name for t in override.tags if t.is_adult == bool(active_match.is_adult if active_match else False)] if (override and override.tags) else [],
             "suggested_tags": active_match.suggested_tags if (active_match and active_match.suggested_tags) else [],
             "technical": technical,
             "in_library": True,

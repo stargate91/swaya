@@ -421,7 +421,7 @@ class SceneDetailService(DetailFormatter):
                 "stash_id": scene_uuid,
                 "source": provider_prefix or "stash",
             },
-            "custom_tags": [t.name for t in effective_override.tags] if (effective_override and effective_override.tags) else [],
+            "custom_tags": [t.name for t in effective_override.tags if t.is_adult == True] if (effective_override and effective_override.tags) else [],
             "suggested_tags": [t.get("name") for t in scene_data.get("tags") or [] if t.get("name")] if scene_data.get("tags") else (match_db.suggested_tags if (match_db and match_db.suggested_tags) else []),
             "tags": [],
             "is_tracked": effective_override.is_tracked if effective_override else False,

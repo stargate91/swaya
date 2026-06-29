@@ -329,7 +329,7 @@ class TmdbMovieFormatter(MovieDetailFormatter):
             "is_favorite": override.is_favorite if override else False,
             "user_rating": override.user_rating if override else None,
             "user_comment": override.user_comment if override else None,
-            "custom_tags": [t.name for t in override.tags] if (override and override.tags) else [],
+            "custom_tags": [t.name for t in override.tags if t.is_adult == bool(tmdb_data.get("adult", False))] if (override and override.tags) else [],
             "suggested_tags": [k["name"] for k in tmdb_data.get("keywords", {}).get("keywords", [])] if tmdb_data.get("keywords") else [],
             "tags": [],
             "is_tracked": override.is_tracked if override else False,

@@ -280,7 +280,7 @@ def link_person_source_preview(
         "user_rating": override_rec.user_rating if override_rec else None,
         "user_comment": override_rec.user_comment if override_rec else None,
         "is_favorite": override_rec.is_favorite if override_rec else False,
-        "custom_tags": override_rec.custom_tags if override_rec else [],
+        "custom_tags": [t.name for t in override_rec.tags if t.is_adult == bool(person.is_adult)] if (override_rec and override_rec.tags) else [],
     }
 
     external_data = {
@@ -455,7 +455,32 @@ def link_person_source(
         if "user_comment" in overrides:
             override_rec.user_comment = overrides["user_comment"]
         if "custom_tags" in overrides:
-            override_rec.custom_tags = overrides["custom_tags"]
+            from app.domains.users.models import Tag
+            from sqlalchemy import func
+            tags_input = overrides["custom_tags"] or []
+            tags_list = []
+            for t in tags_input:
+                tag_obj = None
+                if isinstance(t, dict):
+                    tag_id = t.get("id")
+                    tag_name = t.get("name")
+                    if tag_id:
+                        tag_obj = db.query(Tag).filter(Tag.id == tag_id).first()
+                    elif tag_name:
+                        tag_obj = db.query(Tag).filter(func.lower(Tag.name) == func.lower(tag_name)).first()
+                elif isinstance(t, int):
+                    tag_obj = db.query(Tag).filter(Tag.id == t).first()
+                elif isinstance(t, str):
+                    tag_obj = db.query(Tag).filter(func.lower(Tag.name) == func.lower(t)).first()
+                    if not tag_obj:
+                        # Since person.is_adult indicates SFW/NSFW, let's set the tag's adult status accordingly
+                        tag_obj = Tag(name=t, is_adult=bool(person.is_adult))
+                        db.add(tag_obj)
+                        db.flush()
+                if tag_obj and tag_obj not in tags_list:
+                    tags_list.append(tag_obj)
+            override_rec.tags = tags_list
+
 
     if duplicate_person and duplicate_person.id != person.id:
         existing_links = db.query(MediaPersonLink).filter(MediaPersonLink.person_id == person.id).all()
