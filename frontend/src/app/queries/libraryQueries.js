@@ -260,7 +260,7 @@ export const useUpdatePersonStatusMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ personId, payload }) => api.people.updateStatus(personId, payload),
-    onMutate: async ({ personId, payload }) => {
+    onMutate: async ({ personId, routeId, payload }) => {
       const idStr = String(personId);
       const idNum = Number(personId);
       const isNumValid = !isNaN(idNum);
@@ -272,11 +272,16 @@ export const useUpdatePersonStatusMutation = () => {
       if (isNumValid) {
         await queryClient.cancelQueries({ queryKey: ['person-detail', idNum] });
       }
+      if (routeId) {
+        await queryClient.cancelQueries({ queryKey: ['person-detail', String(routeId)] });
+      }
 
       const previousLibraryQueries = queryClient.getQueriesData({ queryKey: ['library'] });
       const previousPeopleQueries = queryClient.getQueriesData({ queryKey: ['people'] });
       const previousPeopleInfiniteQueries = queryClient.getQueriesData({ queryKey: ['people-infinite'] });
-      const previousPersonDetail = queryClient.getQueryData(['person-detail', idStr]) || queryClient.getQueryData(['person-detail', idNum]);
+      const previousPersonDetail = queryClient.getQueryData(['person-detail', idStr])
+        || queryClient.getQueryData(['person-detail', idNum])
+        || (routeId ? queryClient.getQueryData(['person-detail', String(routeId)]) : undefined);
       const shouldAutoActivate =
         payload?.is_favorite === true
         || ('user_rating' in payload && payload.user_rating !== null && payload.user_rating !== undefined)
@@ -372,6 +377,9 @@ export const useUpdatePersonStatusMutation = () => {
       if (isNumValid) {
         updatePersonDetailData(idNum);
       }
+      if (routeId) {
+        updatePersonDetailData(String(routeId));
+      }
 
       // 3. Update library queries (which renders the active people grid)
       queryClient.setQueriesData({ queryKey: ['library'] }, (oldData, query) => {
@@ -454,6 +462,7 @@ export const useUpdatePersonStatusMutation = () => {
       const idStr = String(context.personId);
       const idNum = Number(context.personId);
       const isNumValid = !isNaN(idNum);
+      const routeId = variables.routeId;
 
       if (context?.previousLibraryQueries) {
         context.previousLibraryQueries.forEach(([key, value]) => {
@@ -475,12 +484,16 @@ export const useUpdatePersonStatusMutation = () => {
         if (isNumValid) {
           queryClient.setQueryData(['person-detail', idNum], context.previousPersonDetail);
         }
+        if (routeId) {
+          queryClient.setQueryData(['person-detail', String(routeId)], context.previousPersonDetail);
+        }
       }
     },
     onSuccess: (data, variables) => {
       const idStr = String(variables.personId);
       const idNum = Number(variables.personId);
       const isNumValid = !isNaN(idNum);
+      const routeId = variables.routeId;
 
       const updateSuccessData = (pId) => {
         queryClient.setQueryData(['person-detail', pId], (oldData) => {
@@ -500,11 +513,15 @@ export const useUpdatePersonStatusMutation = () => {
       if (isNumValid) {
         updateSuccessData(idNum);
       }
+      if (routeId) {
+        updateSuccessData(String(routeId));
+      }
     },
     onSettled: (data, error, variables) => {
       const idStr = String(variables.personId);
       const idNum = Number(variables.personId);
       const isNumValid = !isNaN(idNum);
+      const routeId = variables.routeId;
       const payload = variables?.payload || {};
       
       if (error) {
@@ -514,6 +531,9 @@ export const useUpdatePersonStatusMutation = () => {
         queryClient.invalidateQueries({ queryKey: ['person-detail', idStr] });
         if (isNumValid) {
           queryClient.invalidateQueries({ queryKey: ['person-detail', idNum] });
+        }
+        if (routeId) {
+          queryClient.invalidateQueries({ queryKey: ['person-detail', String(routeId)] });
         }
         queryClient.invalidateQueries({ queryKey: ['stats'] });
         return;

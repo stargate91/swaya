@@ -198,6 +198,7 @@ export default function usePeopleCollectionDetailController({
     const isSame = currentRating !== null && currentRating !== undefined && Number(currentRating) === Number(hoveredRating);
     updatePersonStatusMutation.mutate({
       personId: item.id,
+      routeId: id,
       payload: {
         user_rating: isSame ? null : hoveredRating,
       },
@@ -210,6 +211,7 @@ export default function usePeopleCollectionDetailController({
     }
     updatePersonStatusMutation.mutate({
       personId: item.id,
+      routeId: id,
       payload: {
         is_favorite: !item?.is_favorite,
       },
@@ -222,6 +224,7 @@ export default function usePeopleCollectionDetailController({
     }
     updatePersonStatusMutation.mutate({
       personId: item.id,
+      routeId: id,
       payload: {
         is_active: !item?.is_active,
       },
@@ -241,6 +244,7 @@ export default function usePeopleCollectionDetailController({
           onSave={(newComment) => {
             updatePersonStatusMutation.mutate({
               personId: item.id,
+              routeId: id,
               payload: {
                 user_comment: newComment || null,
               },
