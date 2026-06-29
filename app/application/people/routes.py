@@ -159,7 +159,7 @@ def update_person_status(
     payload: PersonStatusUpdate,
     db: Session = Depends(get_db)
 ):
-    return PeopleStatusService(db).update_person_status(
+    return PeopleStatusService(db, scraper_gateway).update_person_status(
         person_id=person_id,
         payload_data=payload.model_dump(),
         fields_set=payload.model_fields_set,

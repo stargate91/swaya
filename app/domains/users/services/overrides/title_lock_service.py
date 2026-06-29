@@ -333,8 +333,8 @@ class TitleLockService:
             if metadata_match_id:
                 match = self.db.query(MetadataMatch).filter(MetadataMatch.id == metadata_match_id).first()
             elif media_item_id:
-                match = self.db.query(MetadataMatch).join(MetadataMatch.media_items).filter(
-                    MetadataMatch.media_items.any(id=media_item_id)
+                match = self.db.query(MetadataMatch).filter(
+                    MetadataMatch.media_item_id == media_item_id
                 ).first()
             
             if match and match.media_type == MediaType.EPISODE:

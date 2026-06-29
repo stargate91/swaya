@@ -12,6 +12,7 @@ export default function UtilityBarBottomPortal({ children, side = 'left', enable
       } else if (side === 'right') {
         selector = '.shell__utility-bar-bottom-right';
       }
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTargetEl(document.querySelector(selector));
     } else {
       setTargetEl(null);

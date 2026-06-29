@@ -1,3 +1,4 @@
+/* eslint-disable react/forbid-dom-props, jsx-a11y/no-static-element-interactions */
 import { useState, useRef, useEffect } from 'react';
 import { Star, Heart, Edit3, Search, X } from 'lucide-react';
 import Page from '@/ui/Page';
@@ -265,7 +266,6 @@ export default function RatingsPage() {
                     <div key={index} className="analytics-distribution__row">
                       <span className="analytics-distribution__label">{index + 1}</span>
                       <div className="analytics-distribution__bar-container">
-                        {/* eslint-disable-next-line react/forbid-dom-props */}
                         <div
                           className="analytics-distribution__bar"
                           style={{ width: `${percentage}%` }}

@@ -10,7 +10,6 @@ import { useTranslation } from '@/providers/LanguageContext';
 import { useUi } from '@/providers/UiProvider';
 import { useHistoryQuery, useUndoMutation, useScanStatusQuery, useWatchedHistoryQuery, usePlayMediaMutation } from '@/queries';
 import { RotateCcw, AlertTriangle, Play, CheckCircle2, Clock, Tv, Film } from 'lucide-react';
-import { API_BASE } from '@/lib/backend';
 import { resolveMediaImageUrl } from '@/lib/imageUrls';
 import HistoryCard from './components/HistoryCard';
 import './HistoryPage.css';
@@ -274,9 +273,9 @@ export default function HistoryPage() {
                   ) : (
                     <div className="watched-history-card__title-group">
                       <h3 className="watched-history-card__title">
-                        {log.tv_title} - S{String(log.season_number).padStart(2, '0')}E{String(log.episode_number).padStart(2, '0')} - {log.episode_title || log.title}
+                        {log.tv_title}{DASH}{S_CHAR}{String(log.season_number).padStart(2, '0')}{E_CHAR}{String(log.episode_number).padStart(2, '0')}{DASH}{log.episode_title || log.title}
                       </h3>
-                      {log.year && <span className="watched-history-card__year">({log.year})</span>}
+                      {log.year && <span className="watched-history-card__year">{LPAR}{log.year}{RPAR}</span>}
                     </div>
                   )}
                 </div>

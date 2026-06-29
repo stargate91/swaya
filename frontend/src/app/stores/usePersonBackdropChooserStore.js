@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 const createDefaultSession = (initialBackdropPath = '') => ({
   activeTab: 'movies',
@@ -19,54 +18,49 @@ const createDefaultSession = (initialBackdropPath = '') => ({
 export const createPersonBackdropChooserSession = createDefaultSession;
 
 export const usePersonBackdropChooserStore = create(
-  persist(
-    (set) => ({
-      sessions: {},
-      ensureSession: (personId, initialBackdropPath = '') => set((state) => {
-        const key = String(personId || '');
-        if (!key || state.sessions[key]) {
-          return state;
-        }
-        return {
-          sessions: {
-            ...state.sessions,
-            [key]: createDefaultSession(initialBackdropPath),
-          },
-        };
-      }),
-      patchSession: (personId, patch) => set((state) => {
-        const key = String(personId || '');
-        if (!key) {
-          return state;
-        }
-        const current = state.sessions[key] || createDefaultSession();
-        const nextPatch = typeof patch === 'function' ? patch(current) : patch;
-        return {
-          sessions: {
-            ...state.sessions,
-            [key]: {
-              ...current,
-              ...nextPatch,
-            },
-          },
-        };
-      }),
-      resetSession: (personId, initialBackdropPath = '') => set((state) => {
-        const key = String(personId || '');
-        if (!key) {
-          return state;
-        }
-        return {
-          sessions: {
-            ...state.sessions,
-            [key]: createDefaultSession(initialBackdropPath),
-          },
-        };
-      }),
+  (set) => ({
+    sessions: {},
+    ensureSession: (personId, initialBackdropPath = '') => set((state) => {
+      const key = String(personId || '');
+      if (!key || state.sessions[key]) {
+        return state;
+      }
+      return {
+        sessions: {
+          ...state.sessions,
+          [key]: createDefaultSession(initialBackdropPath),
+        },
+      };
     }),
-    {
-      name: 'person-backdrop-chooser-storage',
-    }
-  )
+    patchSession: (personId, patch) => set((state) => {
+      const key = String(personId || '');
+      if (!key) {
+        return state;
+      }
+      const current = state.sessions[key] || createDefaultSession();
+      const nextPatch = typeof patch === 'function' ? patch(current) : patch;
+      return {
+        sessions: {
+          ...state.sessions,
+          [key]: {
+            ...current,
+            ...nextPatch,
+          },
+        },
+      };
+    }),
+    resetSession: (personId, initialBackdropPath = '') => set((state) => {
+      const key = String(personId || '');
+      if (!key) {
+        return state;
+      }
+      return {
+        sessions: {
+          ...state.sessions,
+          [key]: createDefaultSession(initialBackdropPath),
+        },
+      };
+    }),
+  })
 );
 

@@ -14,6 +14,8 @@ import Pill from '../../../ui/Pill';
 import { useLibraryModeStore } from '../../../stores/useLibraryModeStore';
 import { API_BASE } from '../../../lib/backend';
 
+const ADULT_LABEL = '18+';
+
 const SpotlightBanner = ({ item, watchlistIds, onWatchlist, onCardClick, T }) => {
   if (!item) return null;
   const imageUrl = resolveMediaImageUrl(item.backdrop_path, 'backdrop');
@@ -177,7 +179,7 @@ const RecommendationCarousel = ({ title, items, watchlistIds, onWatchlist, onCar
                   )}
                   {shouldBlur && (
                     <div className="recommend-card-blur-overlay">
-                      <span className="settings-badge settings-badge--danger">{'18+'}</span>
+                      <span className="settings-badge settings-badge--danger">{ADULT_LABEL}</span>
                     </div>
                   )}
                   <div className="recommend-card-overlay">

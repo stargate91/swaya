@@ -56,3 +56,26 @@ def process_people(parser, match: MetadataMatch, details: Dict[str, Any]):
                 match_id=match.id,
                 person_id=person.id
             )
+
+    # Link Sound/Music
+    sound_crew = [p for p in crew if p.get("department") == "Sound" or p.get("job") in ("Original Music Composer", "Music", "Composer")][:2]
+    for idx, sound_member in enumerate(sound_crew):
+        person = person_service.update_or_create_person(
+            name=sound_member["name"],
+            profile_path=sound_member.get("profile_path"),
+            gender=sound_member.get("gender"),
+            is_adult=sound_member.get("adult", False),
+            tmdb_id=str(sound_member["id"]),
+            known_for_department=sound_member.get("known_for_department")
+        )
+        
+        link = parser.people_repo.get_media_person_link(match.id, person.id, RoleType.SOUND)
+        
+        if not link:
+            link = parser.people_repo.create_media_person_link(
+                role=RoleType.SOUND,
+                order=idx,
+                match_id=match.id,
+                person_id=person.id,
+                character_name=sound_member.get("job")
+            )

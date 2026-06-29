@@ -63,6 +63,11 @@ export default function PersonBackdropPickerModal({ personId, item, t, toast, ov
 
   useEffect(() => {
     ensureSession(personId, person?.backdrop_path || item?.backdrop_path || '');
+    return () => {
+      if (personId) {
+        usePersonBackdropChooserStore.getState().resetSession(personId);
+      }
+    };
   }, [ensureSession, item?.backdrop_path, person?.backdrop_path, personId]);
 
   useEffect(() => {

@@ -65,6 +65,7 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsScrolled(false);
   }, [id]);
 

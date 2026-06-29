@@ -81,14 +81,34 @@ class LibraryListingService:
             from app.infrastructure.playback.playback_monitor import active_sessions
             is_active = item.id in active_sessions if item else False
 
+            def get_first_int(val):
+                if val is None:
+                    return None
+                if isinstance(val, (int, float)):
+                    return int(val)
+                if isinstance(val, list):
+                    return get_first_int(val[0]) if val else None
+                if isinstance(val, str):
+                    if val.isdigit():
+                        return int(val)
+                    import json
+                    try:
+                        parsed = json.loads(val)
+                        if isinstance(parsed, list):
+                            return get_first_int(parsed[0]) if parsed else None
+                        return int(parsed)
+                    except:
+                        pass
+                return None
+
             results.append(ContinueWatchingItem(
                 id=item.id,
                 title=title,
                 tv_title=tv_title,
                 episode_title=episode_title,
                 type=match.media_type.value if match else "movie",
-                season_number=match.season_number if match else None,
-                episode_number=match.episode_number if match else None,
+                season_number=get_first_int(match.season_number) if match else None,
+                episode_number=get_first_int(match.episode_number) if match else None,
                 tv_tmdb_id=tv_tmdb_id,
                 tmdb_id=int(match.external_id) if (match and match.external_id.isdigit()) else None,
                 backdrop_path=match.backdrop_path if match else None,

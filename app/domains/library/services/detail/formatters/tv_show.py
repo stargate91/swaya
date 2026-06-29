@@ -249,6 +249,7 @@ class TvShowFormatter(DetailFormatter):
         cast = []
         directors = []
         writers = []
+        sound = []
         
         from app.domains.people.models import Person
 
@@ -373,6 +374,8 @@ class TvShowFormatter(DetailFormatter):
                 directors.append(crew_member)
             elif crew.get("job") in ("Writer", "Screenplay"):
                 writers.append(crew_member)
+            elif crew.get("department") == "Sound" or crew.get("job") in ("Original Music Composer", "Music", "Composer"):
+                sound.append(crew_member)
         
         override = db.query(UserOverride).join(MetadataMatch, UserOverride.metadata_match_id == MetadataMatch.id).filter(
             UserOverride.user_id == current_uid,
@@ -566,6 +569,7 @@ class TvShowFormatter(DetailFormatter):
             "cast": cast,
             "directors": directors,
             "writers": writers,
+            "sound": sound,
             "seasons": seasons,
             "companies": [{"name": c.get("name"), "logo_path": self._resolve_img(c.get("logo_path"), "logos")} for c in tmdb_data.get("production_companies", [])] if tmdb_data.get("production_companies") else [],
             "networks": [{"name": n.get("name"), "logo_path": self._resolve_img(n.get("logo_path"), "logos")} for n in tmdb_data.get("networks", [])] if tmdb_data.get("networks") else [],

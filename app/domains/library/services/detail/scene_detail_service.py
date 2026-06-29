@@ -86,15 +86,33 @@ class SceneDetailService(DetailFormatter):
             except:
                 pass
         
-        duration_sec = scene_data.get("duration")
+        duration_raw = scene_data.get("duration")
+        duration_sec = None
         duration_str = None
+        
+        if duration_raw:
+            if isinstance(duration_raw, (int, float)):
+                duration_sec = int(duration_raw)
+            elif isinstance(duration_raw, str):
+                val = duration_raw.strip()
+                if val.isdigit():
+                    duration_sec = int(val)
+                elif "." in val and val.replace(".", "", 1).isdigit():
+                    duration_sec = int(float(val))
+                elif ":" in val:
+                    parts = val.split(":")
+                    try:
+                        if len(parts) == 2:
+                            duration_sec = int(parts[0]) * 60 + int(parts[1])
+                        elif len(parts) == 3:
+                            duration_sec = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+                    except ValueError:
+                        pass
+
         if duration_sec:
-            try:
-                duration_min = int(float(duration_sec) / 60)
-                if duration_min > 0:
-                    duration_str = f"{duration_min} min"
-            except:
-                pass
+            duration_min = duration_sec // 60
+            if duration_min > 0:
+                duration_str = f"{duration_min} min"
         
         studio_data = scene_data.get("studio") or scene_data.get("site") or {}
         studio_name = studio_data.get("name")

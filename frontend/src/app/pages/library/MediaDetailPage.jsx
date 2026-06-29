@@ -1,8 +1,8 @@
+/* eslint-disable react/forbid-dom-props, react/jsx-no-literals, i18next/no-literal-string */
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Users, User, BadgeInfo, Layers3, Tags, Clapperboard,
-  SlidersHorizontal, CheckCheck, Image as ImageIcon, Flame, ExternalLink,
+  User, Tags, Image as ImageIcon,
   Minus, Plus, ChevronUp, ChevronDown, ChevronLeft, ChevronRight,
   DollarSign, TrendingUp, Coins
 } from 'lucide-react';
@@ -28,14 +28,11 @@ import DetailPageShell from './components/detail/DetailPageShell';
 import UtilityBarBottomPortal from '../../../components/UtilityBarBottomPortal';
 
 // Panels
-import SeasonsPanel from './components/detail/panels/SeasonsPanel';
 import BespokeSeasonsSection from './components/detail/BespokeSeasonsSection';
 import TechnicalPanel from './components/detail/panels/TechnicalPanel';
 import ExtrasPanel from './components/detail/panels/ExtrasPanel';
-import PeaksPanel from './components/detail/panels/PeaksPanel';
 import BackdropsPanel from './components/detail/panels/BackdropsPanel';
 import TagsPanel from './components/detail/panels/TagsPanel';
-import WatchedPanel from './components/detail/panels/WatchedPanel';
 import './components/entityDetail/EntityDetailHeroSection.css';
 
 function BespokeCastSection({ item, t, navigate }) {
@@ -60,36 +57,52 @@ function BespokeCastSection({ item, t, navigate }) {
   };
 
   const filteredDirectors = processPeople(item.directors);
+  const filteredWriters = processPeople(item.writers);
+  const filteredSound = processPeople(item.sound);
   const filteredCast = processPeople(item.cast);
   const resolvePersonAvatarUrl = (path) => resolveMediaImageUrl(path, 'person', API_BASE);
-
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const maxTotal = 15;
 
   const allPeople = useMemo(() => {
     const list = [];
-    const maxDirectors = 2;
 
-    // 1. Slice Directors (max 2)
-    const slicedDirectors = filteredDirectors ? filteredDirectors.slice(0, maxDirectors) : [];
+    // 1. Directors (max 2) - Priority 1
+    const slicedDirectors = filteredDirectors ? filteredDirectors.slice(0, 2) : [];
     slicedDirectors.forEach(p => {
       list.push({ ...p, displayRole: t('library.people.roles.director') || 'Director' });
     });
 
-    // 2. Dynamically calculate remaining slots for Cast
-    const remainingSlots = maxTotal - list.length;
-    const slicedCast = filteredCast ? filteredCast.slice(0, remainingSlots) : [];
+    // 2. Cast/Actors (up to remaining slots) - Priority 2
+    const remainingForCast = maxTotal - list.length;
+    const slicedCast = filteredCast ? filteredCast.slice(0, remainingForCast) : [];
     slicedCast.forEach(p => {
       if (!list.some(x => x.id === p.id)) {
         list.push({ ...p, displayRole: p.character });
       }
     });
+
+    // 3. Writers (if limit not reached) - Priority 3
+    if (list.length < maxTotal) {
+      const remainingForWriters = maxTotal - list.length;
+      const slicedWriters = filteredWriters ? filteredWriters.slice(0, Math.min(2, remainingForWriters)) : [];
+      slicedWriters.forEach(p => {
+        if (!list.some(x => x.id === p.id)) {
+          list.push({ ...p, displayRole: t('library.people.roles.writer') || 'Writer' });
+        }
+      });
+    }
+
+    // 4. Sound/Music (if limit not reached) - Priority 4
+    if (list.length < maxTotal) {
+      const remainingForSound = maxTotal - list.length;
+      const slicedSound = filteredSound ? filteredSound.slice(0, Math.min(2, remainingForSound)) : [];
+      slicedSound.forEach(p => {
+        if (!list.some(x => x.id === p.id)) {
+          list.push({ ...p, displayRole: p.job || 'Composer' });
+        }
+      });
+    }
 
     // Sort: Preferred gender (isFilteredOut === false) comes first
     list.sort((a, b) => {
@@ -99,7 +112,7 @@ function BespokeCastSection({ item, t, navigate }) {
     });
 
     return list;
-  }, [filteredDirectors, filteredCast, maxTotal, t]);
+  }, [filteredDirectors, filteredCast, filteredWriters, filteredSound, maxTotal, t]);
 
   const castScrollRef = useRef(null);
   const [castScrollState, setCastScrollState] = useState({ left: false, right: false });
@@ -182,8 +195,8 @@ function BespokeCastSection({ item, t, navigate }) {
                   )}
                 </div>
               ))}
+            </div>
           </div>
-        </div>
           <button
             type="button"
             className="bespoke-carousel-nav bespoke-carousel-nav--right"
@@ -191,8 +204,8 @@ function BespokeCastSection({ item, t, navigate }) {
           >
             <ChevronRight size={14} />
           </button>
+        </div>
       </div>
-    </div>
     </div>
   );
 }
@@ -276,7 +289,7 @@ function BespokeCompaniesSection({ item, t }) {
   );
 }
 
-function BespokeDetailsSection({ item, t }) {
+export function BespokeDetailsSection({ item, t }) {
   const isSceneType = item?.type === 'scene';
   const hasImdb = !isSceneType && item?.rating_imdb != null && Number(item.rating_imdb) > 0;
   const hasTmdb = !isSceneType && item?.rating_tmdb != null && Number(item.rating_tmdb) > 0;
@@ -383,6 +396,227 @@ function BespokeDetailsSection({ item, t }) {
   );
 }
 
+function CompactWatchStatsSection({ item, isMovie, isScene, t }) {
+  const [isHistoryExpanded, setIsHistoryExpanded] = useState(false);
+
+  if (!item) return null;
+
+  const formatLogDate = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      return new Date(dateStr).toLocaleString();
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const formatTime = (seconds) => {
+    if (!seconds) return '0:00';
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    if (h > 0) {
+      return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
+  let watchStatus;
+  let watchCount;
+  let progressPercent;
+  let progressText;
+  let lastWatchedText;
+
+  const logs = isMovie || isScene
+    ? (item.playback_logs || [])
+    : (() => {
+      const regularSeasons = (item.seasons || []).filter(s => s.season_number > 0);
+      const watchStats = item.watch_stats;
+      if (watchStats?.playback_logs) return watchStats.playback_logs;
+      const list = [];
+      regularSeasons.forEach(season => {
+        (season.episodes || []).forEach(episode => {
+          if (episode.playback_logs) {
+            episode.playback_logs.forEach(log => {
+              list.push({
+                ...log,
+                seasonNumber: season.season_number,
+                episodeNumber: episode.episode_number,
+              });
+            });
+          }
+        });
+      });
+      list.sort((a, b) => new Date(b.watched_at) - new Date(a.watched_at));
+      return list;
+    })();
+
+  if (isMovie || isScene) {
+    const duration = item.technical?.duration || (item.runtime ? item.runtime * 60 : 0);
+    progressPercent = duration > 0 && item.resume_position
+      ? Math.round((item.resume_position / duration) * 100)
+      : 0;
+
+    watchStatus = item.is_watched
+      ? (t('library.details.statusWatched') || 'Watched')
+      : (item.resume_position > 0
+        ? (t('library.details.statusInProgress') || 'In Progress')
+        : (t('library.details.statusUnwatched') || 'Unwatched'));
+
+    progressText = item.is_watched
+      ? (t('library.details.statusWatched') || 'Watched')
+      : (item.resume_position > 0
+        ? `${formatTime(item.resume_position)} / ${formatTime(duration)}`
+        : '0:00');
+
+    watchCount = item.watch_count || 0;
+    lastWatchedText = item.last_watched_at ? formatLogDate(item.last_watched_at) : (t('library.details.never') || 'Never');
+  } else {
+    // TV show
+    const regularSeasons = (item.seasons || []).filter(s => s.season_number > 0);
+    const allEpisodes = regularSeasons.flatMap(s => s.episodes || []);
+    const watchStats = item.watch_stats;
+
+    const totalEpisodesCount = watchStats
+      ? watchStats.total_episodes_count
+      : allEpisodes.length;
+
+    const watchedEpisodesCount = watchStats
+      ? watchStats.watched_episodes_count
+      : allEpisodes.filter(ep => ep.is_watched).length;
+
+    progressPercent = totalEpisodesCount > 0
+      ? Math.round((watchedEpisodesCount / totalEpisodesCount) * 100)
+      : 0;
+
+    const inProgressEpisodes = watchStats
+      ? watchStats.in_progress_episodes
+      : allEpisodes.filter(e => e.resume_position > 0);
+
+    const isInProgress = inProgressEpisodes.length > 0;
+
+    watchStatus = watchedEpisodesCount === totalEpisodesCount && totalEpisodesCount > 0
+      ? (t('library.details.statusWatched') || 'Watched')
+      : (isInProgress || watchedEpisodesCount > 0
+        ? (t('library.details.statusInProgress') || 'In Progress')
+        : (t('library.details.statusUnwatched') || 'Unwatched'));
+
+    progressText = `${watchedEpisodesCount} / ${totalEpisodesCount} ep`;
+
+    let tvLastWatched = null;
+    if (watchStats?.playback_logs && watchStats.playback_logs.length > 0) {
+      tvLastWatched = watchStats.playback_logs[0].watched_at;
+    } else {
+      if (logs.length > 0) {
+        tvLastWatched = logs[0].watched_at;
+      }
+    }
+
+    watchCount = logs.length;
+    lastWatchedText = tvLastWatched ? formatLogDate(tvLastWatched) : (t('library.details.never') || 'Never');
+  }
+
+  const statusClass = watchStatus === 'Watched' ? 'watched' : (watchStatus === 'In Progress' ? 'progress' : 'unwatched');
+
+  return (
+    <div className="bespoke-boxoffice-section compact-watch-stats-section">
+      <div className="bespoke-boxoffice-card">
+        <div className="bespoke-browser-card__pills-header">
+          <span className="bespoke-cast-title">
+            {t('library.details.watchStats') || 'Watch Stats'}
+          </span>
+        </div>
+        <div className="bespoke-boxoffice-body">
+          <div className="bespoke-boxoffice-stat">
+            <div className="bespoke-boxoffice-info">
+              <span className="bespoke-boxoffice-label">
+                {t('library.details.watchStatus') || 'Status'}
+              </span>
+              <span className={`specs-card__value status-${statusClass} bespoke-boxoffice-value`}>
+                {watchStatus}
+                {((isMovie || isScene) && watchCount > 0) && (
+                  <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginLeft: '6px', fontWeight: 'normal' }}>
+                    ({watchCount}x)
+                  </span>
+                )}
+              </span>
+            </div>
+          </div>
+
+          <div className="bespoke-boxoffice-stat">
+            <div className="bespoke-boxoffice-info" style={{ width: '100%' }}>
+              <span className="bespoke-boxoffice-label">
+                {t('library.details.movieProgress') || 'Progress'}
+              </span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginBottom: '4px' }}>
+                <span>{progressText}</span>
+                <span>{progressPercent}%</span>
+              </div>
+              <progress
+                className="specs-card__progress"
+                value={progressPercent}
+                max={100}
+                style={{ width: '100%', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.1)' }}
+              />
+            </div>
+          </div>
+
+          <div className="bespoke-boxoffice-stat">
+            <div className="bespoke-boxoffice-info">
+              <span className="bespoke-boxoffice-label">
+                {t('library.details.lastWatched') || 'Last Watched'}
+              </span>
+              <span className="bespoke-boxoffice-value" style={{ fontSize: '0.8rem', whiteSpace: 'normal' }}>{lastWatchedText}</span>
+            </div>
+          </div>
+
+          {logs.length > 0 && (
+            <div className="bespoke-boxoffice-stat" style={{ gridColumn: '1 / -1', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px', marginTop: '10px', flexDirection: 'column', alignItems: 'stretch', width: '100%' }}>
+              <button
+                type="button"
+                onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', background: 'none', border: 'none', padding: 0, color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: '0.85rem' }}
+              >
+                <span>{t('library.details.watchActivity') || 'Watch History'} ({logs.length})</span>
+                {isHistoryExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              </button>
+
+              {isHistoryExpanded && (
+                <div
+                  style={{
+                    marginTop: '8px',
+                    maxHeight: logs.length > 3 ? '115px' : 'none',
+                    overflowY: logs.length > 3 ? 'auto' : 'visible',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                    width: '100%',
+                    paddingRight: logs.length > 3 ? '4px' : '0'
+                  }}
+                  className={logs.length > 3 ? 'custom-scrollbar' : ''}
+                >
+                  {logs.map((log, idx) => {
+                    const dateStr = formatLogDate(log.watched_at);
+                    const epText = log.seasonNumber != null && log.episodeNumber != null
+                      ? `S${log.seasonNumber.toString().padStart(2, '0')}E${log.episodeNumber.toString().padStart(2, '0')}`
+                      : '';
+                    return (
+                      <div key={log.id || idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 10px', borderRadius: '4px', background: 'rgba(255,255,255,0.03)', fontSize: '0.75rem', color: 'rgba(255,255,255,0.8)', width: '100%' }}>
+                        <span style={{ fontWeight: 'bold' }}>{epText || (t('library.details.playSession') || 'Session')}</span>
+                        <span style={{ opacity: 0.6 }}>{dateStr}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function MediaDetailPage({ type = 'movie' }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -399,16 +633,14 @@ export default function MediaDetailPage({ type = 'movie' }) {
     closeModal
   });
 
-  const { state, actions } = detailState;
+  const { state } = detailState;
   const {
     backdropUrl,
     posterUrl,
     item,
     isLoading,
-    hasTechnicalPanel,
     isMovie,
-    isScene,
-    isOwned
+    isScene
   } = state;
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -417,6 +649,7 @@ export default function MediaDetailPage({ type = 'movie' }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsScrolled(false);
   }, [id]);
 
@@ -426,6 +659,9 @@ export default function MediaDetailPage({ type = 'movie' }) {
         if (e.deltaY > 0 && !isScrolled) {
           setIsScrolled(true);
         } else if (e.deltaY < 0 && isScrolled) {
+          if (e.target.closest('.custom-scrollbar')) {
+            return;
+          }
           const isInsideSection = e.target.closest('.media-detail-page__inline-sections');
           if (isInsideSection) {
             if (isInsideSection.scrollTop > 0) {
@@ -594,26 +830,7 @@ export default function MediaDetailPage({ type = 'movie' }) {
               <Tags size={18} />
             </button>
 
-            {item && (
-              <button
-                type="button"
-                onClick={() => {
-                  openModal({
-                    title: t('library.details.watchedPanel') || 'Watched Panel',
-                    variant: 'wide',
-                    content: (
-                      <MediaDetailProvider value={{ ...detailState, t, navigate, toast, type: normalizedType, id }}>
-                        <WatchedPanel />
-                      </MediaDetailProvider>
-                    ),
-                  });
-                }}
-                className="media-detail-page__side-nav-toggle"
-                title={t('library.details.watchedPanel') || 'Watched stats'}
-              >
-                <CheckCheck size={18} />
-              </button>
-            )}
+
 
             <button
               type="button"
@@ -743,7 +960,14 @@ export default function MediaDetailPage({ type = 'movie' }) {
               {isMovie && <BespokeCompaniesSection item={item} t={t} />}
             </div>
             <div className="media-detail-page__inline-side-col">
-              {/* Empty for now */}
+              {item && (
+                <CompactWatchStatsSection
+                  item={item}
+                  isMovie={isMovie}
+                  isScene={isScene}
+                  t={t}
+                />
+              )}
             </div>
           </div>
         </div>

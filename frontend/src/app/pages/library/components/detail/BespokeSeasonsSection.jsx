@@ -1,7 +1,8 @@
+/* eslint-disable react/jsx-no-literals, react-hooks/set-state-in-effect */
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  ChevronDown, ChevronRight, ChevronLeft, Check, Eye, Play,
+  ChevronRight, ChevronLeft, Check, Eye, Play,
   Clapperboard, Calendar, Tv, Star, Flame, Trash2
 } from 'lucide-react';
 import IconButton from '@/ui/IconButton';
@@ -26,8 +27,6 @@ export default function BespokeSeasonsSection() {
 
   const seasonsList = useMemo(() => item?.seasons || [], [item?.seasons]);
   const seasonsCount = seasonsList.length;
-
-  if (seasonsCount === 0) return null;
 
   // Determine initial season and episode selection
   const initialSeasonNumber = nextEpisodeInfo?.seasonNumber ?? seasonsList[0]?.season_number ?? 1;
@@ -71,7 +70,7 @@ export default function BespokeSeasonsSection() {
     };
   }, [activeSeason, cleanId, item?.progressive_seasons, queryClient, metadataLanguage]);
 
-  const episodes = activeSeason?.episodes || [];
+  const episodes = useMemo(() => activeSeason?.episodes || [], [activeSeason?.episodes]);
   const initialEpisodeId = useMemo(() => {
     if (nextEpisodeInfo?.seasonNumber === selectedSeasonNumber && nextEpisodeInfo?.episode?.id) {
       return nextEpisodeInfo.episode.id;
@@ -163,6 +162,8 @@ export default function BespokeSeasonsSection() {
       tvId: cleanId,
     });
   };
+
+  if (seasonsCount === 0) return null;
 
   return (
     <div className="bespoke-seasons-section">

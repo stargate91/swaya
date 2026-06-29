@@ -210,14 +210,34 @@ class PlaybackService:
                     if tv_loc and tv_loc.poster_path:
                         tv_poster_path = self._resolve_img(tv_loc.poster_path, "posters")
 
+            def get_first_int(val):
+                if val is None:
+                    return None
+                if isinstance(val, (int, float)):
+                    return int(val)
+                if isinstance(val, list):
+                    return get_first_int(val[0]) if val else None
+                if isinstance(val, str):
+                    if val.isdigit():
+                        return int(val)
+                    import json
+                    try:
+                        parsed = json.loads(val)
+                        if isinstance(parsed, list):
+                            return get_first_int(parsed[0]) if parsed else None
+                        return int(parsed)
+                    except:
+                        pass
+                return None
+
             results.append({
                 "id": log.id,
                 "media_item_id": item.id,
                 "watched_at": log.watched_at.isoformat(),
                 "title": title,
                 "type": active_match.media_type.value if (active_match and hasattr(active_match.media_type, "value")) else (str(active_match.media_type) if active_match else "movie"),
-                "season_number": active_match.season_number if active_match else None,
-                "episode_number": active_match.episode_number if active_match else None,
+                "season_number": get_first_int(active_match.season_number) if active_match else None,
+                "episode_number": get_first_int(active_match.episode_number) if active_match else None,
                 "poster_path": self._resolve_img(loc.poster_path if loc else None, "posters"),
                 "backdrop_path": self._resolve_img(active_match.backdrop_path if active_match else None, "backdrops"),
                 "resume_position": log_position,

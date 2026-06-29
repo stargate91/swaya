@@ -2,7 +2,8 @@
   display: flex;
   width: 120px;
   height: 10px;
-  gap: 3px;
+  --local-gap: 3px;
+  gap: var(--local-gap);
   cursor: pointer;
   outline: none;
   align-items: center;
@@ -11,23 +12,29 @@
 .rating-segment {
   flex: 1;
   height: 100%;
-  background: rgba(255, 255, 255, 0.08);
+  --local-bg: rgba(255, 255, 255, 0.08);
+  background: var(--local-bg);
   border-radius: 2px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  transition: all 0.2s ease;
+  --local-border: 1px solid rgba(255, 255, 255, 0.04);
+  border: var(--local-border);
+  --local-transition: all 0.2s ease;
+  transition: var(--local-transition);
 }
 
 .rating-segmented-bar:hover .rating-segment {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.08);
+  --local-bg: rgba(255, 255, 255, 0.12);
+  background: var(--local-bg);
+  --local-border-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--local-border-color);
 }
 
 .rating-segment-fill {
   height: 100%;
   background: var(--color-accent-blue);
   opacity: 0.85;
-  transition: opacity 0.2s ease, box-shadow 0.2s ease, width 0.12s ease;
+  --local-transition: opacity 0.2s ease, box-shadow 0.2s ease, width 0.12s ease;
+  transition: var(--local-transition);
 }
 
 .rating-segmented-bar:hover .rating-segment-fill {

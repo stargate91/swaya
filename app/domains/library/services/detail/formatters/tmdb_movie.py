@@ -98,6 +98,7 @@ class TmdbMovieFormatter(MovieDetailFormatter):
         cast = []
         directors = []
         writers = []
+        sound = []
         
         for actor in credits.get("cast", [])[:15]:
             actor_id = actor.get("id")
@@ -133,6 +134,8 @@ class TmdbMovieFormatter(MovieDetailFormatter):
                 directors.append(crew_member)
             elif crew.get("job") in ("Writer", "Screenplay"):
                 writers.append(crew_member)
+            elif crew.get("department") == "Sound" or crew.get("job") in ("Original Music Composer", "Music", "Composer"):
+                sound.append(crew_member)
         year = None
         if release_date:
             try:
@@ -321,6 +324,7 @@ class TmdbMovieFormatter(MovieDetailFormatter):
             "people_complete": True,
             "directors": directors,
             "writers": writers,
+            "sound": sound,
             "is_adult": tmdb_data.get("adult", False),
             "is_favorite": override.is_favorite if override else False,
             "user_rating": override.user_rating if override else None,

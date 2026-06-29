@@ -1,3 +1,4 @@
+/* eslint-disable react/forbid-dom-props */
 import { PenLine } from 'lucide-react';
 import Pill from '@/ui/Pill';
 import { useMediaDetailContext } from './MediaDetailContext';
@@ -30,7 +31,6 @@ export default function UserRatingSection() {
         </button>
         <span className="pill-vertical-separator">{verticalBarText}</span>
 
-        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div
           className="rating-segmented-bar"
           onMouseMove={handleMouseMove}

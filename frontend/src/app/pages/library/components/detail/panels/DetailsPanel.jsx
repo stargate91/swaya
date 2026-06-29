@@ -15,8 +15,6 @@ export default function DetailsPanel() {
   } = state;
 
   const isSceneType = item?.type === 'scene';
-  const tmdbId = item?.tmdb_id || item?.tv_tmdb_id;
-  const imdbId = item?.imdb_id;
   const hasImdb = !isSceneType && item?.rating_imdb != null && Number(item.rating_imdb) > 0;
   const hasTmdb = !isSceneType && item?.rating_tmdb != null && Number(item.rating_tmdb) > 0;
   const hasRotten = !isSceneType && item?.rating_rotten != null && item?.rating_rotten !== '';

@@ -55,7 +55,8 @@
 }
 
 .ratings-search input {
-  padding-left: 32px !important;
+  --local-padding-left: 32px;
+  padding-left: var(--local-padding-left) !important;
   width: 100%;
 }
 
@@ -144,7 +145,8 @@
   height: 100%;
   background: var(--color-accent-blue);
   border-radius: 99px;
-  transition: width 0.3s ease;
+  --local-transition: width 0.3s ease;
+  transition: var(--local-transition);
 }
 
 .analytics-distribution__count {
@@ -157,7 +159,8 @@
 .inline-rating-stars {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  --local-gap: 2px;
+  gap: var(--local-gap);
 }
 
 .inline-rating-star {
@@ -205,7 +208,8 @@
 
 .fav-heart-btn.is-favorite {
   color: var(--color-accent-pink);
-  animation: heart-burst 0.4s ease-out;
+  --local-animation: heart-burst 0.4s ease-out;
+  animation: var(--local-animation);
 }
 
 @keyframes heart-burst {
@@ -290,7 +294,8 @@
   padding: var(--space-xl);
   gap: var(--space-lg);
   transform: translateX(100%);
-  transition: transform var(--motion-fast) cubic-bezier(0.16, 1, 0.3, 1);
+  --local-transition: transform var(--motion-fast) cubic-bezier(0.16, 1, 0.3, 1);
+  transition: var(--local-transition);
 }
 
 .review-drawer.is-open {

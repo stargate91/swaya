@@ -130,7 +130,8 @@
 .is-scrolled .person-credits-discover-grid-wrapper {
   overflow-y: auto;
   min-height: 0;
-  padding-top: 10px;
+  --local-padding-top: 10px;
+  padding-top: var(--local-padding-top);
   padding-bottom: var(--space-6);
 }
 
@@ -206,13 +207,17 @@
   grid-column: 2;
   display: flex;
   flex-direction: column;
-  background: color-mix(in srgb, var(--app-shell-color-panel, #1e1e24) 22%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-border-default, #32323d) 40%, transparent);
-  padding: 24px;
+  --local-bg: color-mix(in srgb, var(--app-shell-color-panel, #1e1e24) 22%, transparent);
+  background: var(--local-bg);
+  --local-border: 1px solid color-mix(in srgb, var(--color-border-default, #32323d) 40%, transparent);
+  border: var(--local-border);
+  --local-padding: 24px;
+  padding: var(--local-padding);
   border-radius: 20px;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+  --local-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--local-shadow);
   margin-bottom: var(--space-6);
 }
 
@@ -670,7 +675,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  padding-top: 10px;
+  --local-padding-top: 10px;
+  padding-top: var(--local-padding-top);
 }
 
 .person-credits-discover-grid {

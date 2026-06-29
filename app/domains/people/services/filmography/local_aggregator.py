@@ -61,7 +61,7 @@ class LocalCreditsAggregator:
             if match.media_type == MediaType.SCENE:
                 scenes.append(credit_entry)
             elif match.media_type == MediaType.MOVIE:
-                if match.provider == Provider.TMDB:
+                if match.provider in (Provider.TMDB, Provider.PORNDB, Provider.FANSDB, Provider.STASHDB):
                     movies.append(credit_entry)
             elif match.media_type in (MediaType.TV, MediaType.EPISODE):
                 if match.provider == Provider.TMDB:

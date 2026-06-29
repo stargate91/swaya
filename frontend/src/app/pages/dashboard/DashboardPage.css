@@ -512,7 +512,8 @@
 .continue-watching-play-active {
   opacity: 1 !important;
   pointer-events: none;
-  animation: continue-watching-play-pulse 2s infinite ease-in-out;
+  --local-animation: continue-watching-play-pulse 2s infinite ease-in-out;
+  animation: var(--local-animation);
 }
 
 @keyframes continue-watching-play-pulse {

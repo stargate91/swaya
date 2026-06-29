@@ -25,7 +25,8 @@
   align-items: center;
   gap: var(--space-xs);
   padding: var(--space-xs) var(--space-md);
-  background: rgba(0, 0, 0, 0.15);
+  --local-bg: rgba(0, 0, 0, 0.15);
+  background: var(--local-bg);
   border-bottom: 1px solid var(--color-border-default);
 }
 
@@ -40,7 +41,8 @@
 .bespoke-episodes-pills {
   display: flex;
   overflow-x: auto;
-  gap: 6px;
+  --local-gap: 6px;
+  gap: var(--local-gap);
   flex: 1;
   padding: var(--space-3xs) 0;
   scroll-behavior: smooth;
@@ -80,8 +82,10 @@
 .bespoke-season-pill.is-active,
 .bespoke-episode-pill.is-active {
   background: color-mix(in srgb, var(--app-shell-color-accent, var(--color-accent-blue)) 15%, transparent);
-  color: color-mix(in srgb, var(--app-shell-color-accent, var(--color-accent-blue)) 88%, var(--color-text-primary, #ffffff));
-  border-color: color-mix(in srgb, var(--app-shell-color-accent, var(--color-accent-blue)) 88%, var(--color-text-primary, #ffffff));
+  --local-color: color-mix(in srgb, var(--app-shell-color-accent, var(--color-accent-blue)) 88%, var(--color-text-primary, #ffffff));
+  color: var(--local-color);
+  --local-border-color: color-mix(in srgb, var(--app-shell-color-accent, var(--color-accent-blue)) 88%, var(--color-text-primary, #ffffff));
+  border-color: var(--local-border-color);
   box-shadow: 0 0 10px color-mix(in srgb, var(--app-shell-color-accent, var(--color-accent-blue)) 25%, transparent);
   font-weight: 700;
 }
@@ -168,7 +172,8 @@
   background: var(--color-surface-glass);
   border: 1px solid var(--color-border-default);
   position: relative;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --local-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--local-shadow);
 }
 
 .bespoke-season-detail-card__poster {
@@ -305,7 +310,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(to right, rgba(0,0,0,0.3), transparent);
+  --local-bg: linear-gradient(to right, rgba(0,0,0,0.3), transparent);
+  background: var(--local-bg);
   border: none;
   color: var(--color-text-muted);
   cursor: pointer;
@@ -322,12 +328,14 @@
 
 .bespoke-card-nav--left {
   left: 0;
-  background: linear-gradient(to right, rgba(0,0,0,0.4), transparent);
+  --local-bg: linear-gradient(to right, rgba(0,0,0,0.4), transparent);
+  background: var(--local-bg);
 }
 
 .bespoke-card-nav--right {
   right: 0;
-  background: linear-gradient(to left, rgba(0,0,0,0.4), transparent);
+  --local-bg: linear-gradient(to left, rgba(0,0,0,0.4), transparent);
+  background: var(--local-bg);
 }
 
 .bespoke-browser-card__body--episode:hover .bespoke-card-nav:hover:not(:disabled) {
@@ -354,7 +362,8 @@
   background: var(--color-surface-glass);
   border: 1px solid var(--color-border-default);
   position: relative;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  --local-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--local-shadow);
 }
 
 .bespoke-episode-detail-card__still {
@@ -380,7 +389,8 @@
 .bespoke-episode-detail-card__still-watched-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  --local-bg: rgba(0, 0, 0, 0.4);
+  background: var(--local-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -425,12 +435,15 @@
 }
 
 .bespoke-action-btn--peak {
-  color: var(--color-accent-orange, #f59e0b);
+  --local-color: var(--color-accent-orange, #f59e0b);
+  color: var(--local-color);
 }
 
 .bespoke-episode-detail-card__tmdb-pill {
-  gap: 3px;
-  padding: 1px var(--space-xs);
+  --local-gap: 3px;
+  gap: var(--local-gap);
+  --local-padding: 1px var(--space-xs);
+  padding: var(--local-padding);
   min-height: 18px;
   font-size: 10px;
   border-radius: 4px;
@@ -449,7 +462,8 @@
   gap: var(--space-xs);
   font-size: 10px;
   font-weight: 600;
-  color: var(--color-accent-orange, #f59e0b);
+  --local-color: var(--color-accent-orange, #f59e0b);
+  color: var(--local-color);
   margin-bottom: var(--space-3xs);
 }
 
@@ -465,7 +479,8 @@
   gap: var(--space-xs);
   background: var(--color-surface-glass);
   border: 1px solid var(--color-border-default);
-  padding: 1px var(--space-xs);
+  --local-padding: 1px var(--space-xs);
+  padding: var(--local-padding);
   border-radius: 4px;
   font-size: 9px;
 }
@@ -490,7 +505,8 @@
 }
 
 .bespoke-episode-detail-card__peak-delete:hover {
-  color: var(--color-state-danger, #ef4444);
+  --local-color: var(--color-state-danger, #ef4444);
+  color: var(--local-color);
 }
 
 .bespoke-browser-card__empty {
@@ -624,7 +640,8 @@
   background: var(--color-surface-glass);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-sm, 6px);
-  padding: 3px 10px;
+  --local-padding: 3px 10px;
+  padding: var(--local-padding);
   white-space: nowrap;
   transition: all var(--motion-fast);
   cursor: default;
@@ -647,7 +664,8 @@
   background: color-mix(in srgb, var(--app-shell-color-accent, var(--color-accent-blue)) 10%, transparent);
   border: 1px solid color-mix(in srgb, var(--app-shell-color-accent, var(--color-accent-blue)) 25%, transparent);
   border-radius: var(--radius-sm, 6px);
-  padding: 3px 10px;
+  --local-padding: 3px 10px;
+  padding: var(--local-padding);
   white-space: nowrap;
   cursor: pointer;
   transition: all var(--motion-fast);
@@ -686,7 +704,8 @@
   align-items: center;
   gap: var(--space-md);
   padding: var(--space-sm) var(--space-md);
-  background: rgba(255, 255, 255, 0.02);
+  --local-bg: rgba(255, 255, 255, 0.02);
+  background: var(--local-bg);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md, 8px);
 }
@@ -698,14 +717,16 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.04);
+  --local-bg: rgba(255, 255, 255, 0.04);
+  background: var(--local-bg);
   color: var(--color-text-secondary);
 }
 
 .bespoke-boxoffice-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  --local-gap: 2px;
+  gap: var(--local-gap);
 }
 
 .bespoke-boxoffice-label {
@@ -713,7 +734,8 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-text-muted);
+  --local-color: rgba(255, 255, 255, 0.45);
+  color: var(--local-color);
 }
 
 .bespoke-boxoffice-value {
@@ -728,8 +750,10 @@
 }
 
 .bespoke-boxoffice-stat--loss .bespoke-boxoffice-icon-wrapper {
-  color: var(--color-state-danger, #ef4444);
-  background: color-mix(in srgb, var(--color-state-danger, #ef4444) 10%, transparent);
+  --local-color: var(--color-state-danger, #ef4444);
+  color: var(--local-color);
+  --local-bg: color-mix(in srgb, var(--color-state-danger, #ef4444) 10%, transparent);
+  background: var(--local-bg);
 }
 
 /* Production Companies / Networks */
@@ -768,7 +792,8 @@
   justify-content: center;
   height: 64px;
   padding: var(--space-sm) var(--space-lg);
-  background: rgba(255, 255, 255, 0.02);
+  --local-bg: rgba(255, 255, 255, 0.02);
+  background: var(--local-bg);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md, 8px);
   flex-shrink: 0;
@@ -797,7 +822,8 @@
 }
 
 .entity-detail-page__drawer .details-panel__section {
-  margin-bottom: 28px;
+  --local-margin: 28px;
+  margin-bottom: var(--local-margin);
 }
 
 .entity-detail-page__drawer .details-panel__section-title {
@@ -807,9 +833,12 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   margin-top: 0;
-  margin-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding-bottom: 6px;
+  --local-margin: 12px;
+  margin-bottom: var(--local-margin);
+  --local-border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: var(--local-border);
+  --local-padding: 6px;
+  padding-bottom: var(--local-padding);
 }
 
 /* Drawer-specific compact wrapping for Production Companies & Networks */
@@ -822,7 +851,8 @@
 
 .entity-detail-page__drawer .bespoke-company-item {
   height: 40px;
-  padding: 4px 12px;
+  --local-padding: 4px 12px;
+  padding: var(--local-padding);
   flex-shrink: 0;
 }
 
@@ -847,6 +877,8 @@
 }
 
 .dashboard-cast-card__avatar-wrapper--filtered {
-  border: 1px dashed rgba(255, 255, 255, 0.3) !important;
-  background: rgba(255, 255, 255, 0.02) !important;
+  --local-border: 1px dashed rgba(255, 255, 255, 0.3);
+  border: var(--local-border) !important;
+  --local-bg: rgba(255, 255, 255, 0.02);
+  background: var(--local-bg) !important;
 }

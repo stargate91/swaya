@@ -4,18 +4,14 @@ import { useLibraryState } from './hooks/useLibraryState';
 import { useLibraryModals } from './hooks/useLibraryModals';
 import LibraryHeader from './components/LibraryHeader';
 import LibraryFilters from './components/LibraryFilters';
-import LibraryBulkImportBanner from './components/LibraryBulkImportBanner';
-import { useLibraryBulkImport } from './hooks/useLibraryBulkImport';
 import LibraryGrid from './components/LibraryGrid';
 import { useDeleteTagMutation } from '@/queries';
-import { useUi } from '@/providers/UiProvider';
 import { useEffect, useMemo, useState } from 'react';
-import { isLibraryPeopleTab, isLibraryTagsTab } from '@/lib/libraryTabs';
+import { isLibraryTagsTab } from '@/lib/libraryTabs';
 import './LibraryPage.css';
 
 export default function LibraryPage({ initialTab = 'movies', lockTab = false, showTabs = true, pageTitle = null }) {
   const state = useLibraryState({ initialTab, lockTab, includeTagsTab: true });
-  const { openModal, closeModal } = useUi();
   const [focusedTagName, setFocusedTagName] = useState(null);
   const deleteTagMutation = useDeleteTagMutation();
   const modals = useLibraryModals({
@@ -26,9 +22,6 @@ export default function LibraryPage({ initialTab = 'movies', lockTab = false, sh
   });
 
   const isAdultMode = state.activeSessionMode === 'nsfw';
-  const isPeopleTab = isLibraryPeopleTab(state.resolvedTab);
-
-  const bulkImport = useLibraryBulkImport({ isAdultMode, isPeopleTab });
 
   useEffect(() => {
     if (!state.isTags && focusedTagName !== null) {
@@ -118,17 +111,6 @@ export default function LibraryPage({ initialTab = 'movies', lockTab = false, sh
             />
           ) : null}
         </div>
-
-        <LibraryBulkImportBanner
-          t={state.t}
-          resolvedTab={state.resolvedTab}
-          isAdultMode={isAdultMode}
-          openBulkImportResolveModal={modals.openBulkImportResolveModal}
-          openModal={openModal}
-          closeModal={closeModal}
-          showBulkImportBanner={bulkImport.showBulkImportBanner}
-          dismissBulkImportBanner={bulkImport.dismissBulkImportBanner}
-        />
 
         <LibraryPagination
           state={state}

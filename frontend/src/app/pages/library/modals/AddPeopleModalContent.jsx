@@ -1,7 +1,6 @@
 import { useState, useMemo, useRef } from 'react';
 import { usePeopleInfiniteQuery, useUpdatePersonStatusMutation, useSettingsQuery, useAddPersonTmdbMutation } from '@/queries';
 import api from '@/lib/api';
-import { useUi } from '@/providers/UiProvider';
 import SegmentedControl from '@/ui/SegmentedControl';
 import Input from '@/ui/Input';
 import Spinner from '@/ui/Spinner';
@@ -10,7 +9,6 @@ import Tooltip from '@/ui/Tooltip';
 import EmptyState from '@/ui/EmptyState';
 import Dropdown from '@/ui/Dropdown';
 import { resolveMediaImageUrl } from '@/lib/imageUrls';
-import { useQueryClient } from '@tanstack/react-query';
 import { Search, Plus, Check, Minus } from 'lucide-react';
 
 const QUESTION_MARK = '?';
@@ -46,9 +44,7 @@ function ActivationButton({ isActive, onClick, disabled }) {
   );
 }
 
-export default function AddPeopleModalContent({ isAdult, t, onClose }) {
-  const { toast } = useUi();
-  const queryClient = useQueryClient();
+export default function AddPeopleModalContent({ isAdult, t }) {
   const { data: settings } = useSettingsQuery();
   const [activeMode, setActiveMode] = useState('local'); // 'local', 'search', 'bulk'
   const [searchQuery, setSearchQuery] = useState('');
@@ -84,9 +80,6 @@ export default function AddPeopleModalContent({ isAdult, t, onClose }) {
   const actionQueueRef = useRef([]);
   const isProcessingQueueRef = useRef(false);
 
-  // Bulk Add States
-  const [bulkText, setBulkText] = useState('');
-
   const hideGenderFilter = isAdult && settings?.adult_gender_preference && settings.adult_gender_preference !== 'all';
 
   // Fetch people with pagination and infinite scroll
@@ -114,13 +107,6 @@ export default function AddPeopleModalContent({ isAdult, t, onClose }) {
   const hasSearchQuery = searchQuery.trim().length > 0;
   const hasActiveFilters = roleFilter !== 'all' || (!hideGenderFilter && genderFilter !== 'all');
   const textKey = (adultKey, defaultKey) => (isAdult ? adultKey : defaultKey);
-  const hasPendingBulkReport = (() => {
-    try {
-      return localStorage.getItem(isAdult ? 'showBulkImportBanner:nsfw' : 'showBulkImportBanner:sfw') === 'true';
-    } catch {
-      return false;
-    }
-  })();
 
   const resolveProfileUrl = (path) => {
     return resolveMediaImageUrl(path, 'personThumb');
@@ -206,7 +192,6 @@ export default function AddPeopleModalContent({ isAdult, t, onClose }) {
           options={[
             { value: 'local', label: t('library.addPeople.modes.local') || 'Local Pack' },
             { value: 'search', label: t('library.addPeople.modes.search') || 'TMDB Search' },
-            { value: 'bulk', label: t('library.addPeople.modes.bulk') || 'Bulk Add' },
           ]}
           className="add-people-modal__segmented-control"
         />
@@ -508,49 +493,6 @@ export default function AddPeopleModalContent({ isAdult, t, onClose }) {
         </div>
       )}
 
-      {activeMode === 'bulk' && (
-        <div className="add-people-modal__tab-panel">
-          <div className="add-people-modal__bulk-field">
-            <span className="ui-field__label">{t(textKey('library.addPeople.adultBulkLabel', 'library.addPeople.bulkLabel'))}</span>
-            <textarea
-              value={bulkText}
-              onChange={(e) => setBulkText(e.target.value)}
-              placeholder="Harrison Ford&#10;Will Smith&#10;Ana de Armas"
-              className="add-people-modal__bulk-textarea"
-            />
-          </div>
-
-          <button
-            type="button"
-            onClick={async () => {
-              if (!bulkText.trim()) return;
-              if (hasPendingBulkReport) {
-                toast(t(textKey('library.addPeople.adultBulkPendingBlockedToast', 'library.addPeople.bulkPendingBlockedToast')), 'danger');
-                return;
-              }
-              try {
-                await api.people.bulkImport({
-                  raw_text: bulkText,
-                  role: 'all',
-                  adult_only: isAdult
-                });
-                queryClient.invalidateQueries({ queryKey: ['scan-status'] });
-                queryClient.invalidateQueries({ queryKey: ['library'] });
-                queryClient.invalidateQueries({ queryKey: ['stats'] });
-                toast(t(textKey('library.addPeople.adultBulkStartedToast', 'library.addPeople.bulkStartedToast')), 'info');
-                if (onClose) onClose();
-              } catch (err) {
-                console.error(err);
-                toast(err.message || 'Failed to start bulk import', 'danger');
-              }
-            }}
-            className="ui-button ui-button--primary ui-button--md add-people-modal__bulk-submit"
-            disabled={!bulkText.trim()}
-          >
-            {t('library.addPeople.startBulk') || 'Start Import'}
-          </button>
-        </div>
-      )}
     </div>
   );
 }

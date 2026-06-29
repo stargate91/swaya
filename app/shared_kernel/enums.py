@@ -54,6 +54,7 @@ class RoleType(enum.Enum):
     WRITER = "writer"
     PRODUCER = "producer"
     CREATOR = "creator"
+    SOUND = "sound"
 
 class TaskStatus(enum.Enum):
     """Current execution state of background tasks."""
