@@ -578,6 +578,8 @@ class TvShowFormatter(DetailFormatter):
             "user_rating": override.user_rating if override else None,
             "user_comment": override.user_comment if override else None,
             "is_tracked": override.is_tracked if override else False,
+            "custom_tags": [t.name for t in override.tags] if (override and override.tags) else [],
+            "suggested_tags": keywords_list,
             "in_library": len(local_items) > 0,
             "progressive_seasons": True,
             "watch_stats": {

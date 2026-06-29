@@ -159,7 +159,8 @@
     "noTagsAssigned": "No tags assigned.",
     "addTagLabel": "Add Tag",
     "addTagPlaceholder": "Add Tag...",
-    "allTagsAssigned": "All tags assigned."
+    "allTagsAssigned": "All tags assigned.",
+    "searchOrAdd": "Search or add tag..."
   },
   "collections": {
     "partsCount": "{{owned}} / {{total}} movies"
@@ -330,6 +331,8 @@
     "language": "Language",
     "showInFolder": "Show in Folder",
     "tagger": "Tagger",
+    "activeTags": "Active Tags",
+    "noTagsAssigned": "No tags assigned.",
     "suggestedTags": "Suggested Tags",
     "createTagFromKeyword": "Create tag from keyword",
     "allKeywordsTagged": "All keywords already exist as tags.",

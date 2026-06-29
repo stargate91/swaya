@@ -33,6 +33,7 @@ import TechnicalPanel from './components/detail/panels/TechnicalPanel';
 import ExtrasPanel from './components/detail/panels/ExtrasPanel';
 import BackdropsPanel from './components/detail/panels/BackdropsPanel';
 import TagsPanel from './components/detail/panels/TagsPanel';
+import BespokeSceneTagger from './components/detail/BespokeSceneTagger';
 import './components/entityDetail/EntityDetailHeroSection.css';
 
 function BespokeCastSection({ item, t, navigate }) {
@@ -968,6 +969,7 @@ export default function MediaDetailPage({ type = 'movie' }) {
                   t={t}
                 />
               )}
+              {item && <BespokeSceneTagger />}
             </div>
           </div>
         </div>

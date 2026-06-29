@@ -1,0 +1,288 @@
+.bespoke-scene-tagger-card {
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg, 16px);
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(10px);
+  overflow: visible;
+  margin-top: var(--space-md);
+}
+
+.bespoke-scene-tagger-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  --local-gap: var(--space-xs);
+  gap: var(--local-gap);
+  padding: var(--space-xs) var(--space-md);
+  --local-bg: rgba(0, 0, 0, 0.15);
+  background: var(--local-bg);
+  border-top-left-radius: var(--radius-lg, 16px);
+  border-top-right-radius: var(--radius-lg, 16px);
+  border-bottom: 1px solid var(--color-border-default);
+}
+
+.bespoke-scene-tagger-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.bespoke-scene-tagger-body {
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  --local-gap: var(--space-md);
+  gap: var(--local-gap);
+}
+
+.bespoke-scene-tagger-active-section,
+.bespoke-scene-tagger-suggested-section {
+  display: flex;
+  flex-direction: column;
+  --local-gap: var(--space-xs);
+  gap: var(--local-gap);
+}
+
+.bespoke-scene-tagger-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.bespoke-scene-tagger-pills-row {
+  display: flex;
+  flex-wrap: wrap;
+  --local-gap: 6px;
+  gap: var(--local-gap);
+}
+
+.bespoke-scene-tagger-pill-active {
+  display: inline-flex;
+  align-items: center;
+  --local-gap: 4px;
+  gap: var(--local-gap);
+  padding: 4px 8px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+
+.bespoke-scene-tagger-pill-remove {
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  opacity: 0.7;
+  --local-transition: opacity 0.15s ease;
+  transition: var(--local-transition);
+}
+
+.bespoke-scene-tagger-pill-remove:hover {
+  opacity: 1;
+}
+
+.bespoke-scene-tagger-empty-text {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+}
+
+/* Autocomplete Input */
+.bespoke-scene-tagger-input-wrapper {
+  position: relative;
+}
+
+.bespoke-scene-tagger-input-container {
+  display: flex;
+  align-items: center;
+  --local-bg: rgba(255, 255, 255, 0.03);
+  background: var(--local-bg);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md, 8px);
+  padding: 0 var(--space-sm);
+  height: 34px;
+  --local-transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: var(--local-transition);
+}
+
+.bespoke-scene-tagger-input-container:focus-within {
+  border-color: var(--color-accent-blue);
+  box-shadow: 0 0 0 1px var(--color-accent-blue);
+}
+
+.bespoke-scene-tagger-search-icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  margin-right: var(--space-xs);
+}
+
+.bespoke-scene-tagger-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-primary);
+  font-size: 12px;
+  width: 100%;
+  height: 100%;
+}
+
+.bespoke-scene-tagger-clear-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bespoke-scene-tagger-clear-btn:hover {
+  color: var(--color-text-primary);
+}
+
+/* Dropdown */
+.bespoke-scene-tagger-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  --local-bg: color-mix(in srgb, var(--color-surface-card) 96%, transparent);
+  background: var(--local-bg);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px 0;
+  backdrop-filter: blur(16px);
+}
+
+.bespoke-scene-tagger-dropdown-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  color: var(--color-text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  --local-gap: 8px;
+  gap: var(--local-gap);
+  --local-transition: background 0.15s ease;
+  transition: var(--local-transition);
+}
+
+.bespoke-scene-tagger-dropdown-item:hover {
+  --local-hover-bg: rgba(255, 255, 255, 0.05);
+  background: var(--local-hover-bg);
+}
+
+.bespoke-scene-tagger-dropdown-color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.bespoke-scene-tagger-dropdown-item--create {
+  color: var(--color-accent-blue);
+  border-top: 1px solid var(--color-border-default);
+  margin-top: 4px;
+  padding-top: 8px;
+}
+
+/* Suggested Tags */
+.bespoke-scene-tagger-pill-suggested {
+  display: inline-flex;
+  align-items: center;
+  --local-gap: 4px;
+  gap: var(--local-gap);
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--radius-md, 6px);
+  --local-border: 1px dashed var(--color-border-default);
+  border: var(--local-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  --local-transition: all 0.15s ease;
+  transition: var(--local-transition);
+}
+
+.bespoke-scene-tagger-pill-suggested:hover {
+  --local-hover-border: 1px solid var(--color-accent-blue);
+  border: var(--local-hover-border);
+  color: var(--color-accent-blue);
+  background: color-mix(in srgb, var(--color-accent-blue) 8%, transparent);
+}
+
+/* Horizontal scroller layout and buttons (flex layout next to the container) */
+.bespoke-scene-tagger-scroller-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  --local-gap: 6px;
+  gap: var(--local-gap);
+}
+
+.bespoke-scene-tagger-pills-row--nowrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+
+.bespoke-scene-tagger-pills-row--nowrap::-webkit-scrollbar {
+  display: none;
+}
+
+.bespoke-scene-tagger-pill-active,
+.bespoke-scene-tagger-pill-suggested {
+  flex-shrink: 0 !important;
+}
+
+.bespoke-scene-tagger-scroller-btn {
+  flex-shrink: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-secondary);
+  border-radius: 999px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.8;
+  --local-transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  transition: var(--local-transition);
+  padding: 0;
+}
+
+.bespoke-scene-tagger-scroller-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--color-text-primary);
+}
+
+
