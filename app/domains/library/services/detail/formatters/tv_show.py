@@ -404,8 +404,22 @@ class TvShowFormatter(DetailFormatter):
             MetadataMatch.media_type == MediaType.TV
         ).first()
 
+        imdb_id = tmdb_data.get("external_ids", {}).get("imdb_id")
         if series_match:
             db_updated = False
+            if imdb_id and not series_match.imdb_id:
+                series_match.imdb_id = imdb_id
+                db_updated = True
+            if series_match.imdb_id and not series_match.rating_imdb:
+                try:
+                    from app.infrastructure.scrapers.providers.omdb import OMDBScraper
+                    omdb = OMDBScraper(db)
+                    omdb_data = omdb.fetch_omdb(series_match.imdb_id)
+                    if omdb_data:
+                        omdb.update_omdb_ratings(series_match, omdb_data)
+                        db_updated = True
+                except Exception as e:
+                    logger.error(f"Failed to fetch OMDB ratings for tv show {series_match.imdb_id}: {e}")
             if not series_match.backdrop_path and effective_backdrop:
                 series_match.backdrop_path = effective_backdrop
                 db_updated = True
@@ -434,6 +448,7 @@ class TvShowFormatter(DetailFormatter):
                 db_updated = True
             
             loc_db = next((l for l in series_match.localizations if l.locale == ui_lang), None)
+            genres_list = _split_genres([g["name"] for g in tmdb_data.get("genres", [])]) if tmdb_data.get("genres") else []
             if not loc_db:
                 loc_db = MetadataLocalization(
                     match_id=series_match.id,
@@ -441,7 +456,8 @@ class TvShowFormatter(DetailFormatter):
                     title=tmdb_data.get("name") or tmdb_data.get("original_name") or "Unknown TV Show",
                     overview=tmdb_data.get("overview"),
                     poster_path=tmdb_data.get("poster_path"),
-                    tagline=tmdb_data.get("tagline")
+                    tagline=tmdb_data.get("tagline"),
+                    genres=genres_list
                 )
                 db.add(loc_db)
                 db_updated = True
@@ -457,6 +473,9 @@ class TvShowFormatter(DetailFormatter):
                     db_updated = True
                 if not loc_db.tagline and tmdb_data.get("tagline"):
                     loc_db.tagline = tmdb_data.get("tagline")
+                    db_updated = True
+                if not loc_db.genres and genres_list:
+                    loc_db.genres = genres_list
                     db_updated = True
             
             if db_updated:

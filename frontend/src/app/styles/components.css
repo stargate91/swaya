@@ -97,25 +97,25 @@
 /* Unified Drawer Primitive */
 .ui-drawer-backdrop {
   position: fixed;
-  top: 0;
+  top: var(--layout-window-titlebar-height, 46px);
   left: 0;
   right: 0;
   bottom: 0;
   background: var(--color-surface-overlay, rgba(0, 0, 0, 0.4));
   backdrop-filter: blur(4px);
-  z-index: 99998;
+  z-index: 99999998 !important;
   animation: uiDrawerFadeIn 0.3s ease;
 }
 
 .ui-drawer {
   position: fixed;
-  top: 0;
+  top: var(--layout-window-titlebar-height, 46px);
   right: 0;
-  height: 100vh;
+  height: calc(100vh - var(--layout-window-titlebar-height, 46px));
   background: var(--color-surface-overlay, #1c1c1e);
   border-left: 1px solid var(--color-border, rgba(255, 255, 255, 0.15));
   box-shadow: -10px 0 35px rgba(0, 0, 0, 0.6);
-  z-index: 99999;
+  z-index: 99999999 !important;
   display: flex;
   flex-direction: column;
   max-width: 100%;

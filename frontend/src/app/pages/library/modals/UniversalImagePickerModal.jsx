@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import TMDBImageGrid from '../components/entityDetail/TMDBImageGrid';
-import Dropdown from '@/ui/Dropdown';
+import SegmentedControl from '@/ui/SegmentedControl';
 import {
   useOverrideBackdropMutation,
   useUploadBackdropMutation,
@@ -252,7 +252,7 @@ export default function UniversalImagePickerModal({
               }
 
               return options.map((opt, idx) => (
-                <div 
+                <div
                   key={idx}
                   className={`scene-image-picker-card ${pathsMatch(selectedPath || currentPath, opt.path) ? 'active' : ''}`}
                   role="button"
@@ -277,14 +277,11 @@ export default function UniversalImagePickerModal({
 
       {sources.length > 1 && (
         <div className="universal-image-picker__source-filter">
-          <span className="universal-image-picker__source-label">{t('library.details.imageSource') || 'Image Source'}{COLON_CHAR}</span>
-          <div className="universal-image-picker__source-dropdown-wrapper">
-            <Dropdown
-              value={imageSource}
-              onChange={(e) => setImageSource(e.target.value)}
-              options={sources}
-            />
-          </div>
+          <SegmentedControl
+            value={imageSource}
+            onChange={(val) => setImageSource(val)}
+            options={sources}
+          />
         </div>
       )}
 

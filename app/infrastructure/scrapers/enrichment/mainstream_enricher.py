@@ -73,6 +73,16 @@ class MainstreamEnricher:
         if not active_match:
             return
 
+        self.enrich_match(active_match, language, fallback_language, include_ratings, commit)
+
+    def enrich_match(
+        self,
+        active_match: MetadataMatch,
+        language: str = DEFAULT_FALLBACK_LANGUAGE,
+        fallback_language: str = None,
+        include_ratings: bool = True,
+        commit: bool = False,
+    ):
         # Build unique list of languages to enrich
         langs_to_enrich = []
         if language:

@@ -212,7 +212,7 @@ export default function LibraryFilters({
           </div>
         )}
 
-        {isVideoTab && !isScenesTab && (
+        {isVideoTab && !isScenesTab && activeSessionMode !== 'nsfw' && (
           <div className="library-sorter-container">
             <span className="library-sorter-label">{t('library.filter.genreLabel') || 'Genre:'}</span>
             <Dropdown

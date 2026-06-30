@@ -763,13 +763,16 @@
 
 /* Sliding Drawer Styles */
 .entity-detail-page__drawer-backdrop {
-  z-index: 99998;
+  z-index: 99999998 !important;
+  top: var(--layout-window-titlebar-height, 46px) !important;
 }
 
 .entity-detail-page__drawer {
   --drawer-bg: var(--color-surface-overlay, #1c1c1e);
   background: var(--drawer-bg);
-  z-index: 99999;
+  z-index: 99999999 !important;
+  top: var(--layout-window-titlebar-height, 46px) !important;
+  height: calc(100vh - var(--layout-window-titlebar-height, 46px)) !important;
 }
 
 @keyframes drawerFadeIn {

@@ -1,5 +1,6 @@
-import { useState, useMemo, useCallback, memo } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './entityDetail/EntityDetailHeroSection.css';
 import { usePlayMediaMutation, useSettingsQuery } from '@/queries';
 import api from '@/lib/api';
 import Badge from '@/ui/Badge';
@@ -322,6 +323,7 @@ export default function LibraryGrid({
   onFocusTag,
   onExitTagFocus,
   activeSessionMode,
+  onEditImage,
 }) {
   const navigate = useNavigate();
   const playMutation = usePlayMediaMutation();
@@ -408,27 +410,19 @@ export default function LibraryGrid({
         : getPosterImagePath(item);
     const tmdbId = isPeopleCard ? item.id : (item.tmdb_id || item.tv_tmdb_id || item.id);
 
-    openModal({
+    onEditImage({
+      entityId,
+      entityType,
+      imageType,
+      currentPath,
+      tmdbId,
+      externalIds: item?.external_ids || item,
+      item,
       title: isPeopleCard
         ? (t('library.details.changeProfile') || 'Change Profile Picture')
         : (t('library.details.changePoster') || 'Change Poster'),
-      variant: 'wide',
-      content: (
-        <UniversalImagePickerModal
-          entityId={entityId}
-          tmdbId={tmdbId}
-          imageType={imageType}
-          entityType={entityType}
-          currentPath={currentPath}
-          t={t}
-          toast={toast}
-          onClose={closeModal}
-          externalIds={item?.external_ids || item}
-          item={item}
-        />
-      ),
     });
-  }, [resolvedTab, isCollections, openModal, t, toast, closeModal]);
+  }, [resolvedTab, isCollections, t, onEditImage]);
 
   const resolvePosterUrl = useCallback((path) => {
     return resolveMediaImageUrl(path, 'poster');

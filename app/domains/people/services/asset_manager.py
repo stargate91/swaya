@@ -12,6 +12,13 @@ from app.shared_kernel.ports.image_service_port import ImageServicePort
 
 logger = logging.getLogger(__name__)
 
+def fnv1a_hash(s: str) -> str:
+    hash_val = 2166136261
+    for char in s.encode('utf-8'):
+        hash_val ^= char
+        hash_val = (hash_val * 16777619) & 0xffffffff
+    return f"{hash_val:08x}"
+
 class PerformerAssetManager:
     def __init__(self, db: Session, library_port: LibraryPort, image_service: ImageServicePort):
         self.db = db
@@ -54,12 +61,30 @@ class PerformerAssetManager:
                     import re
                     from urllib.parse import urlparse
                     basename = os.path.basename(urlparse(backdrop_path).path)
-                    ext = os.path.splitext(basename)[1].lower() or ".jpg"
+                    name, ext = os.path.splitext(basename)
+                    ext = ext.lower() or ".jpg"
+                    url_hash = fnv1a_hash(url)
                     prefix = f"user_override_{user_id}_person_backdrop_{person_id}"
                     safe_prefix = re.sub(r"[^A-Za-z0-9_.-]+", "_", prefix).strip("_")
-                    filename = f"{safe_prefix}_{basename}{ext}"
-                    downloader.download_now(url, "backdrops", filename)
-                    backdrop_path = filename
+                    filename = f"{safe_prefix}_{name}_{url_hash}{ext}"
+                    
+                    import threading
+                    def bg_download():
+                        try:
+                            downloader.download_now(url, "backdrops", filename)
+                            from app.shared_kernel.database import SessionLocal
+                            from app.domains.users.models import UserOverride
+                            db_bg = SessionLocal()
+                            try:
+                                override = db_bg.query(UserOverride).filter(UserOverride.person_id == person_id).first()
+                                if override:
+                                    override.custom_backdrop = filename
+                                    db_bg.commit()
+                            finally:
+                                db_bg.close()
+                        except Exception as e:
+                            logger.error(f"Failed to download person backdrop in bg: {e}")
+                    threading.Thread(target=bg_download, daemon=True).start()
             except Exception as e:
                 logger.error(f"Failed to download person backdrop override image: {e}")
 
@@ -148,12 +173,30 @@ class PerformerAssetManager:
                     import re
                     from urllib.parse import urlparse
                     basename = os.path.basename(urlparse(profile_path).path)
-                    ext = os.path.splitext(basename)[1].lower() or ".jpg"
+                    name, ext = os.path.splitext(basename)
+                    ext = ext.lower() or ".jpg"
+                    url_hash = fnv1a_hash(url)
                     prefix = f"user_override_{user_id}_person_{person_id}"
                     safe_prefix = re.sub(r"[^A-Za-z0-9_.-]+", "_", prefix).strip("_")
-                    filename = f"{safe_prefix}_{basename}{ext}"
-                    downloader.download_now(url, "people", filename)
-                    profile_path = filename
+                    filename = f"{safe_prefix}_{name}_{url_hash}{ext}"
+                    
+                    import threading
+                    def bg_download():
+                        try:
+                            downloader.download_now(url, "people", filename)
+                            from app.shared_kernel.database import SessionLocal
+                            from app.domains.users.models import UserOverride
+                            db_bg = SessionLocal()
+                            try:
+                                override = db_bg.query(UserOverride).filter(UserOverride.person_id == person_id).first()
+                                if override:
+                                    override.custom_poster = filename
+                                    db_bg.commit()
+                            finally:
+                                db_bg.close()
+                        except Exception as e:
+                            logger.error(f"Failed to download person profile in bg: {e}")
+                    threading.Thread(target=bg_download, daemon=True).start()
             except Exception as e:
                 logger.error(f"Failed to download person profile override image: {e}")
 

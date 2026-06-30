@@ -7,12 +7,17 @@ import LibraryFilters from './components/LibraryFilters';
 import LibraryGrid from './components/LibraryGrid';
 import { useDeleteTagMutation } from '@/queries';
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { isLibraryTagsTab } from '@/lib/libraryTabs';
+import { useUi } from '@/providers/UiProvider';
+import UniversalImagePickerModal from './modals/UniversalImagePickerModal';
 import './LibraryPage.css';
 
 export default function LibraryPage({ initialTab = 'movies', lockTab = false, showTabs = true, pageTitle = null }) {
   const state = useLibraryState({ initialTab, lockTab, includeTagsTab: true });
   const [focusedTagName, setFocusedTagName] = useState(null);
+  const [imagePickerData, setImagePickerData] = useState(null);
+  const { toast } = useUi();
   const deleteTagMutation = useDeleteTagMutation();
   const modals = useLibraryModals({
     state,
@@ -22,6 +27,17 @@ export default function LibraryPage({ initialTab = 'movies', lockTab = false, sh
   });
 
   const isAdultMode = state.activeSessionMode === 'nsfw';
+
+  useEffect(() => {
+    if (imagePickerData) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [imagePickerData]);
 
   useEffect(() => {
     if (!state.isTags && focusedTagName !== null) {
@@ -139,6 +155,7 @@ export default function LibraryPage({ initialTab = 'movies', lockTab = false, sh
           onFocusTag={setFocusedTagName}
           onExitTagFocus={() => setFocusedTagName(null)}
           activeSessionMode={state.activeSessionMode}
+          onEditImage={setImagePickerData}
         />
 
         <LibraryPagination
@@ -147,6 +164,54 @@ export default function LibraryPage({ initialTab = 'movies', lockTab = false, sh
           showSpacer
         />
       </div>
+
+      {/* Image Picker Drawer */}
+      {imagePickerData && typeof document !== 'undefined' && createPortal(
+        <>
+          <div
+            className="entity-detail-page__drawer-backdrop ui-drawer-backdrop entity-detail-page__drawer-backdrop--transparent"
+            role="button"
+            tabIndex={-1}
+            onClick={() => setImagePickerData(null)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                setImagePickerData(null);
+              }
+            }}
+          />
+          <div className="entity-detail-page__drawer ui-drawer ui-drawer--md entity-detail-page__drawer--poster">
+            <div className="entity-detail-page__drawer-header">
+              <h3 className="entity-detail-page__drawer-title">
+                {imagePickerData.title}
+              </h3>
+              <button
+                type="button"
+                className="entity-detail-page__drawer-close"
+                onClick={() => setImagePickerData(null)}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="entity-detail-page__drawer-content" style={{ padding: '24px' }}>
+              <UniversalImagePickerModal
+                entityId={imagePickerData.entityId}
+                tmdbId={imagePickerData.tmdbId}
+                imageType={imagePickerData.imageType}
+                entityType={imagePickerData.entityType}
+                currentPath={imagePickerData.currentPath}
+                t={state.t}
+                toast={toast}
+                externalIds={imagePickerData.externalIds}
+                item={imagePickerData.item}
+                onImageSelected={() => {
+                  toast.success(state.t('library.details.imageUpdatedSuccessfully') || 'Image updated successfully');
+                }}
+              />
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
     </Page>
   );
 }

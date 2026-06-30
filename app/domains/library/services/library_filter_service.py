@@ -24,43 +24,80 @@ class LibraryFilterService:
         
         lib_statuses = [ItemStatus.ORGANIZED, ItemStatus.RENAMED]
         
-        # Determine the set of active, owned MetadataMatch IDs for the current tab
-        if tab == "movies":
-            match_ids_subquery = select(MetadataMatch.id).join(MediaItem).filter(
-                MediaItem.status.in_(lib_statuses),
-                MetadataMatch.media_type == MediaType.MOVIE,
-                MetadataMatch.is_active == True,
-                MetadataMatch.is_adult == is_adult
-            ).scalar_subquery()
-        elif tab in ("scenes", "adult_scenes"):
-            match_ids_subquery = select(MetadataMatch.id).join(MediaItem).filter(
-                MediaItem.status.in_(lib_statuses),
-                MetadataMatch.media_type == MediaType.SCENE,
-                MetadataMatch.is_active == True,
-                MetadataMatch.is_adult == is_adult
-            ).scalar_subquery()
-        elif tab in ("tv", "series", "tv_shows", "adult_tv", "adult_series"):
-            season_parent_ids = select(MetadataMatch.parent_id).join(MediaItem).filter(
-                MediaItem.status.in_(lib_statuses),
-                MetadataMatch.media_type == MediaType.EPISODE,
-                MetadataMatch.is_active == True,
-                MetadataMatch.is_adult == is_adult
-            ).scalar_subquery()
+        # Determine the set of active MetadataMatch IDs for the current tab based on ownership
+        if filter_ownership in ("tracked", "unowned"):
+            from app.domains.users.models import UserOverride
+            from app.shared_kernel.user_context import get_current_user_id
+            current_uid = get_current_user_id() or 1
             
-            tv_ids = select(MetadataMatch.parent_id).filter(
-                MetadataMatch.id.in_(season_parent_ids),
-                MetadataMatch.parent_id != None
-            ).scalar_subquery()
-            
-            match_ids_subquery = select(MetadataMatch.id).filter(
-                MetadataMatch.id.in_(tv_ids),
-                MetadataMatch.media_type == MediaType.TV,
-                MetadataMatch.is_adult == is_adult
-            ).scalar_subquery()
+            if tab == "movies":
+                match_ids_subquery = select(MetadataMatch.id).join(UserOverride, UserOverride.metadata_match_id == MetadataMatch.id).filter(
+                    MetadataMatch.media_item_id == None,
+                    UserOverride.is_tracked == True,
+                    UserOverride.user_id == current_uid,
+                    MetadataMatch.media_type == MediaType.MOVIE,
+                    MetadataMatch.is_adult == is_adult
+                ).scalar_subquery()
+            elif tab in ("scenes", "adult_scenes"):
+                match_ids_subquery = select(MetadataMatch.id).join(UserOverride, UserOverride.metadata_match_id == MetadataMatch.id).filter(
+                    MetadataMatch.media_item_id == None,
+                    UserOverride.is_tracked == True,
+                    UserOverride.user_id == current_uid,
+                    MetadataMatch.media_type == MediaType.SCENE,
+                    MetadataMatch.is_adult == is_adult
+                ).scalar_subquery()
+            elif tab in ("tv", "series", "tv_shows", "adult_tv", "adult_series"):
+                match_ids_subquery = select(MetadataMatch.id).join(UserOverride, UserOverride.metadata_match_id == MetadataMatch.id).filter(
+                    MetadataMatch.media_item_id == None,
+                    UserOverride.is_tracked == True,
+                    UserOverride.user_id == current_uid,
+                    MetadataMatch.media_type == MediaType.TV,
+                    MetadataMatch.is_adult == is_adult
+                ).scalar_subquery()
+            else:
+                match_ids_subquery = select(MetadataMatch.id).join(UserOverride, UserOverride.metadata_match_id == MetadataMatch.id).filter(
+                    MetadataMatch.media_item_id == None,
+                    UserOverride.is_tracked == True,
+                    UserOverride.user_id == current_uid,
+                    MetadataMatch.is_adult == is_adult
+                ).scalar_subquery()
         else:
-            match_ids_subquery = select(MetadataMatch.id).filter(
-                MetadataMatch.is_adult == is_adult
-            ).scalar_subquery()
+            if tab == "movies":
+                match_ids_subquery = select(MetadataMatch.id).join(MediaItem).filter(
+                    MediaItem.status.in_(lib_statuses),
+                    MetadataMatch.media_type == MediaType.MOVIE,
+                    MetadataMatch.is_active == True,
+                    MetadataMatch.is_adult == is_adult
+                ).scalar_subquery()
+            elif tab in ("scenes", "adult_scenes"):
+                match_ids_subquery = select(MetadataMatch.id).join(MediaItem).filter(
+                    MediaItem.status.in_(lib_statuses),
+                    MetadataMatch.media_type == MediaType.SCENE,
+                    MetadataMatch.is_active == True,
+                    MetadataMatch.is_adult == is_adult
+                ).scalar_subquery()
+            elif tab in ("tv", "series", "tv_shows", "adult_tv", "adult_series"):
+                season_parent_ids = select(MetadataMatch.parent_id).join(MediaItem).filter(
+                    MediaItem.status.in_(lib_statuses),
+                    MetadataMatch.media_type == MediaType.EPISODE,
+                    MetadataMatch.is_active == True,
+                    MetadataMatch.is_adult == is_adult
+                ).scalar_subquery()
+                
+                tv_ids = select(MetadataMatch.parent_id).filter(
+                    MetadataMatch.id.in_(season_parent_ids),
+                    MetadataMatch.parent_id != None
+                ).scalar_subquery()
+                
+                match_ids_subquery = select(MetadataMatch.id).filter(
+                    MetadataMatch.id.in_(tv_ids),
+                    MetadataMatch.media_type == MediaType.TV,
+                    MetadataMatch.is_adult == is_adult
+                ).scalar_subquery()
+            else:
+                match_ids_subquery = select(MetadataMatch.id).filter(
+                    MetadataMatch.is_adult == is_adult
+                ).scalar_subquery()
             
         # 1. Fetch years
         query_years = self.db.query(MetadataMatch.release_date).filter(

@@ -9,6 +9,56 @@ import EmptyState from '@/ui/EmptyState';
 import BackdropCard from '@/ui/BackdropCard';
 import '../detail/panels/BackdropsPanel.css'; // Reuse existing backdrop panel grid styles
 
+const fnv1aHash = (str) => {
+  let hash = 2166136261;
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(str);
+  for (let i = 0; i < bytes.length; i++) {
+    hash ^= bytes[i];
+    hash = Math.imul(hash, 16777619) >>> 0;
+  }
+  return hash.toString(16).padStart(8, '0');
+};
+
+const pathsMatch = (path, currentPath) => {
+  if (!path || !currentPath) return false;
+  const pathLower = path.toLowerCase();
+  const currentLower = currentPath.toLowerCase();
+
+  if (pathLower === currentLower) return true;
+
+  const isPathHttp = pathLower.startsWith('http://') || pathLower.startsWith('https://');
+  const isCurrentHttp = currentLower.startsWith('http://') || currentLower.startsWith('https://');
+
+  if (isPathHttp && isCurrentHttp) {
+    return pathLower === currentLower;
+  }
+
+  // Handle local vs remote override matching
+  const currentFilename = currentLower.split(/[/\\]/).pop().split('?')[0];
+  const optionFilename = pathLower.split(/[/\\]/).pop().split('?')[0];
+
+  // Try exact filename match first
+  if (currentFilename === optionFilename) return true;
+
+  // If option is remote, calculate its FNV-1a hash and see if it is in the current local filename
+  if (isPathHttp && !isCurrentHttp) {
+    const urlHash = fnv1aHash(path);
+    const hashPattern = `_${urlHash}`;
+    if (currentFilename.includes(hashPattern)) {
+      return true;
+    }
+  }
+
+  // Fallback to suffix match of cleaned filename
+  const cleanCurrent = currentFilename.replace('user_override_', '');
+  if (cleanCurrent.includes(optionFilename)) {
+    return true;
+  }
+
+  return false;
+};
+
 export default function TMDBImageGrid({
   itemId,
   mediaType,
@@ -332,24 +382,12 @@ export default function TMDBImageGrid({
     });
   }, [collectionDetail, customImages, fullMetadata, imageType, isCollection, isPerson, metadataLanguage, normalizedMediaType, personDetail, selectedSource]);
 
-  const normalizedCurrent = useMemo(() => {
-    if (!currentPath) return '';
-    const parts = currentPath.split('/');
-    return parts[parts.length - 1].toLowerCase();
-  }, [currentPath]);
-
   const selectedIndex = useMemo(
     () => images.findIndex((img) => {
       const path = img.file_path || img.backdrop_path || img.poster_path || img.logo_path;
-      if (!path || !currentPath) return false;
-      const isPathHttp = path.startsWith('http://') || path.startsWith('https://');
-      const isCurrentHttp = currentPath.startsWith('http://') || currentPath.startsWith('https://');
-      if (isPathHttp && isCurrentHttp) {
-        return path.toLowerCase() === currentPath.toLowerCase();
-      }
-      return path.split('/').pop().toLowerCase() === normalizedCurrent;
+      return pathsMatch(path, currentPath);
     }),
-    [images, currentPath, normalizedCurrent]
+    [images, currentPath]
   );
 
   const [prevDeps, setPrevDeps] = useState({ images, initialVisibleCount, selectedIndex });
@@ -443,13 +481,8 @@ export default function TMDBImageGrid({
               : buildTmdbImageUrl(path, TMDB_IMAGE_SIZES.posterThumb);
           }
 
-          const normalizedPath = path.split('/').pop().toLowerCase();
           const isImagePending = isPending && pendingPath === path;
-          const isPathHttp = path.startsWith('http://') || path.startsWith('https://');
-          const isCurrentHttp = currentPath && (currentPath.startsWith('http://') || currentPath.startsWith('https://'));
-          const isSelected = (isPathHttp && isCurrentHttp)
-            ? (path.toLowerCase() === currentPath.toLowerCase() || isImagePending)
-            : ((normalizedCurrent !== '' && normalizedCurrent === normalizedPath) || isImagePending);
+          const isSelected = pathsMatch(path, currentPath) || isImagePending;
 
           const infoLeft = img.width && img.height ? `${img.width}×${img.height}` : '';
           const infoRight = img.vote_average ? `★ ${img.vote_average.toFixed(1)}` : '';

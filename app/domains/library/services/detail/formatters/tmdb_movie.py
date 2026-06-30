@@ -178,8 +178,20 @@ class TmdbMovieFormatter(MovieDetailFormatter):
         else:
             effective_logo = image_processing_service.pick_logo_path(tmdb_data, preferred_language=ui_lang)
 
+        imdb_id = tmdb_data.get("imdb_id")
         if match:
             db_updated = False
+            if imdb_id and not match.imdb_id:
+                match.imdb_id = imdb_id
+                db_updated = True
+            if match.imdb_id and not match.rating_imdb:
+                try:
+                    omdb_data = scrapers.omdb.fetch_omdb(match.imdb_id)
+                    if omdb_data:
+                        scrapers.omdb.update_omdb_ratings(match, omdb_data)
+                        db_updated = True
+                except Exception as e:
+                    logger.error(f"Failed to fetch OMDB ratings for {match.imdb_id}: {e}")
             if not match.backdrop_path and effective_backdrop:
                 match.backdrop_path = effective_backdrop
                 db_updated = True
@@ -207,6 +219,7 @@ class TmdbMovieFormatter(MovieDetailFormatter):
                 db_updated = True
             
             loc_db = next((l for l in match.localizations if l.locale == ui_lang), None)
+            genres_list = _split_genres([g["name"] for g in tmdb_data.get("genres", [])]) if tmdb_data.get("genres") else []
             if not loc_db:
                 from app.domains.metadata.models import MetadataLocalization
                 loc_db = MetadataLocalization(
@@ -214,7 +227,8 @@ class TmdbMovieFormatter(MovieDetailFormatter):
                     locale=ui_lang,
                     title=tmdb_data.get("title") or tmdb_data.get("original_title") or "Unknown Movie",
                     overview=tmdb_data.get("overview"),
-                    poster_path=tmdb_data.get("poster_path")
+                    poster_path=tmdb_data.get("poster_path"),
+                    genres=genres_list
                 )
                 db.add(loc_db)
                 db_updated = True
@@ -227,6 +241,9 @@ class TmdbMovieFormatter(MovieDetailFormatter):
                     db_updated = True
                 if not loc_db.poster_path and tmdb_data.get("poster_path"):
                     loc_db.poster_path = tmdb_data.get("poster_path")
+                    db_updated = True
+                if not loc_db.genres and genres_list:
+                    loc_db.genres = genres_list
                     db_updated = True
             
             if db_updated:

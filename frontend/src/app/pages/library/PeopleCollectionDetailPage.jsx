@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import { useTranslation } from '@/providers/LanguageContext';
 import { useUi } from '@/providers/UiProvider';
 import { Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
@@ -62,6 +63,7 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
 
   const [isSocialExpanded, setIsSocialExpanded] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isImagePickerDrawerOpen, setIsImagePickerDrawerOpen] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -70,6 +72,19 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
   }, [id]);
 
   useEffect(() => {
+    if (isImagePickerDrawerOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isImagePickerDrawerOpen]);
+
+  useEffect(() => {
+    if (isImagePickerDrawerOpen) return;
+
     const handleWheel = (e) => {
       if (Math.abs(e.deltaY) > 5) {
         if (e.deltaY > 0 && !isScrolled) {
@@ -89,7 +104,7 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
 
     window.addEventListener('wheel', handleWheel, { passive: true });
     return () => window.removeEventListener('wheel', handleWheel);
-  }, [isScrolled]);
+  }, [isScrolled, isImagePickerDrawerOpen]);
 
   const handleScrollArrowClick = useCallback(() => {
     setIsScrolled(true);
@@ -100,28 +115,7 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
   const extraSocialLinks = hasExtraSocials ? socialLinks.slice(4) : [];
 
   const handleOpenImagePickerModal = () => {
-    const idToUse = isPeople ? item?.id : `collection_${item?.tmdb_id}`;
-    if (!idToUse) return;
-    openModal({
-      title: isPeople ? (t('library.details.changeProfile') || 'Change Profile Picture') : (t('library.details.changePoster') || 'Change Poster'),
-      variant: 'wide',
-      content: (
-        <UniversalImagePickerModal
-          entityId={idToUse}
-          entityType={isPeople ? 'person' : 'collection'}
-          imageType={isPeople ? 'profile' : 'poster'}
-          externalIds={item?.external_ids}
-          item={item}
-          t={t}
-          toast={toast}
-          onClose={closeModal}
-          onImageSelected={() => {
-            closeModal();
-            toast.success(t('library.details.imageUpdatedSuccessfully') || 'Image updated successfully');
-          }}
-        />
-      ),
-    });
+    setIsImagePickerDrawerOpen(true);
   };
 
 
@@ -133,7 +127,7 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
       fallbackUrl={mediaUrl}
       backLabel={t('common.back') || 'Back'}
       isLoading={isLoading}
-      pageClassName={`entity-detail-page ${isPeople ? 'entity-detail-page--people' : 'entity-detail-page--collection'} ${isScrolled ? 'is-scrolled' : ''}`}
+      pageClassName={`entity-detail-page ${isPeople ? 'entity-detail-page--people' : 'entity-detail-page--collection'} ${isScrolled ? 'is-scrolled' : ''} ${isImagePickerDrawerOpen ? 'logo-drawer-open' : ''}`}
       topRightControls={
         <EntityDetailTopControls
           isPeople={isPeople}
@@ -276,6 +270,57 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
             {isScrolled ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </button>
         </div>
+      )}
+
+      {/* Image Picker Drawer */}
+      {isImagePickerDrawerOpen && typeof document !== 'undefined' && createPortal(
+        (() => {
+          const idToUse = isPeople ? item?.id : `collection_${item?.tmdb_id}`;
+          return (
+            <>
+              <div
+                className="entity-detail-page__drawer-backdrop ui-drawer-backdrop entity-detail-page__drawer-backdrop--transparent"
+                role="button"
+                tabIndex={-1}
+                onClick={() => setIsImagePickerDrawerOpen(false)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    setIsImagePickerDrawerOpen(false);
+                  }
+                }}
+              />
+              <div className="entity-detail-page__drawer ui-drawer ui-drawer--md entity-detail-page__drawer--poster">
+                <div className="entity-detail-page__drawer-header">
+                  <h3 className="entity-detail-page__drawer-title">
+                    {isPeople ? (t('library.details.changeProfile') || 'Change Profile Picture') : (t('library.details.changePoster') || 'Change Poster')}
+                  </h3>
+                  <button
+                    type="button"
+                    className="entity-detail-page__drawer-close"
+                    onClick={() => setIsImagePickerDrawerOpen(false)}
+                  >
+                    &times;
+                  </button>
+                </div>
+                <div className="entity-detail-page__drawer-content" style={{ padding: '24px' }}>
+                  <UniversalImagePickerModal
+                    entityId={idToUse}
+                    entityType={isPeople ? 'person' : 'collection'}
+                    imageType={isPeople ? 'profile' : 'poster'}
+                    externalIds={item?.external_ids}
+                    item={item}
+                    t={t}
+                    toast={toast}
+                    onImageSelected={() => {
+                      toast.success(t('library.details.imageUpdatedSuccessfully') || 'Image updated successfully');
+                    }}
+                  />
+                </div>
+              </div>
+            </>
+          );
+        })(),
+        document.body
       )}
     </DetailPageShell>
   );

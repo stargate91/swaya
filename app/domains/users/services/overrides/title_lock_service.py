@@ -305,9 +305,14 @@ class TitleLockService:
         
         if is_tracked:
             media_type = None
-            if override.metadata_match:
-                m_type = override.metadata_match.media_type
-                media_type = m_type.value if hasattr(m_type, "value") else str(m_type)
+            match_id = override.metadata_match_id
+            match = None
+            if match_id:
+                from app.domains.metadata.models import MetadataMatch
+                match = self.db.query(MetadataMatch).filter(MetadataMatch.id == match_id).first()
+                if match:
+                    m_type = match.media_type
+                    media_type = m_type.value if hasattr(m_type, "value") else str(m_type)
             
             from app.infrastructure.scrapers.support.gateway import scraper_gateway
             if media_type == 'scene':
@@ -328,6 +333,13 @@ class TitleLockService:
                     MovieDetailService(self.db, scraper_gateway).get_library_item_detail(item_id)
                 except Exception as e:
                     logger.error(f"Auto-enrich failed for movie {item_id}: {e}")
+
+            if match and not match.is_adult:
+                try:
+                    from app.infrastructure.scrapers.enrichment.mainstream_enricher import MainstreamEnricher
+                    MainstreamEnricher(self.db).enrich_match(match, commit=True)
+                except Exception as e:
+                    logger.error(f"Mainstream auto-enrich failed for tracked match {match_id}: {e}")
 
         self.db.commit()
         return {"status": "success", "item_id": item_id, "is_tracked": is_tracked}

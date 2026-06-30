@@ -410,19 +410,19 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
   const isOwned = item && item.in_library !== false;
   const isTracked = Boolean(item?.is_tracked);
   const trackedExternalId = !isOwned
-    ? (isScene 
-        ? (item?.external_ids?.stash_id || cleanId) 
-        : (cleanId.startsWith('porndb_') || cleanId.startsWith('fansdb_') ? cleanId : Number(item?.tv_tmdb_id || item?.tmdb_id || cleanId || 0))
-      )
+    ? (isScene
+      ? (item?.external_ids?.stash_id || cleanId)
+      : (cleanId.startsWith('porndb_') || cleanId.startsWith('fansdb_') ? cleanId : Number(item?.tv_tmdb_id || item?.tmdb_id || cleanId || 0))
+    )
     : 0;
   const trackedMediaType = isScene ? 'scene' : (isMovie ? 'movie' : 'tv');
   const canToggleTracked = !isOwned && (
-    isScene 
-      ? !!trackedExternalId 
+    isScene
+      ? !!trackedExternalId
       : (typeof trackedExternalId === 'string' && (trackedExternalId.startsWith('porndb_') || trackedExternalId.startsWith('fansdb_'))
-          ? true 
-          : (Number.isFinite(trackedExternalId) && trackedExternalId > 0)
-        )
+        ? true
+        : (Number.isFinite(trackedExternalId) && trackedExternalId > 0)
+      )
   );
 
   const getIsTvWatched = () => {

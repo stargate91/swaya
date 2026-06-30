@@ -1,6 +1,7 @@
 /* eslint-disable react/forbid-dom-props, react/jsx-no-literals, i18next/no-literal-string */
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import {
   User, Image as ImageIcon,
   Minus, Plus, ChevronUp, ChevronDown, ChevronLeft, ChevronRight,
@@ -668,6 +669,7 @@ export default function MediaDetailPage({ type = 'movie' }) {
   const [isSocialExpanded, setIsSocialExpanded] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLogoDrawerOpen, setIsLogoDrawerOpen] = useState(false);
+  const [isPosterDrawerOpen, setIsPosterDrawerOpen] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -676,7 +678,7 @@ export default function MediaDetailPage({ type = 'movie' }) {
   }, [id]);
 
   useEffect(() => {
-    if (isLogoDrawerOpen || isDrawerOpen) {
+    if (isLogoDrawerOpen || isPosterDrawerOpen || isDrawerOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -684,10 +686,10 @@ export default function MediaDetailPage({ type = 'movie' }) {
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isLogoDrawerOpen, isDrawerOpen]);
+  }, [isLogoDrawerOpen, isPosterDrawerOpen, isDrawerOpen]);
 
   useEffect(() => {
-    if (isLogoDrawerOpen) return;
+    if (isLogoDrawerOpen || isPosterDrawerOpen) return;
 
     const handleWheel = (e) => {
       if (Math.abs(e.deltaY) > 5) {
@@ -710,7 +712,7 @@ export default function MediaDetailPage({ type = 'movie' }) {
 
     window.addEventListener('wheel', handleWheel, { passive: true });
     return () => window.removeEventListener('wheel', handleWheel);
-  }, [isScrolled, isLogoDrawerOpen]);
+  }, [isScrolled, isLogoDrawerOpen, isPosterDrawerOpen]);
 
   const handleScrollToggle = () => {
     setIsScrolled(!isScrolled);
@@ -782,22 +784,7 @@ export default function MediaDetailPage({ type = 'movie' }) {
   };
 
   const handleOpenPosterModal = () => {
-    openModal({
-      title: t('library.details.choosePoster') || 'Choose Poster',
-      variant: 'wide',
-      content: (
-        <UniversalImagePickerModal
-          entityId={id}
-          tmdbId={item?.tmdb_id || item?.tv_tmdb_id}
-          imageType="poster"
-          entityType={normalizedType}
-          currentPath={item?.poster_path}
-          t={t}
-          toast={toast}
-          onClose={closeModal}
-        />
-      ),
-    });
+    setIsPosterDrawerOpen(true);
   };
 
   const handleOpenLogoModal = () => {
@@ -826,7 +813,7 @@ export default function MediaDetailPage({ type = 'movie' }) {
         fallbackUrl={posterUrl}
         isScene={item?.type === 'scene'}
         backLabel={t('common.back') || 'Back'}
-        pageClassName={`media-detail-page--scroll-transition ${isScrolled ? 'is-scrolled' : ''} ${isLogoDrawerOpen ? 'logo-drawer-open' : ''}`}
+        pageClassName={`media-detail-page--scroll-transition ${isScrolled ? 'is-scrolled' : ''} ${isLogoDrawerOpen || isPosterDrawerOpen ? 'logo-drawer-open' : ''}`}
         containerRef={containerRef}
         topRightControls={(
           <>
@@ -1168,7 +1155,7 @@ export default function MediaDetailPage({ type = 'movie' }) {
       )}
 
       {/* Logo Selector Drawer */}
-      {isLogoDrawerOpen && (
+      {isLogoDrawerOpen && typeof document !== 'undefined' && createPortal(
         <>
           <div
             className="entity-detail-page__drawer-backdrop ui-drawer-backdrop entity-detail-page__drawer-backdrop--transparent"
@@ -1208,7 +1195,53 @@ export default function MediaDetailPage({ type = 'movie' }) {
               />
             </div>
           </div>
-        </>
+        </>,
+        document.body
+      )}
+
+      {/* Poster Selector Drawer */}
+      {isPosterDrawerOpen && typeof document !== 'undefined' && createPortal(
+        <>
+          <div
+            className="entity-detail-page__drawer-backdrop ui-drawer-backdrop entity-detail-page__drawer-backdrop--transparent"
+            role="button"
+            tabIndex={-1}
+            onClick={() => setIsPosterDrawerOpen(false)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                setIsPosterDrawerOpen(false);
+              }
+            }}
+          />
+          <div className="entity-detail-page__drawer ui-drawer ui-drawer--md entity-detail-page__drawer--poster">
+            <div className="entity-detail-page__drawer-header">
+              <h3 className="entity-detail-page__drawer-title">
+                {t('library.details.choosePoster') || 'Choose Poster'}
+              </h3>
+              <button
+                type="button"
+                className="entity-detail-page__drawer-close"
+                onClick={() => setIsPosterDrawerOpen(false)}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="entity-detail-page__drawer-content" style={{ padding: '24px' }}>
+              <UniversalImagePickerModal
+                entityId={id}
+                tmdbId={item?.tmdb_id || item?.tv_tmdb_id}
+                imageType="poster"
+                entityType={normalizedType}
+                currentPath={item?.poster_path}
+                t={t}
+                toast={toast}
+                onClose={() => setIsPosterDrawerOpen(false)}
+                item={item}
+              />
+            </div>
+          </div>
+        </>,
+        document.body
       )}
     </MediaDetailProvider>
   );
