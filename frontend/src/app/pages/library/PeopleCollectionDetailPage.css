@@ -1,15 +1,10 @@
-.entity-detail-page--people .media-detail-page__container {
+.entity-detail-page--people .media-detail-page__container,
+.entity-detail-page--collection .media-detail-page__container {
   gap: var(--space-4xl);
   overflow: hidden !important; /* Force disable scrollbar */
   margin-top: var(--page-top-offset, 4rem);
   padding-top: 0;
   height: calc(100% - var(--page-top-offset, 4rem));
-}
-
-.entity-detail-page--collection .media-detail-page__container {
-  gap: var(--space-4xl);
-  margin-top: var(--page-top-offset, 4rem);
-  padding-top: 0;
 }
 
 .entity-detail-page__transition-wrapper {

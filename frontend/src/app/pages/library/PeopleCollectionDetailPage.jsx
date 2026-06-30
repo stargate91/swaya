@@ -86,6 +86,7 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
     if (isImagePickerDrawerOpen) return;
 
     const handleWheel = (e) => {
+      if (!isPeople) return;
       if (Math.abs(e.deltaY) > 5) {
         if (e.deltaY > 0 && !isScrolled) {
           setIsScrolled(true);
