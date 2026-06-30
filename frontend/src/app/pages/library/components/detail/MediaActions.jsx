@@ -83,13 +83,15 @@ export default function MediaActions() {
         </Button>
       )}
 
-      <Button
-        variant="ghost"
-        onClick={() => setIsDrawerOpen(true)}
-      >
-        <Info size={16} />
-        {t('library.details.details') || 'Details'}
-      </Button>
+      {!isScene && (
+        <Button
+          variant="ghost"
+          onClick={() => setIsDrawerOpen(true)}
+        >
+          <Info size={16} />
+          {t('library.details.details') || 'Details'}
+        </Button>
+      )}
 
       {isOwned && (
         <>

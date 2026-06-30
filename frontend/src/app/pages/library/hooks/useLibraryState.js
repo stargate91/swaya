@@ -196,6 +196,9 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
 
   const handleOwnershipFilterChange = (newOwnership) => {
     setOwnershipFilter(newOwnership);
+    if (newOwnership === 'unowned' && (sortKey === 'file_size' || sortKey === 'last_watched')) {
+      setSortKey('title');
+    }
     setCurrentPage(1);
     setSearchQuery('');
     setGenreFilter('');

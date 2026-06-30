@@ -42,6 +42,7 @@ class StashDBScraper(BaseScraper):
             title
             details
             date
+            duration
             tags {
               name
             }

@@ -107,8 +107,10 @@ export default function LibraryFilters({
                       ] : []),
                       { value: 'user_rating', label: t('library.sort.userRating') || 'User Rating' },
                       { value: 'duration', label: t('library.sort.duration') || 'Duration' },
-                      { value: 'file_size', label: t('library.sort.fileSize') || 'File Size' },
-                      { value: 'last_watched', label: t('library.sort.lastWatched') || 'Last Watched' },
+                      ...(ownershipFilter !== 'unowned' ? [
+                        { value: 'file_size', label: t('library.sort.fileSize') || 'File Size' },
+                        { value: 'last_watched', label: t('library.sort.lastWatched') || 'Last Watched' },
+                      ] : []),
                     ]
               }
             />

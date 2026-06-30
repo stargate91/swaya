@@ -43,6 +43,7 @@ class FansDBScraper(BaseScraper):
             title
             details
             date
+            duration
             tags {
               name
             }

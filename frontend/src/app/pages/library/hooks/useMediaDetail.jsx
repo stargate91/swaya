@@ -587,10 +587,7 @@ export default function useMediaDetail({ id, type, t, openModal, closeModal }) {
   let showStudioPill = false;
   let showNetworkPill = false;
 
-  if (item?.type === 'scene') {
-    showStudioPill = !!studioName;
-    showNetworkPill = !!networkName;
-  }
+
 
   return {
     state: {

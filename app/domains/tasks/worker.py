@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from pathlib import Path
 from typing import Optional, List, TYPE_CHECKING
 
 from app.domains.media_assets.services.images import image_processing_service, ImageProcessingService

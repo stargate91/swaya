@@ -800,11 +800,10 @@
 }
 
 .bespoke-company-logo {
-  max-height: 38px;
+  height: 38px;
   max-width: 160px;
   object-fit: contain;
-  filter: brightness(0) invert(1);
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .bespoke-company-name-only {

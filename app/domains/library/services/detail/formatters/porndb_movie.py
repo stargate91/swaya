@@ -247,7 +247,7 @@ class PornDbMovieFormatter(MovieDetailFormatter):
             "genres": [],
             "year": year,
             "release_date": date_str,
-            "runtime": duration_val,
+            "runtime": (duration_val // 60) if duration_val else None,
             "rating_tmdb": None,
             "rating_porndb": movie_data.get("rating"),
             "rating_imdb": None,
