@@ -60,6 +60,16 @@ class PeopleGroupItem(BaseModel):
     people_role: str
     is_adult_person: bool
     external_ids: dict[str, Any]
+    cup_size: Optional[str] = None
+    band_size: Optional[int] = None
+    waist: Optional[int] = None
+    hip: Optional[int] = None
+    hair_color: Optional[str] = None
+    ethnicity: Optional[str] = None
+    eye_color: Optional[str] = None
+    tattoos: Optional[str] = None
+    piercings: Optional[str] = None
+    breast_type: Optional[str] = None
 
 class PersonSearchItem(BaseModel):
     id: int

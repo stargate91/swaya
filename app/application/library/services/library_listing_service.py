@@ -244,6 +244,14 @@ class LibraryListingService:
         filter_gender: str = "all",
         people_role: str = "all",
         include_adult: bool = False,
+        selected_performer_id: Optional[int] = None,
+        selected_studio_id: Optional[int] = None,
+        filter_hair_color: Optional[str] = None,
+        filter_ethnicity: Optional[str] = None,
+        filter_eye_color: Optional[str] = None,
+        filter_tattoos: Optional[str] = None,
+        filter_piercings: Optional[str] = None,
+        filter_breast_type: Optional[str] = None,
     ) -> LibraryTabResponse:
         """
         Retrieves a paginated, filtered, and sorted list of library items for a specific UI tab.
@@ -265,6 +273,14 @@ class LibraryListingService:
             filter_gender=filter_gender,
             people_role=people_role,
             include_adult=include_adult,
+            selected_performer_id=selected_performer_id,
+            selected_studio_id=selected_studio_id,
+            filter_hair_color=filter_hair_color,
+            filter_ethnicity=filter_ethnicity,
+            filter_eye_color=filter_eye_color,
+            filter_tattoos=filter_tattoos,
+            filter_piercings=filter_piercings,
+            filter_breast_type=filter_breast_type,
         )
 
         if tab in ("people", "adult_people"):

@@ -123,6 +123,22 @@ export default function LibraryPage({ initialTab = 'movies', lockTab = false, sh
               setTimeFilterMode={state.setTimeFilterMode}
               favoriteFilter={state.favoriteFilter}
               setFavoriteFilter={state.setFavoriteFilter}
+              performerFilter={state.performerFilter}
+              setPerformerFilter={state.setPerformerFilter}
+              studioFilter={state.studioFilter}
+              setStudioFilter={state.setStudioFilter}
+              hairColorFilter={state.hairColorFilter}
+              setHairColorFilter={state.setHairColorFilter}
+              ethnicityFilter={state.ethnicityFilter}
+              setEthnicityFilter={state.setEthnicityFilter}
+              eyeColorFilter={state.eyeColorFilter}
+              setEyeColorFilter={state.setEyeColorFilter}
+              tattoosFilter={state.tattoosFilter}
+              setTattoosFilter={state.setTattoosFilter}
+              piercingsFilter={state.piercingsFilter}
+              setPiercingsFilter={state.setPiercingsFilter}
+              breastTypeFilter={state.breastTypeFilter}
+              setBreastTypeFilter={state.setBreastTypeFilter}
               filterData={state.filterData}
             />
           ) : null}

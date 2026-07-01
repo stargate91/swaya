@@ -221,3 +221,21 @@
   padding: 0.125rem 0.3125rem;
   border-radius: 2px;
 }
+
+.ui-pill--filter-active {
+  padding: var(--space-xs) var(--space-md);
+  cursor: pointer;
+  transition: all var(--motion-base);
+  background: var(--ui-surface-soft-strong);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-primary);
+  box-shadow: 
+    0 1px 3px color-mix(in srgb, black 20%, transparent), 
+    inset 0 1px 0 var(--color-border-subtle);
+  outline: none;
+}
+
+.ui-pill--filter-active:hover {
+  background: var(--ui-surface-soft-strong);
+  border-color: var(--color-border-strong);
+}

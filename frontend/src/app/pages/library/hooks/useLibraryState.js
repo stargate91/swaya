@@ -35,6 +35,14 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
   const [favoriteFilter, setFavoriteFilter] = useState('all');
   const [decadeFilter, setDecadeFilter] = useState('all');
   const [yearFilter, setYearFilter] = useState('');
+  const [performerFilter, setPerformerFilter] = useState('');
+  const [studioFilter, setStudioFilter] = useState('');
+  const [hairColorFilter, setHairColorFilter] = useState('');
+  const [ethnicityFilter, setEthnicityFilter] = useState('');
+  const [eyeColorFilter, setEyeColorFilter] = useState('');
+  const [tattoosFilter, setTattoosFilter] = useState('');
+  const [piercingsFilter, setPiercingsFilter] = useState('');
+  const [breastTypeFilter, setBreastTypeFilter] = useState('');
   const [timeFilterMode, setTimeFilterMode] = useState('decade'); // 'decade' or 'year'
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(40);
@@ -58,6 +66,14 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
     setFavoriteFilter('all');
     setDecadeFilter('all');
     setYearFilter('');
+    setPerformerFilter('');
+    setStudioFilter('');
+    setHairColorFilter('');
+    setEthnicityFilter('');
+    setEyeColorFilter('');
+    setTattoosFilter('');
+    setPiercingsFilter('');
+    setBreastTypeFilter('');
   };
 
   const isCollections = isLibraryCollectionTab(activeTab);
@@ -91,7 +107,15 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
       filter_favorite: isPeople ? favoriteFilter : undefined,
       selected_decade: decadeFilter !== 'all' ? decadeFilter : undefined,
       selected_year: yearFilter !== '' ? Number(yearFilter) : undefined,
-      include_adult: activeSessionMode === 'nsfw'
+      include_adult: activeSessionMode === 'nsfw',
+      selected_performer_id: performerFilter !== '' ? Number(performerFilter) : undefined,
+      selected_studio_id: studioFilter !== '' ? Number(studioFilter) : undefined,
+      filter_hair_color: hairColorFilter !== '' ? hairColorFilter : undefined,
+      filter_ethnicity: ethnicityFilter !== '' ? ethnicityFilter : undefined,
+      filter_eye_color: eyeColorFilter !== '' ? eyeColorFilter : undefined,
+      filter_tattoos: tattoosFilter !== '' ? tattoosFilter : undefined,
+      filter_piercings: piercingsFilter !== '' ? piercingsFilter : undefined,
+      filter_breast_type: breastTypeFilter !== '' ? breastTypeFilter : undefined,
     };
   }, [
     isCollections,
@@ -111,7 +135,15 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
     resolvedGenderFilter,
     favoriteFilter,
     decadeFilter,
-    yearFilter
+    yearFilter,
+    performerFilter,
+    studioFilter,
+    hairColorFilter,
+    ethnicityFilter,
+    eyeColorFilter,
+    tattoosFilter,
+    piercingsFilter,
+    breastTypeFilter
   ]);
 
   const { data: libraryData, isLoading: isLibraryLoading } = useLibraryQuery(
@@ -192,6 +224,14 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
     setFavoriteFilter('all');
     setDecadeFilter('all');
     setYearFilter('');
+    setPerformerFilter('');
+    setStudioFilter('');
+    setHairColorFilter('');
+    setEthnicityFilter('');
+    setEyeColorFilter('');
+    setTattoosFilter('');
+    setPiercingsFilter('');
+    setBreastTypeFilter('');
   };
 
   const handleOwnershipFilterChange = (newOwnership) => {
@@ -208,6 +248,14 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
     setFavoriteFilter('all');
     setDecadeFilter('all');
     setYearFilter('');
+    setPerformerFilter('');
+    setStudioFilter('');
+    setHairColorFilter('');
+    setEthnicityFilter('');
+    setEyeColorFilter('');
+    setTattoosFilter('');
+    setPiercingsFilter('');
+    setBreastTypeFilter('');
   };
 
   const handleFilterChange = (setter) => (val) => {
@@ -403,6 +451,22 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
     setSortKey,
     sortDirection,
     setSortDirection,
+    performerFilter,
+    setPerformerFilter: handleFilterChange(setPerformerFilter),
+    studioFilter,
+    setStudioFilter: handleFilterChange(setStudioFilter),
+    hairColorFilter,
+    setHairColorFilter: handleFilterChange(setHairColorFilter),
+    ethnicityFilter,
+    setEthnicityFilter: handleFilterChange(setEthnicityFilter),
+    eyeColorFilter,
+    setEyeColorFilter: handleFilterChange(setEyeColorFilter),
+    tattoosFilter,
+    setTattoosFilter: handleFilterChange(setTattoosFilter),
+    piercingsFilter,
+    setPiercingsFilter: handleFilterChange(setPiercingsFilter),
+    breastTypeFilter,
+    setBreastTypeFilter: handleFilterChange(setBreastTypeFilter),
     isCollections,
     isTags,
     isPeople,

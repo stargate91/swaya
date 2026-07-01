@@ -135,10 +135,109 @@ class LibraryFilterService:
             for t in tags_query
         ]
 
+        performers = []
+        studios = []
+        hair_colors = []
+        ethnicities = []
+        eye_colors = []
+        tattoos = []
+        piercings = []
+        breast_types = []
+        if is_adult:
+            from app.domains.people.models import Person, MediaPersonLink
+            from app.domains.metadata.models import Studio
+            from app.infrastructure.settings.db_settings_adapter import DbSettingsAdapter
+
+            settings_adapter = DbSettingsAdapter(self.db)
+            gender_pref = settings_adapter.get_setting("adult_gender_preference")
+
+            performers_query = self.db.query(Person.id, Person.name).join(
+                MediaPersonLink, MediaPersonLink.person_id == Person.id
+            ).filter(
+                MediaPersonLink.match_id.in_(match_ids_subquery)
+            )
+
+            if gender_pref == "female":
+                performers_query = performers_query.filter(Person.gender.in_([1, "1"]))
+            elif gender_pref == "male":
+                performers_query = performers_query.filter(Person.gender.in_([2, "2"]))
+
+            performers_query = performers_query.distinct().order_by(Person.name.asc()).all()
+            performers = [{"id": r.id, "name": r.name} for r in performers_query]
+
+            studios_query = self.db.query(Studio.id, Studio.name).join(
+                Studio.matches
+            ).filter(
+                MetadataMatch.id.in_(match_ids_subquery)
+            ).distinct().order_by(Studio.name.asc()).all()
+            studios = [{"id": r.id, "name": r.name} for r in studios_query]
+
+            hair_colors_query = self.db.query(Person.hair_color).join(
+                MediaPersonLink, MediaPersonLink.person_id == Person.id
+            ).filter(
+                MediaPersonLink.match_id.in_(match_ids_subquery),
+                Person.hair_color != None,
+                Person.hair_color != ""
+            ).distinct().order_by(Person.hair_color.asc()).all()
+            hair_colors = [r[0] for r in hair_colors_query]
+
+            ethnicities_query = self.db.query(Person.ethnicity).join(
+                MediaPersonLink, MediaPersonLink.person_id == Person.id
+            ).filter(
+                MediaPersonLink.match_id.in_(match_ids_subquery),
+                Person.ethnicity != None,
+                Person.ethnicity != ""
+            ).distinct().order_by(Person.ethnicity.asc()).all()
+            ethnicities = [r[0] for r in ethnicities_query]
+
+            eye_colors_query = self.db.query(Person.eye_color).join(
+                MediaPersonLink, MediaPersonLink.person_id == Person.id
+            ).filter(
+                MediaPersonLink.match_id.in_(match_ids_subquery),
+                Person.eye_color != None,
+                Person.eye_color != ""
+            ).distinct().order_by(Person.eye_color.asc()).all()
+            eye_colors = [r[0] for r in eye_colors_query]
+
+            tattoos_query = self.db.query(Person.tattoos).join(
+                MediaPersonLink, MediaPersonLink.person_id == Person.id
+            ).filter(
+                MediaPersonLink.match_id.in_(match_ids_subquery),
+                Person.tattoos != None,
+                Person.tattoos != ""
+            ).distinct().order_by(Person.tattoos.asc()).all()
+            tattoos = [r[0] for r in tattoos_query]
+
+            piercings_query = self.db.query(Person.piercings).join(
+                MediaPersonLink, MediaPersonLink.person_id == Person.id
+            ).filter(
+                MediaPersonLink.match_id.in_(match_ids_subquery),
+                Person.piercings != None,
+                Person.piercings != ""
+            ).distinct().order_by(Person.piercings.asc()).all()
+            piercings = [r[0] for r in piercings_query]
+
+            breast_types_query = self.db.query(Person.breast_type).join(
+                MediaPersonLink, MediaPersonLink.person_id == Person.id
+            ).filter(
+                MediaPersonLink.match_id.in_(match_ids_subquery),
+                Person.breast_type != None,
+                Person.breast_type != ""
+            ).distinct().order_by(Person.breast_type.asc()).all()
+            breast_types = [r[0] for r in breast_types_query]
+
         return FilterOptionsResponse(
             genres=genres,
             years=years,
-            tags=tags
+            tags=tags,
+            performers=performers,
+            studios=studios,
+            hair_colors=hair_colors,
+            ethnicities=ethnicities,
+            eye_colors=eye_colors,
+            tattoos=tattoos,
+            piercings=piercings,
+            breast_types=breast_types
         )
 
     def get_tag_groups(self, is_adult: bool = False) -> List[TagGroupItem]:

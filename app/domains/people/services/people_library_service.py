@@ -129,6 +129,16 @@ class PeopleLibraryService:
                 people_role=person.known_for_department.lower() if person.known_for_department else "person",
                 is_adult_person=person.is_adult,
                 external_ids=person.external_ids or {},
+                cup_size=person.cup_size,
+                band_size=person.band_size,
+                waist=person.waist,
+                hip=person.hip,
+                hair_color=person.hair_color,
+                ethnicity=person.ethnicity,
+                eye_color=person.eye_color,
+                tattoos=person.tattoos,
+                piercings=person.piercings,
+                breast_type=person.breast_type,
             ))
 
         return people_list

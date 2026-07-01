@@ -19,6 +19,14 @@ class ListingFilterParams:
         filter_gender: str = "all",
         people_role: str = "all",
         include_adult: bool = False,
+        selected_performer_id: Optional[int] = None,
+        selected_studio_id: Optional[int] = None,
+        filter_hair_color: Optional[str] = None,
+        filter_ethnicity: Optional[str] = None,
+        filter_eye_color: Optional[str] = None,
+        filter_tattoos: Optional[str] = None,
+        filter_piercings: Optional[str] = None,
+        filter_breast_type: Optional[str] = None,
     ):
         self.tab = tab
         self.page = page
@@ -36,3 +44,11 @@ class ListingFilterParams:
         self.filter_gender = filter_gender
         self.people_role = people_role
         self.include_adult = include_adult
+        self.selected_performer_id = selected_performer_id
+        self.selected_studio_id = selected_studio_id
+        self.filter_hair_color = filter_hair_color
+        self.filter_ethnicity = filter_ethnicity
+        self.filter_eye_color = filter_eye_color
+        self.filter_tattoos = filter_tattoos
+        self.filter_piercings = filter_piercings
+        self.filter_breast_type = filter_breast_type

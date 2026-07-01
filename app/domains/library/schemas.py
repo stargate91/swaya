@@ -253,10 +253,26 @@ class TagGroupItem(BaseModel):
     tags: List[TagItem]
 
 
+class PerformerFilterItem(BaseModel):
+    id: int
+    name: str
+
+class StudioFilterItem(BaseModel):
+    id: int
+    name: str
+
 class FilterOptionsResponse(BaseModel):
     genres: List[str]
     years: List[int]
     tags: List[TagItem]
+    performers: Optional[List[PerformerFilterItem]] = None
+    studios: Optional[List[StudioFilterItem]] = None
+    hair_colors: Optional[List[str]] = None
+    ethnicities: Optional[List[str]] = None
+    eye_colors: Optional[List[str]] = None
+    tattoos: Optional[List[str]] = None
+    piercings: Optional[List[str]] = None
+    breast_types: Optional[List[str]] = None
 
 
 # --- Dynamic Detail Response DTOs ---

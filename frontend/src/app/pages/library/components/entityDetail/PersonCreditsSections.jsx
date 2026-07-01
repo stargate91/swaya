@@ -437,131 +437,139 @@ export default function PersonCreditsSections({ id, item, navigate, t }) {
           {/* DISCOVER INFINITE GRID */}
           {activeDiscoverTab && (
             <div className="person-credits-discover-grid-wrapper">
-              <div className={`person-credits-discover-grid ${isSceneGrid ? 'grid-16-9' : 'grid-2-3'}`}>
-                {accumulatedItems.map((credit, i) => {
-                  const creditTitle = credit.title || credit.name || 'Unknown';
-                  const resolvedSource = credit.source || activeSource || (credit.rating_porndb ? 'porndb' : (credit.stash_id ? 'stashdb' : (credit.fansdb_id ? 'fansdb' : 'tmdb')));
-                  const posterPath = isSceneGrid
-                    ? (credit.backdrop_path || credit.local_backdrop_path || credit.poster_path || credit.local_poster_path)
-                    : (credit.poster_path || credit.local_poster_path || credit.backdrop_path || credit.local_backdrop_path);
-                  const posterUrl = posterPath ? resolveDetailsImageUrl(posterPath, API_BASE, isSceneGrid ? 'backdrop' : 'poster') : null;
-
-                  const handleCardClick = () => {
-                    const itemType = credit.media_type || credit.type;
-                    const isSceneType = itemType === 'scene' || itemType === 'scenes';
-                    if (isSceneType) {
-                      const prefix = resolvedSource === 'porndb' || resolvedSource === 'theporndb' ? 'porndb' : (resolvedSource === 'fansdb' ? 'fansdb' : 'stash');
-                      const sceneId = credit.in_library ? (credit.library_item_id || credit.id) : `${prefix}_${credit.stash_id || credit.id}`;
-                      navigate(`/library/scene/${sceneId}`, { state: { allowAdult: true } });
-                      return;
-                    }
-
-                    const isTv = itemType === 'tv' || itemType === 'tvshows';
-                    if (isTv) {
-                      const tvId = credit.library_tv_tmdb_id || credit.tv_tmdb_id || credit.tmdb_id || credit.id;
-                      navigate(`/library/tv/${tvId}`, { state: { allowAdult: true } });
-                      return;
-                    }
-
-                    const movieId = credit.in_library
-                      ? (credit.library_item_id || credit.id)
-                      : (resolvedSource === 'porndb' ? `porndb_${credit.tmdb_id || credit.id}` : `tmdb_${credit.tmdb_id || credit.id}`);
-                    navigate(`/library/movie/${movieId}`, { state: { allowAdult: true } });
-                  };
-
-                  const itemType = credit.media_type || credit.type;
-                  const isTvItem = itemType === 'tv' || itemType === 'tvshows';
-                  const isSceneOrPornDbMovie = (itemType === 'scene' || itemType === 'scenes') || (resolvedSource === 'porndb' || resolvedSource === 'theporndb');
-                  const leftText = isSceneOrPornDbMovie ? (credit.release_date || '').split('T')[0].split(' ')[0] || credit.year || '' : credit.character || '';
-                  const rightText = isSceneOrPornDbMovie ? '' : credit.year || '';
-
-                  return (
-                    <div
-                      key={`${credit.id}-${credit.type || activeMediaType}-discover-${i}`}
-                      className="person-credits-card"
-                      onClick={handleCardClick}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          handleCardClick();
-                        }
-                      }}
-                    >
-                      <div className="person-credits-card__poster-container">
-                        {posterUrl ? (
-                          <img
-                            src={posterUrl}
-                            alt={creditTitle}
-                            className="person-credits-card__poster"
-                            loading="lazy"
-                            onError={(e) => console.error("Image load failed in Grid:", { src: posterUrl, resolvedSource, creditTitle, e })}
-                          />
-                        ) : (
-                          <div className="person-credits-card__placeholder">
-                            <Layers size={22} />
-                          </div>
-                        )}
-
-                        {/* Discrete Source Logo Badge */}
-                        {credit.in_library && (
-                          <span className={`person-credits-card__source-badge source-${resolvedSource}`}>
-                            {resolvedSource === 'porndb' || resolvedSource === 'theporndb' ? 'PornDB' : resolvedSource === 'stashdb' ? 'Stash' : resolvedSource === 'fansdb' ? 'Fans' : 'TMDb'}
-                          </span>
-                        )}
-
-                        {/* "In Library" bookmark badge */}
-                        {credit.in_library && (
-                          <div className="person-credits-card__library-badge" title={t('library.details.inLibrary') || 'In Library'}>
-                            <Bookmark size={10} />
-                          </div>
-                        )}
-
-                        {credit.in_library && !isTvItem && (
-                          <button
-                            type="button"
-                            className="person-credits-card__play-btn"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              playMutation.mutate(credit.library_item_id || credit.id);
-                            }}
-                          >
-                            <Play size={14} fill="currentColor" />
-                          </button>
-                        )}
-                      </div>
-
-                      <span className="person-credits-card__title" title={creditTitle}>{creditTitle}</span>
-                      <div className="person-credits-card__meta-row">
-                        <span className="person-credits-card__role" title={leftText}>
-                          {leftText}
-                        </span>
-                        {rightText && (
-                          <span className="person-credits-card__year">{rightText}</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {/* Skeletons on loading page */}
-                {isFetchingNextPage && Array.from({ length: 12 }).map((_, idx) => (
-                  <div
-                    key={`loading-skeleton-${idx}`}
-                    className={`person-credits-card skeleton-card`}
-                  >
-                    <div className="person-credits-card__poster-container skeleton-shimmer" />
-                  </div>
-                ))}
-              </div>
-
-              {/* Sentinel element to trigger next page load */}
-              {hasMore && <div ref={observerRef} className="person-credits-grid__sentinel" />}
-
-              {!hasMore && accumulatedItems.length > 0 && (
-                <div className="person-credits-grid__finished">
-                  {t('library.details.finishedCredits') || 'All credits loaded.'}
+              {!activeGridQuery.isLoading && accumulatedItems.length === 0 ? (
+                <div className="person-credits-discover-empty">
+                  {t(`library.details.emptyCredits_${activeDiscoverTab}`) || t('library.details.emptyCredits') || 'No credits found for this source.'}
                 </div>
+              ) : (
+                <>
+                  <div className={`person-credits-discover-grid ${isSceneGrid ? 'grid-16-9' : 'grid-2-3'}`}>
+                    {accumulatedItems.map((credit, i) => {
+                      const creditTitle = credit.title || credit.name || 'Unknown';
+                      const resolvedSource = credit.source || activeSource || (credit.rating_porndb ? 'porndb' : (credit.stash_id ? 'stashdb' : (credit.fansdb_id ? 'fansdb' : 'tmdb')));
+                      const posterPath = isSceneGrid
+                        ? (credit.backdrop_path || credit.local_backdrop_path || credit.poster_path || credit.local_poster_path)
+                        : (credit.poster_path || credit.local_poster_path || credit.backdrop_path || credit.local_backdrop_path);
+                      const posterUrl = posterPath ? resolveDetailsImageUrl(posterPath, API_BASE, isSceneGrid ? 'backdrop' : 'poster') : null;
+
+                      const handleCardClick = () => {
+                        const itemType = credit.media_type || credit.type;
+                        const isSceneType = itemType === 'scene' || itemType === 'scenes';
+                        if (isSceneType) {
+                          const prefix = resolvedSource === 'porndb' || resolvedSource === 'theporndb' ? 'porndb' : (resolvedSource === 'fansdb' ? 'fansdb' : 'stash');
+                          const sceneId = credit.in_library ? (credit.library_item_id || credit.id) : `${prefix}_${credit.stash_id || credit.id}`;
+                          navigate(`/library/scene/${sceneId}`, { state: { allowAdult: true } });
+                          return;
+                        }
+
+                        const isTv = itemType === 'tv' || itemType === 'tvshows';
+                        if (isTv) {
+                          const tvId = credit.library_tv_tmdb_id || credit.tv_tmdb_id || credit.tmdb_id || credit.id;
+                          navigate(`/library/tv/${tvId}`, { state: { allowAdult: true } });
+                          return;
+                        }
+
+                        const movieId = credit.in_library
+                          ? (credit.library_item_id || credit.id)
+                          : (resolvedSource === 'porndb' ? `porndb_${credit.tmdb_id || credit.id}` : `tmdb_${credit.tmdb_id || credit.id}`);
+                        navigate(`/library/movie/${movieId}`, { state: { allowAdult: true } });
+                      };
+
+                      const itemType = credit.media_type || credit.type;
+                      const isTvItem = itemType === 'tv' || itemType === 'tvshows';
+                      const isSceneOrPornDbMovie = (itemType === 'scene' || itemType === 'scenes') || (resolvedSource === 'porndb' || resolvedSource === 'theporndb');
+                      const leftText = isSceneOrPornDbMovie ? (credit.release_date || '').split('T')[0].split(' ')[0] || credit.year || '' : credit.character || '';
+                      const rightText = isSceneOrPornDbMovie ? '' : credit.year || '';
+
+                      return (
+                        <div
+                          key={`${credit.id}-${credit.type || activeMediaType}-discover-${i}`}
+                          className="person-credits-card"
+                          onClick={handleCardClick}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              handleCardClick();
+                            }
+                          }}
+                        >
+                          <div className="person-credits-card__poster-container">
+                            {posterUrl ? (
+                              <img
+                                src={posterUrl}
+                                alt={creditTitle}
+                                className="person-credits-card__poster"
+                                loading="lazy"
+                                onError={(e) => console.error("Image load failed in Grid:", { src: posterUrl, resolvedSource, creditTitle, e })}
+                              />
+                            ) : (
+                              <div className="person-credits-card__placeholder">
+                                <Layers size={22} />
+                              </div>
+                            )}
+
+                            {/* Discrete Source Logo Badge */}
+                            {credit.in_library && (
+                              <span className={`person-credits-card__source-badge source-${resolvedSource}`}>
+                                {resolvedSource === 'porndb' || resolvedSource === 'theporndb' ? 'PornDB' : resolvedSource === 'stashdb' ? 'Stash' : resolvedSource === 'fansdb' ? 'Fans' : 'TMDb'}
+                              </span>
+                            )}
+
+                            {/* "In Library" bookmark badge */}
+                            {credit.in_library && (
+                              <div className="person-credits-card__library-badge" title={t('library.details.inLibrary') || 'In Library'}>
+                                <Bookmark size={10} />
+                              </div>
+                            )}
+
+                            {credit.in_library && !isTvItem && (
+                              <button
+                                type="button"
+                                className="person-credits-card__play-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  playMutation.mutate(credit.library_item_id || credit.id);
+                                }}
+                              >
+                                <Play size={14} fill="currentColor" />
+                              </button>
+                            )}
+                          </div>
+
+                          <span className="person-credits-card__title" title={creditTitle}>{creditTitle}</span>
+                          <div className="person-credits-card__meta-row">
+                            <span className="person-credits-card__role" title={leftText}>
+                              {leftText}
+                            </span>
+                            {rightText && (
+                              <span className="person-credits-card__year">{rightText}</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Skeletons on loading page */}
+                    {isFetchingNextPage && Array.from({ length: 12 }).map((_, idx) => (
+                      <div
+                        key={`loading-skeleton-${idx}`}
+                        className={`person-credits-card skeleton-card`}
+                      >
+                        <div className="person-credits-card__poster-container skeleton-shimmer" />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Sentinel element to trigger next page load */}
+                  {hasMore && <div ref={observerRef} className="person-credits-grid__sentinel" />}
+
+                  {!hasMore && accumulatedItems.length > 0 && (
+                    <div className="person-credits-grid__finished">
+                      {t('library.details.finishedCredits') || 'All credits loaded.'}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}

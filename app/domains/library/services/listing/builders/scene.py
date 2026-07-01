@@ -46,8 +46,15 @@ class SceneQueryBuilder(BaseQueryBuilder):
                 MetadataMatch.media_item_id != None,
                 MediaItem.status.in_(self.lib_statuses),
                 MetadataMatch.is_active == True,
-                MetadataMatch.media_type == MediaType.SCENE
             )
+
+        if params.selected_performer_id:
+            from app.domains.people.models import MediaPersonLink
+            query = query.join(MetadataMatch.people_links).filter(MediaPersonLink.person_id == params.selected_performer_id)
+
+        if params.selected_studio_id:
+            from app.domains.metadata.models import Studio
+            query = query.join(MetadataMatch.studios).filter(Studio.id == params.selected_studio_id)
 
         query, joined_localization, joined_override = self._apply_common_filters(
             query, params, joined_localization, joined_override

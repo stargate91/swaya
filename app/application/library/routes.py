@@ -122,6 +122,14 @@ def get_library_items(
     filter_gender: str = "all",
     people_role: str = "all",
     include_adult: bool = False,
+    selected_performer_id: Optional[int] = None,
+    selected_studio_id: Optional[int] = None,
+    filter_hair_color: Optional[str] = None,
+    filter_ethnicity: Optional[str] = None,
+    filter_eye_color: Optional[str] = None,
+    filter_tattoos: Optional[str] = None,
+    filter_piercings: Optional[str] = None,
+    filter_breast_type: Optional[str] = None,
 ):
     from app.infrastructure.media.db_media_resolver import DbMediaResolver
     from app.infrastructure.settings.db_settings_adapter import DbSettingsAdapter
@@ -147,6 +155,14 @@ def get_library_items(
             filter_gender=filter_gender,
             people_role=people_role,
             include_adult=include_adult,
+            selected_performer_id=selected_performer_id,
+            selected_studio_id=selected_studio_id,
+            filter_hair_color=filter_hair_color,
+            filter_ethnicity=filter_ethnicity,
+            filter_eye_color=filter_eye_color,
+            filter_tattoos=filter_tattoos,
+            filter_piercings=filter_piercings,
+            filter_breast_type=filter_breast_type,
         )
 
     return service.get_grouped_library(include_adult=include_adult)
