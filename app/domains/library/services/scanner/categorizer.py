@@ -19,6 +19,11 @@ class Categorizer:
     Submodule: Categorizes extra files (subtitles, images, etc.) 
     into logical categories and subtypes based on filename keywords and extensions.
     """
+    CATEGORIZER_VIDEO_EXTS = CATEGORIZER_VIDEO_EXTS
+    CATEGORIZER_SUBTITLE_EXTS = CATEGORIZER_SUBTITLE_EXTS
+    CATEGORIZER_IMAGE_EXTS = CATEGORIZER_IMAGE_EXTS
+    CATEGORIZER_AUDIO_EXTS = CATEGORIZER_AUDIO_EXTS
+    CATEGORIZER_META_EXTS = CATEGORIZER_META_EXTS
     
     # Keyword mapping for automated subtype detection
     SUBTYPE_MAP = SCANNER_SUBTYPE_MAP

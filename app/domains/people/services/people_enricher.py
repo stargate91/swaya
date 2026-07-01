@@ -38,8 +38,12 @@ class PeopleEnricher:
         self.task_monitor = task_monitor
         self.image_downloader = image_downloader
         self.session = requests.Session()
-        self.tmdb_enricher = TMDBEnricher(self.scrapers, self._get_temp_db) if self.scrapers else None
-        self.adult_enricher = AdultEnricher(self.scrapers, self._get_temp_db) if self.scrapers else None
+        self.tmdb_enricher = TMDBEnricher(self.scrapers, self._get_temp_db, self._close_temp_db) if self.scrapers else None
+        self.adult_enricher = AdultEnricher(self.scrapers, self._get_temp_db, self._close_temp_db) if self.scrapers else None
+
+    def _close_temp_db(self, session: Session) -> None:
+        if self.session_factory:
+            session.close()
 
     def _is_cancelled(self, task_id: int) -> bool:
         if self._is_cancelled_cb:

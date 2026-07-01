@@ -107,11 +107,26 @@ class TvSeasonFormatter(DetailFormatter):
                                 last_watched_at = sov.last_watched_at.isoformat()
             
             playback_logs = []
+            technical = None
             if local_item:
                 playback_logs = [
                     {"id": log.id, "watched_at": log.watched_at.isoformat()}
                     for log in sorted(local_item.playback_logs or [], key=lambda x: x.watched_at, reverse=True)
                 ]
+                technical = {
+                    "resolution": local_item.resolution,
+                    "video_codec": local_item.video_codec,
+                    "audio_codec": local_item.audio_codec,
+                    "audio_channels": local_item.audio_channels,
+                    "hdr_type": local_item.hdr_type,
+                    "bit_depth": local_item.bit_depth,
+                    "framerate": local_item.framerate,
+                    "duration": local_item.duration,
+                    "size_bytes": local_item.size,
+                    "source": local_item.source.value if hasattr(local_item.source, "value") else str(local_item.source),
+                    "edition": local_item.edition.value if hasattr(local_item.edition, "value") else str(local_item.edition),
+                    "audio_type": local_item.audio_type.value if hasattr(local_item.audio_type, "value") else str(local_item.audio_type),
+                }
 
             episodes.append({
                 "id": f"tmdb_{tv_tmdb_id_int}_{season_number}_{ep_num}",
@@ -133,6 +148,7 @@ class TvSeasonFormatter(DetailFormatter):
                 "is_missing": local_item is None,
                 "is_multi_episode": is_multi_episode,
                 "playback_logs": playback_logs,
+                "technical": technical,
             })
             
         local_count = sum(1 for ep in all_episodes if ep.get("episode_number") in local_episodes_map)

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import {
   User, Image as ImageIcon,
   Minus, Plus, ChevronUp, ChevronDown, ChevronLeft, ChevronRight,
-  DollarSign, TrendingUp, Coins
+  DollarSign, TrendingUp, Coins, X, Maximize2, PenLine
 } from 'lucide-react';
 import { useTranslation } from '@/providers/LanguageContext';
 import { useUi } from '@/providers/UiProvider';
@@ -726,7 +726,15 @@ export default function MediaDetailPage({ type = 'movie' }) {
   const [isLogoDrawerOpen, setIsLogoDrawerOpen] = useState(false);
   const [isPosterDrawerOpen, setIsPosterDrawerOpen] = useState(false);
   const [isBackdropDrawerOpen, setIsBackdropDrawerOpen] = useState(false);
+  const [lightboxUrl, setLightboxUrl] = useState(null);
   const containerRef = useRef(null);
+
+  const getOriginalPosterUrl = () => {
+    if (!item) return null;
+    const path = item.poster_path || item.local_poster_path;
+    if (!path) return null;
+    return resolveMediaImageUrl(path, 'originalPoster', API_BASE);
+  };
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -881,21 +889,42 @@ export default function MediaDetailPage({ type = 'movie' }) {
       >
         <div className="media-detail-page__transition-wrapper">
           <div className="media-detail-page__hero-content-section">
-            {(!state.logoUrl && !state.backdropUrl && state.posterUrl) ? (
+            {(!state.logoUrl && state.posterUrl && !isScene) ? (
               <div className="media-detail-page__fallback-grid">
                 <div
-                  className="media-detail-page__fallback-poster-col"
+                  className="media-detail-page__fallback-poster-col entity-detail-page__media-card--editable"
                   role="button"
                   tabIndex={0}
-                  onClick={handleOpenPosterModal}
+                  onClick={() => {
+                    const url = getOriginalPosterUrl();
+                    if (url) setLightboxUrl(url);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
-                      handleOpenPosterModal();
+                      const url = getOriginalPosterUrl();
+                      if (url) setLightboxUrl(url);
                     }
                   }}
-                  title={t('library.details.choosePoster') || 'Choose Poster'}
+                  title={t('library.details.viewOriginalImage') || 'View Original Image'}
                 >
                   <img src={state.posterUrl} alt={state.title} className="media-detail-page__fallback-poster" />
+                  <div className="entity-detail-page__media-card-hover-overlay">
+                    <div className="entity-detail-page__media-card-hover-icon">
+                      <Maximize2 size={16} />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="entity-detail-page__media-edit-badge"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleOpenPosterModal();
+                    }}
+                    title={t('library.details.changePoster') || 'Change Poster'}
+                    aria-label={t('library.details.changePoster') || 'Change Poster'}
+                  >
+                    <PenLine size={14} />
+                  </button>
                 </div>
                 <div className="media-detail-page__fallback-content-col">
                   <MediaHeaderInfo isFallbackGrid={true} />
@@ -1300,6 +1329,41 @@ export default function MediaDetailPage({ type = 'movie' }) {
         </>,
         document.body
       )}
+
+      {lightboxUrl && typeof document !== 'undefined' ? createPortal(
+        <div
+          className="organizer-details__lightbox"
+          role="button"
+          tabIndex={0}
+          aria-label={t('common.close') || 'Close image preview'}
+          onClick={() => setLightboxUrl(null)}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' || event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              setLightboxUrl(null);
+            }
+          }}
+        >
+          <button
+            type="button"
+            className="organizer-details__lightbox-close"
+            aria-label={t('common.close') || 'Close image preview'}
+            onClick={(event) => {
+              event.stopPropagation();
+              setLightboxUrl(null);
+            }}
+          >
+            <X size={18} />
+          </button>
+          <img
+            src={lightboxUrl}
+            alt="Enlarged preview"
+            className="organizer-details__lightbox-image"
+            onClick={(event) => event.stopPropagation()}
+          />
+        </div>,
+        document.body
+      ) : null}
     </MediaDetailProvider>
   );
 }

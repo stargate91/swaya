@@ -24,9 +24,10 @@ def safe_int(val) -> Optional[int]:
     return None
 
 class AdultEnricher:
-    def __init__(self, scrapers: ScraperGatewayPort, get_temp_db_cb: Callable[[], Session]):
+    def __init__(self, scrapers: ScraperGatewayPort, get_temp_db_cb: Callable[[], Session], close_temp_db_cb: Optional[Callable[[Session], None]] = None):
         self.scrapers = scrapers
         self.get_temp_db = get_temp_db_cb
+        self.close_temp_db = close_temp_db_cb
 
     def enrich_adult(
         self,
@@ -44,7 +45,10 @@ class AdultEnricher:
         except Exception as e:
             logger.error(f"Error calling get_performer_details on {provider.value}: {e}")
         finally:
-            temp_db.close()
+            if self.close_temp_db:
+                self.close_temp_db(temp_db)
+            else:
+                temp_db.close()
 
         if perf:
             tats_val = None

@@ -337,6 +337,7 @@ export default function SeasonsPanel() {
             durationMins || null,
             episode.technical?.resolution || null,
             episode.technical?.video_codec || null,
+            episode.technical?.hdr_type || null,
           ].filter(Boolean);
 
           return (

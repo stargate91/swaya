@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useSettingsQuery } from '@/queries';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/providers/LanguageContext';
@@ -62,6 +62,48 @@ export default function PerformerLinkingTab({ personId, defaultQuery = '', perso
   const [error, setError] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [linkingSource, setLinkingSource] = useState(null);
+  const [oldProfileUrl, setOldProfileUrl] = useState(null);
+  const [isWaitingForImage, setIsWaitingForImage] = useState(false);
+  const showSuccessToastPendingRef = useRef(false);
+  const safetyTimeoutRef = useRef(null);
+
+  const currentProfileUrl = person?.profile_path ? resolveMediaImageUrl(person.profile_path, 'personThumb') : null;
+
+  useEffect(() => {
+    if (!isWaitingForImage || !linkingSource) return;
+
+    // Check if the target source has linked successfully in the updated person details
+    const targetDbName = SOURCE_BUCKETS.find(b => b.key === linkingSource)?.dbName;
+    const linkedInfo = person?.external_links?.find(x => x.provider === targetDbName);
+
+    if (linkedInfo) {
+      const handleFinish = () => {
+        setLinkingSource(null);
+        setIsWaitingForImage(false);
+        if (safetyTimeoutRef.current) clearTimeout(safetyTimeoutRef.current);
+        if (showSuccessToastPendingRef.current) {
+          toast(t('library.details.sourceLinked') || 'Source linked successfully!', 'success');
+          showSuccessToastPendingRef.current = false;
+        }
+      };
+
+      if (currentProfileUrl !== oldProfileUrl && currentProfileUrl) {
+        const img = new Image();
+        img.src = currentProfileUrl;
+        img.onload = handleFinish;
+        img.onerror = handleFinish;
+      } else {
+        handleFinish();
+      }
+    }
+  }, [person, currentProfileUrl, oldProfileUrl, isWaitingForImage, linkingSource]);
+
+  useEffect(() => {
+    return () => {
+      if (safetyTimeoutRef.current) clearTimeout(safetyTimeoutRef.current);
+    };
+  }, []);
 
   const navigate = useNavigate();
   const linkMutation = useLinkPersonSourceMutation();
@@ -155,20 +197,41 @@ export default function PerformerLinkingTab({ personId, defaultQuery = '', perso
     if (typeof cleanId === 'string' && cleanId.includes(':')) {
       cleanId = cleanId.split(':')[1] || cleanId;
     }
+    const sourceKey = activeSearchSource;
+    setLinkingSource(sourceKey);
+    setOldProfileUrl(currentProfileUrl);
+    setIsWaitingForImage(true);
+    
+    // Close search results view immediately so the user sees the card pulsing in the grid
+    setActiveSearchSource(null);
+    setResults([]);
+    setHasSearched(false);
+
     try {
       await linkMutation.mutateAsync({
         personId,
-        source: activeSearchSource,
+        source: sourceKey,
         externalId: String(cleanId),
         overrides: {},
         profileUrl: item.profile_path || item.poster_path || null,
       });
-      toast(t('library.details.sourceLinked') || 'Source linked successfully!', 'success');
-      setActiveSearchSource(null);
-      setResults([]);
-      setHasSearched(false);
+      showSuccessToastPendingRef.current = true;
+      
+      // Safety timeout: stop pulsing after 8 seconds if image fails to change or load
+      if (safetyTimeoutRef.current) clearTimeout(safetyTimeoutRef.current);
+      safetyTimeoutRef.current = setTimeout(() => {
+        setLinkingSource(null);
+        setIsWaitingForImage(false);
+        if (showSuccessToastPendingRef.current) {
+          toast(t('library.details.sourceLinked') || 'Source linked successfully!', 'success');
+          showSuccessToastPendingRef.current = false;
+        }
+      }, 8000);
     } catch (err) {
       toast(err.message || 'Failed to link source', 'danger');
+      setLinkingSource(null);
+      setIsWaitingForImage(false);
+      showSuccessToastPendingRef.current = false;
     }
   };
 
@@ -321,14 +384,19 @@ export default function PerformerLinkingTab({ personId, defaultQuery = '', perso
           const isLinked = !!linkedInfo;
           const isPrimary = person?.primary_provider === bucket.dbName;
           const profileImg = isLinked ? (linkedInfo.profile_url ? resolveMediaImageUrl(linkedInfo.profile_url, 'personThumb') : (person.profile_path ? resolveMediaImageUrl(person.profile_path, 'personThumb') : null)) : null;
+          const isLinking = linkingSource === bucket.key;
 
           return (
             <div
               key={bucket.key}
-              className={`performer-linker-card performer-linker-card--${bucket.key} ${isLinked ? 'performer-linker-card--linked' : 'performer-linker-card--unlinked'} ${isPrimary ? 'performer-linker-card--primary' : ''}`}
+              className={`performer-linker-card performer-linker-card--${bucket.key} ${isLinked ? 'performer-linker-card--linked' : 'performer-linker-card--unlinked'} ${isPrimary ? 'performer-linker-card--primary' : ''} ${isLinking ? 'performer-linker-card--linking' : ''}`}
             >
               <div className="performer-linker-card__image-wrapper">
-                {isLinked ? (
+                {isLinking ? (
+                  <div className="performer-linker-card__silhouette">
+                    {renderSilhouette(person?.gender)}
+                  </div>
+                ) : isLinked ? (
                   profileImg ? (
                     <img src={profileImg} alt={person.name} className="performer-linker-card__img" />
                   ) : (
@@ -346,7 +414,11 @@ export default function PerformerLinkingTab({ personId, defaultQuery = '', perso
 
               <div className="performer-linker-card__content">
                 <div className="performer-linker-card__info">
-                  {isLinked ? (
+                  {isLinking ? (
+                    <div className="performer-linker-card__linking-msg">
+                      <Spinner label={t('library.performerEdit.linkingEnriching') || 'Linking & Enriching...'} />
+                    </div>
+                  ) : isLinked ? (
                     <>
                       <div className="performer-linker-card__name">{person.name}</div>
                       <div className="performer-linker-card__ext-id" title={linkedInfo.external_id}>
@@ -359,7 +431,7 @@ export default function PerformerLinkingTab({ personId, defaultQuery = '', perso
                 </div>
 
                 <div className="performer-linker-card__actions">
-                  {isLinked ? (
+                  {isLinking ? null : isLinked ? (
                     <div className="performer-linker-card__linked-actions-wrapper">
                       <div className="performer-linker-card__linked-actions">
                         <Tooltip content="Separate profile connection" side="top">

@@ -4,9 +4,10 @@ from app.shared_kernel.ports.scrapers import ScraperGatewayPort
 from app.shared_kernel.constants import DEFAULT_FALLBACK_LANGUAGE
 
 class TMDBEnricher:
-    def __init__(self, scrapers: ScraperGatewayPort, get_temp_db_cb: Callable[[], Session]):
+    def __init__(self, scrapers: ScraperGatewayPort, get_temp_db_cb: Callable[[], Session], close_temp_db_cb: Optional[Callable[[Session], None]] = None):
         self.scrapers = scrapers
         self.get_temp_db = get_temp_db_cb
+        self.close_temp_db = close_temp_db_cb
 
     def enrich_tmdb(self, external_id: str, result: Dict[str, Any]) -> bool:
         temp_db = self.get_temp_db()
@@ -15,7 +16,10 @@ class TMDBEnricher:
             tmdb = self.scrapers.tmdb(temp_db)
             details = tmdb.get_person_details(int(external_id))
         finally:
-            temp_db.close()
+            if self.close_temp_db:
+                self.close_temp_db(temp_db)
+            else:
+                temp_db.close()
 
         if details:
             images_data = details.get("images", {}).get("profiles", [])

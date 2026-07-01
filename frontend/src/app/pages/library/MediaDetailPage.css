@@ -500,6 +500,7 @@
 }
 
 .media-detail-page__fallback-poster-col {
+  position: relative;
   width: 250px;
   height: 375px;
   flex-shrink: 0;

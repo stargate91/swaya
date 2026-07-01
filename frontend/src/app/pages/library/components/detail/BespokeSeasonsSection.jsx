@@ -452,14 +452,26 @@ export default function BespokeSeasonsSection() {
                     {String(activeEpisode.air_date).slice(0, 10)}
                   </span>
                 )}
-                {activeEpisode.runtime && (
+                {(activeEpisode.runtime || activeEpisode.technical?.duration) && (
                   <span className="bespoke-episode-detail-card__meta-item">
-                    {`${activeEpisode.runtime}m`}
+                    {activeEpisode.runtime
+                      ? `${activeEpisode.runtime}m`
+                      : `${Math.round(activeEpisode.technical.duration / 60)}m`}
                   </span>
                 )}
                 {activeEpisode.technical?.resolution && (
                   <span className="bespoke-episode-detail-card__meta-item">
                     {activeEpisode.technical.resolution}
+                  </span>
+                )}
+                {activeEpisode.technical?.video_codec && (
+                  <span className="bespoke-episode-detail-card__meta-item">
+                    {activeEpisode.technical.video_codec}
+                  </span>
+                )}
+                {activeEpisode.technical?.hdr_type && (
+                  <span className="bespoke-episode-detail-card__meta-item">
+                    {activeEpisode.technical.hdr_type}
                   </span>
                 )}
                 {activeEpisode.vote_average != null && activeEpisode.vote_average > 0 && (

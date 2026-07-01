@@ -90,12 +90,6 @@ function PersonCreditsRow({
                     {resolvedSource === 'porndb' || resolvedSource === 'theporndb' ? 'PornDB' : resolvedSource === 'stashdb' ? 'Stash' : resolvedSource === 'fansdb' ? 'Fans' : 'TMDb'}
                   </span>
 
-                  {item.in_library && (
-                    <div className="person-credits-card__library-badge" title={t('library.details.inLibrary') || 'In Library'}>
-                      <Bookmark size={10} />
-                    </div>
-                  )}
-
                   {item.in_library && !isTvItem && (
                     <button
                       type="button"
@@ -132,9 +126,9 @@ export default function PersonCreditsSections({ id, item, navigate, t }) {
   const hasFansDb = !!item?.external_ids?.fansdb_id;
   const hasPornDb = !!item?.external_ids?.theporndb_id || !!item?.external_ids?.porndb_id || !!item?.external_ids?.porndb;
 
-  const hasTmdbMovies = Number(item?.total_movie_credits) > 0;
+  const hasTmdbMovies = !!item?.external_ids?.tmdb && Number(item?.total_movie_credits) > 0;
   const hasMovies = hasTmdbMovies || (item?.is_adult && hasPornDb);
-  const hasTv = Number(item?.total_tv_credits) > 0;
+  const hasTv = !!item?.external_ids?.tmdb && Number(item?.total_tv_credits) > 0;
 
   const hasScenes = Number(item?.total_scene_credits) > 0 || (item?.is_adult && (hasStashDb || hasFansDb || hasPornDb));
 

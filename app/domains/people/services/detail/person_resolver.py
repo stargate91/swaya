@@ -17,7 +17,7 @@ class PersonResolver:
         db = self.db
         query = db.query(Person)
         if load_localizations:
-            query = query.options(joinedload(Person.localizations))
+            query = query.options(joinedload(Person.localizations), joinedload(Person.external_links))
         
         person = None
         person_id_str = str(person_id)
@@ -38,7 +38,7 @@ class PersonResolver:
                     if res and res.get("status") == "success":
                         query_new = db.query(Person)
                         if load_localizations:
-                            query_new = query_new.options(joinedload(Person.localizations))
+                            query_new = query_new.options(joinedload(Person.localizations), joinedload(Person.external_links))
                         person = query_new.filter(Person.id == res["id"]).first()
             except Exception as e:
                 logger.error(f"Error dynamically importing person via tmdb prefix {person_id_str}: {e}")

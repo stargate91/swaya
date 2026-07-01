@@ -1,12 +1,13 @@
 import logging
 import datetime
 from typing import Dict, Any, Optional
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 
 from app.domains.people.models import Person, ExternalSourceLink, MediaPersonLink
 from app.domains.users.models import UserOverride, Tag
 from app.shared_kernel.enums import Provider
+from app.infrastructure.scrapers.support.gateway import scraper_gateway
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,9 @@ class PersonLinkerService:
     ) -> Dict[str, Any]:
         """Links a Person to an external metadata provider, merges duplicates, and enriches attributes."""
         source = source.lower()
+        person = db.merge(person)
+        _ = person.external_links
+        _ = person.localizations
         try:
             provider_enum = Provider(source)
         except ValueError:
@@ -68,6 +72,7 @@ class PersonLinkerService:
                 profile_url=profile_url
             )
             db.add(link)
+            person.external_links.append(link)
         else:
             if profile_url:
                 link.profile_url = profile_url
@@ -161,7 +166,6 @@ class PersonLinkerService:
 
             db.delete(duplicate_person)
 
-        # Dynamic enrichment after linking using TMDB > StashDB > FansDB > PornDB priority
         try:
             from app.domains.people.services.people_enricher import PeopleEnricher
             enricher = PeopleEnricher(db, scrapers=scraper_gateway)
@@ -261,9 +265,11 @@ class PersonLinkerService:
                 db.flush()
                 new_person.recalculate_projection(db)
 
-                # Dynamic enrichment for the new split performer
                 try:
                     from app.domains.people.services.people_enricher import PeopleEnricher
+                    new_person = db.merge(new_person)
+                    _ = new_person.external_links
+                    _ = new_person.localizations
                     enricher = PeopleEnricher(db, scrapers=scraper_gateway)
                     
                     link_data = [{"provider": provider_enum, "external_id": link.external_id}]

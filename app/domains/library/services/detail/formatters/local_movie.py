@@ -208,6 +208,26 @@ class LocalMovieFormatter(MovieDetailFormatter):
             "last_watched_at": last_watched_at_dt.isoformat() if last_watched_at_dt else None,
             "playback_logs": playback_logs,
         }
+
+        peaks_count = 0
+        peaks_history = []
+        if item.id:
+            from app.domains.history.models import PlaybackPeakLog
+            peaks = db.query(PlaybackPeakLog).filter(
+                PlaybackPeakLog.user_id == current_uid,
+                PlaybackPeakLog.media_item_id == item.id
+            ).order_by(PlaybackPeakLog.video_position.asc()).all()
+            peaks_count = len(peaks)
+            peaks_history = [
+                {
+                    "id": p.id,
+                    "video_position": p.video_position,
+                    "watched_at": p.created_at.isoformat() if p.created_at else None
+                }
+                for p in peaks
+            ]
+        result["peaks_count"] = peaks_count
+        result["peaks_history"] = peaks_history
         
         ext_ids = {}
         if active_match:

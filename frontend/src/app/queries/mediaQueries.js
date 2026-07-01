@@ -735,17 +735,20 @@ export const useAddPeakMutation = () => {
       const { itemId, tvId } = typeof variables === 'object' ? variables : { itemId: variables, tvId: null };
       const targets = [itemId, tvId].filter(Boolean);
       
-      for (const id of targets) {
-        const clean = String(id).replace('tv_', '');
+      const uniqueIds = new Set();
+      targets.forEach(id => {
+        uniqueIds.add(id);
+        uniqueIds.add(String(id).replace('tv_', ''));
+      });
+
+      for (const id of uniqueIds) {
         await queryClient.cancelQueries({ queryKey: ['library-item-detail', id] });
-        await queryClient.cancelQueries({ queryKey: ['library-item-detail', clean] });
       }
 
-      const contextSnapshot = {};
-      targets.forEach(id => {
-        const clean = String(id).replace('tv_', '');
-        contextSnapshot[id] = queryClient.getQueryData(['library-item-detail', id]);
-        contextSnapshot[clean] = queryClient.getQueryData(['library-item-detail', clean]);
+      // Snapshot all matching detail queries by prefix
+      const contextSnapshot = [];
+      uniqueIds.forEach(id => {
+        contextSnapshot.push(...queryClient.getQueriesData({ queryKey: ['library-item-detail', id] }));
       });
 
       const optimisticUpdate = (oldData) => {
@@ -765,18 +768,16 @@ export const useAddPeakMutation = () => {
         };
       };
 
-      targets.forEach(id => {
-        const clean = String(id).replace('tv_', '');
-        queryClient.setQueryData(['library-item-detail', id], optimisticUpdate);
-        queryClient.setQueryData(['library-item-detail', clean], optimisticUpdate);
+      uniqueIds.forEach(id => {
+        queryClient.setQueriesData({ queryKey: ['library-item-detail', id] }, optimisticUpdate);
       });
 
       return { contextSnapshot };
     },
     onError: (err, variables, context) => {
       if (context?.contextSnapshot) {
-        Object.entries(context.contextSnapshot).forEach(([key, val]) => {
-          queryClient.setQueryData(['library-item-detail', key], val);
+        context.contextSnapshot.forEach(([key, val]) => {
+          queryClient.setQueryData(key, val);
         });
       }
       toast(err.message || 'Failed to add peak', 'danger');
@@ -794,9 +795,9 @@ export const useAddPeakMutation = () => {
       const targets = [itemId, tvId].filter(Boolean);
       targets.forEach(id => {
         const clean = String(id).replace('tv_', '');
-        queryClient.setQueryData(['library-item-detail', id], updateData);
-        queryClient.setQueryData(['library-item-detail', clean], updateData);
-        queryClient.setQueryData(['library-tv-detail', id], updateData);
+        queryClient.setQueriesData({ queryKey: ['library-item-detail', id] }, updateData);
+        queryClient.setQueriesData({ queryKey: ['library-item-detail', clean] }, updateData);
+        queryClient.setQueriesData({ queryKey: ['library-tv-detail', id] }, updateData);
         queryClient.invalidateQueries({ queryKey: ['library-item-detail', id] });
         queryClient.invalidateQueries({ queryKey: ['library-item-detail', clean] });
       });
@@ -822,9 +823,9 @@ export const useDeletePeakMutation = () => {
       const targets = [itemId, tvId].filter(Boolean);
       targets.forEach(id => {
         const clean = String(id).replace('tv_', '');
-        queryClient.setQueryData(['library-item-detail', id], updateData);
-        queryClient.setQueryData(['library-item-detail', clean], updateData);
-        queryClient.setQueryData(['library-tv-detail', id], updateData);
+        queryClient.setQueriesData({ queryKey: ['library-item-detail', id] }, updateData);
+        queryClient.setQueriesData({ queryKey: ['library-item-detail', clean] }, updateData);
+        queryClient.setQueriesData({ queryKey: ['library-tv-detail', id] }, updateData);
         queryClient.invalidateQueries({ queryKey: ['library-item-detail', id] });
         queryClient.invalidateQueries({ queryKey: ['library-item-detail', clean] });
       });

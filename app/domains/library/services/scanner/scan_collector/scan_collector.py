@@ -143,6 +143,10 @@ class ScanCollector:
                 if get_rel_path(p).lower() not in existing_extras:
                     candidates_to_probe.append(p)
 
+        probe_targets = []
+        probe_infos = {}
+        probe_durations = {}
+
         for p in candidates_to_probe:
             stat = p.stat()
             mtime = stat.st_mtime
