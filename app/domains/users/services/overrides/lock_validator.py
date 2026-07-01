@@ -37,18 +37,16 @@ class LockValidator:
                 if tag_id:
                     tag_obj = db.query(Tag).filter(Tag.id == tag_id).first()
                 elif tag_name:
-                    tag_obj = db.query(Tag).filter(func.lower(Tag.name) == func.lower(tag_name)).first()
+                    tag_obj = db.query(Tag).filter(func.lower(Tag.name) == func.lower(tag_name), Tag.is_adult == is_adult_item).first()
             elif isinstance(t, int):
                 tag_obj = db.query(Tag).filter(Tag.id == t).first()
             elif isinstance(t, str):
-                tag_obj = db.query(Tag).filter(func.lower(Tag.name) == func.lower(t)).first()
+                tag_obj = db.query(Tag).filter(func.lower(Tag.name) == func.lower(t), Tag.is_adult == is_adult_item).first()
                 if not tag_obj:
                     tag_obj = Tag(name=t, is_adult=is_adult_item)
                     db.add(tag_obj)
                     db.flush()
             if tag_obj and tag_obj not in tags_list:
-                if is_adult_item and not tag_obj.is_adult:
-                    tag_obj.is_adult = True
                 tags_list.append(tag_obj)
         return tags_list
 

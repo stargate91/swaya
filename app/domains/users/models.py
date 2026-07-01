@@ -63,9 +63,12 @@ class Tag(Base):
     Global user-defined tags that can be SFW or NSFW (is_adult).
     """
     __tablename__ = "tags"
+    __table_args__ = (
+        UniqueConstraint("name", "is_adult", name="uq_tag_name_is_adult"),
+    )
     
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String, unique=True, index=True)
+    name: Mapped[str] = mapped_column(String, index=True)
     color: Mapped[Optional[str]] = mapped_column(String, default="#3b82f6") # Hex color code for UI
     is_adult: Mapped[bool] = mapped_column(Boolean, default=False, index=True) # Tag separation SFW vs NSFW
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))

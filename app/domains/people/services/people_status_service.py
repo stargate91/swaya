@@ -6,7 +6,7 @@ from typing import Any, List, Dict, Optional
 from sqlalchemy.orm import Session
 
 from app.domains.people.models import Person, ExternalSourceLink
-from app.domains.users.models import UserOverride
+from app.domains.users.models import UserOverride, Tag
 from app.shared_kernel.enums import Provider
 from app.shared_kernel.exceptions import NotFoundException
 from app.shared_kernel.user_context import get_current_user_id
@@ -240,7 +240,7 @@ class PeopleStatusService:
                     for t in tags_input:
                         tag_obj = None
                         if isinstance(t, str):
-                            tag_obj = self.db.query(Tag).filter(func.lower(Tag.name) == func.lower(t)).first()
+                            tag_obj = self.db.query(Tag).filter(func.lower(Tag.name) == func.lower(t), Tag.is_adult == bool(person.is_adult)).first()
                             if not tag_obj:
                                 tag_obj = Tag(name=t, is_adult=bool(person.is_adult))
                                 self.db.add(tag_obj)

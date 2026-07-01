@@ -180,8 +180,44 @@ class LibraryFilterService:
                         if parent:
                             studio_map[parent.id] = parent
             
-            sorted_studios = sorted(studio_map.values(), key=lambda x: (x.name or "").lower())
-            studios = [{"id": s.id, "name": s.name} for s in sorted_studios]
+            # Group into parents and children
+            parents = [s for s in studio_map.values() if s.parent_studio_id is None]
+            children = [s for s in studio_map.values() if s.parent_studio_id is not None]
+            
+            # Sort parents alphabetically
+            parents.sort(key=lambda x: (x.name or "").lower())
+            
+            # Group children by their parent_studio_id
+            children_by_parent = {}
+            for c in children:
+                children_by_parent.setdefault(c.parent_studio_id, []).append(c)
+                
+            # Sort each group of children alphabetically
+            for p_id in children_by_parent:
+                children_by_parent[p_id].sort(key=lambda x: (x.name or "").lower())
+                
+            hierarchical_studios = []
+            for p in parents:
+                hierarchical_studios.append((p, False))
+                # Add children of this parent
+                if p.id in children_by_parent:
+                    for c in children_by_parent[p.id]:
+                        hierarchical_studios.append((c, True))
+                        
+            # Add any orphaned children that didn't find their parent in parents list
+            orphaned_children = [c for c in children if c.parent_studio_id not in studio_map]
+            if orphaned_children:
+                orphaned_children.sort(key=lambda x: (x.name or "").lower())
+                for c in orphaned_children:
+                    hierarchical_studios.append((c, False))
+                    
+            # Build final list with indentation for children
+            studios = []
+            for s, is_child in hierarchical_studios:
+                name = s.name or ""
+                if is_child:
+                    name = f"  ↳ {name}"
+                studios.append({"id": s.id, "name": name})
 
             hair_colors_query = self.db.query(Person.hair_color).join(
                 MediaPersonLink, MediaPersonLink.person_id == Person.id

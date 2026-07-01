@@ -123,6 +123,8 @@ export default function LibraryPage({ initialTab = 'movies', lockTab = false, sh
               setTimeFilterMode={state.setTimeFilterMode}
               favoriteFilter={state.favoriteFilter}
               setFavoriteFilter={state.setFavoriteFilter}
+              selectedTags={state.selectedTags}
+              setSelectedTags={state.setSelectedTags}
               performerFilter={state.performerFilter}
               setPerformerFilter={state.setPerformerFilter}
               studioFilter={state.studioFilter}

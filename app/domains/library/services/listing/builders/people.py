@@ -56,6 +56,20 @@ class PeopleQueryBuilder:
         elif params.filter_favorite == "not_favorite":
             people_items = [item for item in people_items if not item.is_favorite]
 
+        if params.selected_tags:
+            from app.domains.users.models import UserOverride, Tag, user_override_tags
+            matching_person_ids = [
+                r[0] for r in self.db.query(UserOverride.person_id).join(
+                    user_override_tags, UserOverride.id == user_override_tags.c.user_override_id
+                ).join(
+                    Tag, Tag.id == user_override_tags.c.tag_id
+                ).filter(
+                    Tag.name.in_(params.selected_tags),
+                    UserOverride.person_id != None
+                ).all()
+            ]
+            people_items = [item for item in people_items if item.id in matching_person_ids]
+
         if params.sort_by in ("library_count", "library_count_desc"):
             people_items.sort(key=lambda item: (-(item.library_count or 0), -(item.rating or 0.0), (item.name or "").lower()))
         elif params.sort_by == "library_count_asc":

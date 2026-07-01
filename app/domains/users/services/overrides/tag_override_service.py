@@ -42,14 +42,11 @@ class TagOverrideService:
                 resolved_tags.append(tag_obj)
 
         for tname in tags_input:
-            tag_obj = self.db.query(Tag).filter(func.lower(Tag.name) == func.lower(tname)).first()
+            tag_obj = self.db.query(Tag).filter(func.lower(Tag.name) == func.lower(tname), Tag.is_adult == is_adult_item).first()
             if not tag_obj:
                 tag_obj = Tag(name=tname, is_adult=is_adult_item)
                 self.db.add(tag_obj)
                 self.db.flush()
-            else:
-                if is_adult_item and not tag_obj.is_adult:
-                    tag_obj.is_adult = True
             if tag_obj not in resolved_tags:
                 resolved_tags.append(tag_obj)
 

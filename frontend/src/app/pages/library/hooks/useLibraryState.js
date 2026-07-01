@@ -43,6 +43,7 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
   const [tattoosFilter, setTattoosFilter] = useState('');
   const [piercingsFilter, setPiercingsFilter] = useState('');
   const [breastTypeFilter, setBreastTypeFilter] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]);
   const [timeFilterMode, setTimeFilterMode] = useState('decade'); // 'decade' or 'year'
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(40);
@@ -74,6 +75,7 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
     setTattoosFilter('');
     setPiercingsFilter('');
     setBreastTypeFilter('');
+    setSelectedTags([]);
   };
 
   const isCollections = isLibraryCollectionTab(activeTab);
@@ -116,6 +118,7 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
       filter_tattoos: tattoosFilter !== '' ? tattoosFilter : undefined,
       filter_piercings: piercingsFilter !== '' ? piercingsFilter : undefined,
       filter_breast_type: breastTypeFilter !== '' ? breastTypeFilter : undefined,
+      selected_tags: selectedTags.length > 0 ? selectedTags.join(',') : undefined,
     };
   }, [
     isCollections,
@@ -143,7 +146,8 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
     eyeColorFilter,
     tattoosFilter,
     piercingsFilter,
-    breastTypeFilter
+    breastTypeFilter,
+    selectedTags
   ]);
 
   const { data: libraryData, isLoading: isLibraryLoading } = useLibraryQuery(
@@ -232,6 +236,7 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
     setTattoosFilter('');
     setPiercingsFilter('');
     setBreastTypeFilter('');
+    setSelectedTags([]);
   };
 
   const handleOwnershipFilterChange = (newOwnership) => {
@@ -256,6 +261,7 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
     setTattoosFilter('');
     setPiercingsFilter('');
     setBreastTypeFilter('');
+    setSelectedTags([]);
   };
 
   const handleFilterChange = (setter) => (val) => {
@@ -490,6 +496,8 @@ export function useLibraryState({ initialTab = 'movies', lockTab = false, includ
     setSessionMode: handleSetSessionMode,
     favoriteFilter,
     setFavoriteFilter: handleFilterChange(setFavoriteFilter),
+    selectedTags,
+    setSelectedTags: handleFilterChange(setSelectedTags),
   };
 }
 
