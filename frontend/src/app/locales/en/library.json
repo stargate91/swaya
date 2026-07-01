@@ -524,6 +524,8 @@
     "defaultPriority": "Default Priority",
     "setPrimary": "Set Primary",
     "primarySource": "Primary Source",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
     "validation": {
       "height": "Height has to be between 50 and 300 cm",
       "weight": "Weight has to be between 30 and 300 kg",
@@ -531,7 +533,8 @@
       "bandSize": "Band size has to be between 10 and 100",
       "waist": "Waist has to be between 10 and 100",
       "hip": "Hip has to be between 10 and 100",
-      "correctErrors": "Please fix the details above before saving!"
+      "correctErrors": "Please fix the details above before saving!",
+      "underage": "Performer must be at least 18 years and 2 weeks old"
     }
   }
 }

@@ -34,7 +34,21 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
     { value: 'NA', label: 'N/A' },
   ];
 
-  const cupSizeOptions = ['A', 'B', 'C', 'D', 'DD', 'DDD', 'E', 'F', 'G', 'H', 'I', 'J', 'K'];
+  const cupSizeOptions = [
+    { value: 'A', label: 'A' },
+    { value: 'B', label: 'B' },
+    { value: 'C', label: 'C' },
+    { value: 'D', label: 'D' },
+    { value: 'DD', label: 'DD' },
+    { value: 'DDD', label: 'DDD' },
+    { value: 'E', label: 'E' },
+    { value: 'F', label: 'F' },
+    { value: 'G', label: 'G' },
+    { value: 'H', label: 'H' },
+    { value: 'I', label: 'I' },
+    { value: 'J', label: 'J' },
+    { value: 'K', label: 'K' },
+  ];
 
   const hairColorOptions = [
     { value: 'BLONDE', label: 'Blonde' },
@@ -183,6 +197,17 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
         errs.hip = t('performerEdit.validation.hip');
       }
     }
+    if (form.birthday) {
+      const birthDate = new Date(form.birthday);
+      if (!isNaN(birthDate.getTime())) {
+        const today = new Date();
+        const minDate = new Date(birthDate.getFullYear() + 18, birthDate.getMonth(), birthDate.getDate());
+        minDate.setDate(minDate.getDate() + 14);
+        if (minDate > today) {
+          errs.birthday = t('performerEdit.validation.underage') || 'Performer must be at least 18 years and 2 weeks old';
+        }
+      }
+    }
     return errs;
   })();
 
@@ -328,6 +353,7 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
                   type="date"
                   value={form.birthday}
                   onChange={e => handleChange('birthday', e.target.value)}
+                  error={errors.birthday}
                 />
               </div>
               <div className="ui-field">
@@ -428,22 +454,15 @@ export default function PerformerCustomValuesTab({ personId, person: initialPers
                 onChange={e => handleChange('breast_type', e.target.value)}
                 placeholder="- Select -"
               />
-              <div className="ui-field">
-                <label className="ui-field__label">{t('library.performerEdit.cupSize') || 'Cup Size'}</label>
-                <Input
-                  type="text"
-                  placeholder="e.g. B"
-                  value={form.cup_size}
-                  onChange={e => handleChange('cup_size', e.target.value.toUpperCase().replace(/[^A-Z]/g, ''))}
-                  list="cup-size-options"
-                  error={errors.cup_size}
-                />
-                <datalist id="cup-size-options">
-                  {cupSizeOptions.map(opt => (
-                    <option key={opt} value={opt} />
-                  ))}
-                </datalist>
-              </div>
+              <Dropdown
+                label={t('library.performerEdit.cupSize') || 'Cup Size'}
+                options={getDropdownOptions(cupSizeOptions, form.cup_size)}
+                value={form.cup_size}
+                onChange={e => handleChange('cup_size', e.target.value)}
+                placeholder="- Select -"
+                error={errors.cup_size}
+                searchable
+              />
               <div className="ui-field">
                 <label className="ui-field__label">{t('library.performerEdit.bandSize') || 'Band Size'}</label>
                 <Input
