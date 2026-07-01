@@ -20,36 +20,50 @@
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: 0 0 0 var(--space-4xl);
+  flex: 0 0 140px;
+  min-width: 140px;
+  padding: 0 0 0 var(--space-xl);
   -webkit-app-region: drag;
 }
 
-.window-titlebar__progress {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+.window-titlebar__center-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xl);
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  padding: 0 var(--space-xl);
+  -webkit-app-region: no-drag;
+}
+
+.window-titlebar__search-wrapper {
+  flex: 1 1 320px;
+  max-width: 480px;
+  min-width: 180px;
+  transition: max-width var(--motion-base), flex-basis var(--motion-base);
+}
+
+.window-titlebar__search-wrapper.has-progress {
+  max-width: 240px;
+  flex-basis: 200px;
+}
+
+.window-titlebar__progress-wrapper {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: var(--space-2);
-  -webkit-app-region: no-drag;
+  gap: var(--space-md);
+  flex: 2 1 auto;
+  min-width: 0;
 }
 
-.window-titlebar__progress .ui-progress-bar-container {
-  width: 320px;
-}
-
-.window-titlebar__search {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  -webkit-app-region: no-drag;
+.window-titlebar__progress-wrapper .ui-progress-bar-container {
+  flex: 1 1 380px;
+  max-width: 480px;
+  min-width: 240px;
+  width: auto;
 }
 
 .window-titlebar__brand-text {

@@ -748,6 +748,9 @@ export default function MediaDetailPage({ type = 'movie' }) {
     if (isLogoDrawerOpen || isPosterDrawerOpen || isBackdropDrawerOpen) return;
 
     const handleWheel = (e) => {
+      if (e.target.closest('.global-search') || e.target.closest('.global-search__overlay')) {
+        return;
+      }
       if (Math.abs(e.deltaY) > 5) {
         if (e.deltaY > 0 && !isScrolled) {
           setIsScrolled(true);

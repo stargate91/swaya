@@ -100,18 +100,19 @@ export default function WindowTitlebar() {
         <span className="window-titlebar__brand-text">{BRAND_NAME}</span>
       </div>
 
-      {hasProgress ? (
-        <div className="window-titlebar__progress">
-          {scanProgress ? <ProgressBar {...scanProgress} onAbort={handleAbort} /> : null}
-          {imageProgress ? <ProgressBar {...imageProgress} variant="sub" /> : null}
-          {hydrateProgress ? <ProgressBar {...hydrateProgress} variant="sub" /> : null}
-          {syncProgress ? <ProgressBar {...syncProgress} variant="sub" /> : null}
-        </div>
-      ) : (
-        <div className="window-titlebar__search">
+      <div className="window-titlebar__center-container">
+        <div className={`window-titlebar__search-wrapper ${hasProgress ? 'has-progress' : ''}`}>
           <GlobalSearch />
         </div>
-      )}
+        {hasProgress && (
+          <div className="window-titlebar__progress-wrapper">
+            {scanProgress ? <ProgressBar {...scanProgress} onAbort={handleAbort} /> : null}
+            {imageProgress ? <ProgressBar {...imageProgress} variant="sub" /> : null}
+            {hydrateProgress ? <ProgressBar {...hydrateProgress} variant="sub" /> : null}
+            {syncProgress ? <ProgressBar {...syncProgress} variant="sub" /> : null}
+          </div>
+        )}
+      </div>
 
       <div className="window-titlebar__actions">
         {settings?.include_adult && (

@@ -86,6 +86,9 @@ export default function PeopleCollectionDetailPage({ type = 'people' }) {
     if (isImagePickerDrawerOpen) return;
 
     const handleWheel = (e) => {
+      if (e.target.closest('.global-search') || e.target.closest('.global-search__overlay')) {
+        return;
+      }
       if (!isPeople) return;
       if (Math.abs(e.deltaY) > 5) {
         if (e.deltaY > 0 && !isScrolled) {

@@ -158,7 +158,7 @@ export default function GlobalSearch() {
           >
             <ActiveTypeIcon className="global-search__active-icon" size={14} />
             <span className="global-search__active-label">
-              {activeSourceObj.name === 'TMDb' ? activeTypeObj.name : `${activeSourceObj.name} ${activeTypeObj.name}`}
+              {activeTypeObj.name}
             </span>
             <ChevronDown className={`global-search__chevron ${isSelectorOpen ? 'is-open' : ''}`} size={12} />
           </button>
@@ -252,9 +252,8 @@ export default function GlobalSearch() {
                     <span className="global-search__item-badge">
                       {item.media_type === 'person' ? 'performer' : item.media_type}
                     </span>
-                    {item.studio && <span className="global-search__item-studio">• {item.studio}</span>}
                     {item.overview && (
-                      <span className="global-search__item-overview" title={item.overview}>
+                      <span className="global-search__item-overview">
                         • {item.overview.length > 60 ? item.overview.slice(0, 60) + '...' : item.overview}
                       </span>
                     )}
