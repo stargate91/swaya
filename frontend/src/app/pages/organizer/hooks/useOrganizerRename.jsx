@@ -37,7 +37,7 @@ export function useOrganizerRename({
       ...matchedExtras.map((extra) => mapExtraRow(extra, t)),
     ];
 
-    const executeRename = async () => {
+    const executeRename = async (organizeInPlaceVal) => {
       closeModal();
       setIsRenameStarting(true);
       const previousScanStatus = queryClient.getQueryData(['scan-status']);
@@ -58,7 +58,10 @@ export function useOrganizerRename({
           stop_requested: false,
           current_file_progress: 0,
         }));
-        const response = await renameMutation.mutateAsync({ item_ids: ids });
+        const response = await renameMutation.mutateAsync({
+          item_ids: ids,
+          organize_in_place: organizeInPlaceVal
+        });
         if (response?.status === 'error') {
           throw new Error(response.message);
         }
@@ -76,28 +79,36 @@ export function useOrganizerRename({
       }
     };
 
-    openModal({
-      title: t('organizer.renameModal.title') || 'Confirm Rename',
-      description: t('organizer.renameModal.description') || 'Review the files that will be renamed.',
-      icon: Sparkles,
-      className: 'ui-modal--extra-wide',
-      content: (
-        <OrganizerRenameModalContent
-          items={mappedItems}
-          t={t}
-        />
-      ),
-      footer: (
-        <>
-          <Button variant="secondary-neutral" onClick={closeModal}>
-            {t('organizer.details.delete.cancel') || 'Cancel'}
-          </Button>
-          <Button variant="primary" onClick={executeRename}>
-            {t('organizer.actions.rename') || 'Rename'}
-          </Button>
-        </>
-      ),
-    });
+    const showModal = (organizeInPlaceVal) => {
+      openModal({
+        title: t('organizer.renameModal.title') || 'Confirm Rename',
+        description: t('organizer.renameModal.description') || 'Review the files that will be renamed.',
+        icon: Sparkles,
+        className: 'ui-modal--extra-wide',
+        content: (
+          <OrganizerRenameModalContent
+            items={mappedItems}
+            t={t}
+            organizeInPlace={organizeInPlaceVal}
+            setOrganizeInPlace={showModal}
+          />
+        ),
+        footer: (
+          <>
+            <Button variant="secondary-neutral" onClick={closeModal}>
+              {t('organizer.details.delete.cancel') || 'Cancel'}
+            </Button>
+            <Button variant="primary" onClick={() => executeRename(organizeInPlaceVal)}>
+              {organizeInPlaceVal
+                ? (t('organizer.renameModal.organizeInPlace') || 'Organize in Place')
+                : (t('organizer.actions.rename') || 'Rename')}
+            </Button>
+          </>
+        ),
+      });
+    };
+
+    showModal(false);
   };
 
   return {

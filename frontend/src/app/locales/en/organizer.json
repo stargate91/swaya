@@ -127,7 +127,9 @@
     "showing": "Showing {count} of {total} files to rename",
     "noMatching": "No matching files found!",
     "currentFilename": "Current Filename",
-    "newFilename": "New Filename"
+    "newFilename": "New Filename",
+    "organizeInPlaceCheckbox": "Keep original filenames (Organize in Place)",
+    "organizeInPlace": "Organize in Place"
   },
   "overrideModal": {
     "title": "Change settings for this {type}",

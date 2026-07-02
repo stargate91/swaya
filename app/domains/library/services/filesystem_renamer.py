@@ -38,7 +38,7 @@ class FilesystemRenamer:
         self.db.commit()
         return success_count
 
-    def execute_single(self, preview: RenamePreview, batch_id: Optional[int] = None, progress_callback=None) -> bool:
+    def execute_single(self, preview: RenamePreview, batch_id: Optional[int] = None, progress_callback=None, organize_in_place: bool = False) -> bool:
         item = self.library_port.get_item_by_id(preview.item_id)
         if not item:
             return False
@@ -97,12 +97,13 @@ class FilesystemRenamer:
                             raise FileExistsError(f"Directory exists at extra target: {e_target}")
                         raise FileExistsError(f"File exists at extra target: {e_target}")
 
-            target_path.parent.mkdir(parents=True, exist_ok=True)
-            if self.move_with_progress_fn:
-                self.move_with_progress_fn(str(old_path), str(target_path), progress_callback)
-            else:
-                shutil.move(str(old_path), str(target_path))
-            successful_moves.append((old_path, target_path))
+            if target_path != old_path:
+                target_path.parent.mkdir(parents=True, exist_ok=True)
+                if self.move_with_progress_fn:
+                    self.move_with_progress_fn(str(old_path), str(target_path), progress_callback)
+                else:
+                    shutil.move(str(old_path), str(target_path))
+                successful_moves.append((old_path, target_path))
             
             for extra_preview in preview.extra_previews:
                 extra = self.library_port.get_extra_by_id(extra_preview.extra_id)
@@ -134,7 +135,8 @@ class FilesystemRenamer:
                         successful_moves.append((e_old, e_target))
 
             old_item_path = item.current_path
-            self.library_port.update_item_path_and_status(item.id, str(target_path), ItemStatus.RENAMED)
+            status_to_set = ItemStatus.ORGANIZED if organize_in_place else ItemStatus.RENAMED
+            self.library_port.update_item_path_and_status(item.id, str(target_path), status_to_set)
             self._log_action(batch_id, item_id=item.id, action_type=ActionType.RENAME, 
                             status=ActionStatus.SUCCESS, old_val=old_item_path, new_val=str(target_path))
 

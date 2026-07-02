@@ -9,6 +9,9 @@ export default function LibraryPagination({
   const hasItems = state.paginatedItems.length > 0;
   
   if (!state.shouldShowPagination || isTagFocusMode) {
+    if (showSpacer && hasItems) {
+      return <div className="library-bottom-spacer" aria-hidden="true" />;
+    }
     return null;
   }
 

@@ -250,7 +250,7 @@
 
 /* Missing collection items opacity styling */
 .collection-items-horizontal-grid-wrapper .ui-poster-card.is-missing {
-  opacity: 0.65 !important;
+  opacity: 0.8 !important;
 }
 
 .collection-items-horizontal-grid-wrapper .ui-poster-card.is-missing:hover {
@@ -258,7 +258,7 @@
 }
 
 .collection-items-horizontal-grid-wrapper .ui-poster-card.is-missing .ui-poster-card__image {
-  opacity: 0.55 !important;
+  opacity: 0.7 !important;
 }
 
 .collection-items-horizontal-grid-wrapper .ui-poster-card.is-missing:hover .ui-poster-card__image {

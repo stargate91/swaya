@@ -103,8 +103,8 @@ class ScannerService:
     # Renamer / Revert Operations
     # =========================================================================
 
-    def start_rename(self, item_ids: Optional[List[int]] = None) -> Dict[str, Any]:
-        return self.renamer_runner.start_rename(item_ids)
+    def start_rename(self, item_ids: Optional[List[int]] = None, organize_in_place: bool = False) -> Dict[str, Any]:
+        return self.renamer_runner.start_rename(item_ids, organize_in_place)
 
     async def _run_rename(self, task_id: int, item_ids: Optional[List[int]] = None):
         await self.renamer_runner._run_rename(task_id, item_ids)

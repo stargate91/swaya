@@ -34,6 +34,7 @@ class ScanRequest(BaseModel):
 
 class RenameRequest(BaseModel):
     item_ids: Optional[List[int]] = None
+    organize_in_place: bool = False
 
 class RetryRequest(BaseModel):
     mode: ScanMode = ScanMode.MOVIES_TV
@@ -83,7 +84,8 @@ def stop_active_task(db: Session = Depends(get_db)):
 @router.post("/rename/start")
 def start_rename(request: Optional[RenameRequest] = None, db: Session = Depends(get_db)):
     item_ids = request.item_ids if request else None
-    return _scanner_service(db).start_rename(item_ids)
+    organize_in_place = request.organize_in_place if request else False
+    return _scanner_service(db).start_rename(item_ids, organize_in_place)
 
 from app.application.history.schemas import HistoryResponse
 

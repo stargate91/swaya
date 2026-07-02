@@ -34,8 +34,8 @@ class RenamerEngine:
     def execute_batch(self, previews: List[RenamePreview], batch_name: Optional[str] = None) -> int:
         return self.renamer.execute_batch(previews, batch_name)
 
-    def execute_single(self, preview: RenamePreview, batch_id: Optional[int] = None, progress_callback=None) -> bool:
-        return self.renamer.execute_single(preview, batch_id, progress_callback)
+    def execute_single(self, preview: RenamePreview, batch_id: Optional[int] = None, progress_callback=None, organize_in_place: bool = False) -> bool:
+        return self.renamer.execute_single(preview, batch_id, progress_callback, organize_in_place)
 
     def undo_batch(self, batch_id: int, progress_callback=None, stop_check=None) -> int:
         return self.renamer.undo_batch(batch_id, progress_callback, stop_check)

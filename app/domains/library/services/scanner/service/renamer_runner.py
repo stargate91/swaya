@@ -41,16 +41,16 @@ class RenamerRunner:
     def send_to_trash_fn(self):
         return self.service.send_to_trash_fn
 
-    def start_rename(self, item_ids: Optional[List[int]] = None) -> Dict[str, Any]:
+    def start_rename(self, item_ids: Optional[List[int]] = None, organize_in_place: bool = False) -> Dict[str, Any]:
         with StatusCoordinator.scan_status_lock:
             if StatusCoordinator.scan_status.get("active"):
                 return {"status": "error", "message": f"Task already in progress: {StatusCoordinator.scan_status.get('phase')}"}
                 
         task_id = self.task_manager.create_task("Organize Items")
-        self.task_manager.start_task(task_id, self._run_rename, item_ids)
+        self.task_manager.start_task(task_id, self._run_rename, item_ids, organize_in_place)
         return {"status": "success", "message": "Organizing items in background"}
 
-    async def _run_rename(self, task_id: int, item_ids: Optional[List[int]] = None):
+    async def _run_rename(self, task_id: int, item_ids: Optional[List[int]] = None, organize_in_place: bool = False):
         items = self.library_port.get_items_for_renaming(item_ids)
 
         if not items:
@@ -67,7 +67,8 @@ class RenamerRunner:
                 })
             return
 
-        batch = ActionBatch(name=f"Organize {len(items)} items")
+        batch_name_prefix = "Organize in Place" if organize_in_place else "Organize"
+        batch = ActionBatch(name=f"{batch_name_prefix} {len(items)} items")
         self.db.add(batch)
         self.db.commit()
 
@@ -102,7 +103,21 @@ class RenamerRunner:
             previews.append(preview)
 
         if previews:
-            formatter.resolve_collisions(previews)
+            if organize_in_place:
+                for preview in previews:
+                    m_item = next((it for it in items if it.id == preview.item_id), None)
+                    if m_item:
+                        preview.destination_root = os.path.dirname(m_item.current_path).replace("\\", "/")
+                        preview.target_subpath = ""
+                        preview.target_name = os.path.basename(m_item.current_path)
+                    for extra_prev in preview.extra_previews:
+                        extra_obj = self.library_port.get_extra_by_id(extra_prev.extra_id)
+                        if extra_obj:
+                            extra_prev.destination_root = os.path.dirname(extra_obj.current_path).replace("\\", "/")
+                            extra_prev.target_subpath = ""
+                            extra_prev.target_name = os.path.basename(extra_obj.current_path)
+            else:
+                formatter.resolve_collisions(previews)
 
         with StatusCoordinator.scan_status_lock:
             StatusCoordinator.scan_status["total"] = len(previews)
@@ -132,7 +147,7 @@ class RenamerRunner:
                 smooth_pct = ((idx + pct) / len(previews)) * 100.0
                 self.task_manager.update_progress(task_id, smooth_pct)
 
-            await asyncio.to_thread(engine.execute_single, preview, batch.id, progress_callback=progress_cb)
+            await asyncio.to_thread(engine.execute_single, preview, batch.id, progress_callback=progress_cb, organize_in_place=organize_in_place)
             self.db.commit()
 
             with StatusCoordinator.scan_status_lock:
